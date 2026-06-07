@@ -11,6 +11,8 @@ import { DeepLineageTimeline } from "@/features/explorer/components/DeepLineageT
 import { CellShellProvider } from "@/features/cell-shell/CellShellProvider";
 import { MembraneIndicator } from "@/features/cell-shell/MembraneIndicator";
 import { MembraneEdge } from "@/features/cell-shell/MembraneEdge";
+import { QuantizationBiologySection } from "@/features/explorer/components/QuantizationBiologySection";
+import { FractalNavigator } from "@/features/explorer/components/FractalNavigator";
 
 // ─── Nuclear pore gate positions (polar coords → cartesian) ──────────────────
 // 8 gate proteins spaced evenly on a ring of radius 22 px, computed once.
@@ -75,7 +77,7 @@ export default function Home() {
             </p>
 
             <p className="text-xs font-mono text-muted-foreground/40 tracking-widest">
-              尺度不變性 · One pattern · Nine scales · 0.7770777
+              尺度不變性 · One pattern · Ten scales · 0.7770777
             </p>
 
             {/* ── Nuclear Pore — regulated gateway to the philosophy record ── */}
@@ -193,6 +195,14 @@ export default function Home() {
         </div>
 
         {/* ══════════════════════════════════════════════════════════════════
+            MITOCHONDRIA (continued) — Quantization Biology / Precision Cascade
+            Still within the mitochondria zone — ATP = INT4 = minimum viable token
+        ═══════════════════════════════════════════════════════════════════ */}
+        <div data-cell-zone="mitochondria">
+          <QuantizationBiologySection />
+        </div>
+
+        {/* ══════════════════════════════════════════════════════════════════
             GOLGI APPARATUS — Complete OS Genome / Sorting & Packaging
         ═══════════════════════════════════════════════════════════════════ */}
         <MembraneEdge entering="golgi" />
@@ -238,6 +248,14 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        {/* ══════════════════════════════════════════════════════════════════
+            GOLGI (continued) — Fractal Navigator / Scale-Invariant Sorting
+            Every zone contains its own P→A→E cycle — the Golgi sorts this too
+        ═══════════════════════════════════════════════════════════════════ */}
+        <div data-cell-zone="golgi">
+          <FractalNavigator />
+        </div>
 
         {/* ══════════════════════════════════════════════════════════════════
             ENDOPLASMIC RETICULUM — Deep Lineage Timeline / Memory

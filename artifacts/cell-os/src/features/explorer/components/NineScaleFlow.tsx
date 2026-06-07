@@ -28,10 +28,10 @@ export function NineScaleFlow() {
             尺度不變性 · Scale Invariance
           </div>
           <h2 className="text-3xl md:text-5xl font-bold text-white text-glow-secondary">
-            One Pattern, Nine Scales
+            One Pattern · Ten Scales
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            PERCEPTION → AFFECT → EXPRESSION is not a metaphor invented for Cell OS. It is the structural shape of every complete transformation — from the formation of a Chinese character to the breath of the cosmos. Select a scale to explore it.
+            PERCEPTION → AFFECT → EXPRESSION is not a metaphor invented for Cell OS. It is the structural shape of every complete transformation — from the formation of a Chinese character to one inference call on the Hexagon 770. Select a scale to explore it.
           </p>
           <p className="text-xs font-mono text-muted-foreground/50 tracking-widest">
             Harmonic constant · {HARMONIC_CONSTANT}
@@ -74,7 +74,7 @@ export function NineScaleFlow() {
               <div className="text-8xl leading-none" aria-hidden="true">{activeScale.glyph}</div>
               <div>
                 <div className="text-xs font-mono tracking-widest uppercase text-muted-foreground mb-1">
-                  Scale {String(NINE_SCALE_FLOWS.findIndex((s) => s.id === activeScale.id) + 1).padStart(2, "0")} / 09
+                  Scale {String(NINE_SCALE_FLOWS.findIndex((s) => s.id === activeScale.id) + 1).padStart(2, "0")} / {String(NINE_SCALE_FLOWS.length).padStart(2, "0")}
                 </div>
                 <h3 className="text-3xl font-bold text-white">{activeScale.scale}</h3>
               </div>
@@ -96,8 +96,8 @@ export function NineScaleFlow() {
           </div>
         </div>
 
-        {/* Scale minimap — all nine at a glance */}
-        <div className="grid grid-cols-3 md:grid-cols-9 gap-2 text-center">
+        {/* Scale minimap — all ten at a glance */}
+        <div className="grid grid-cols-5 md:grid-cols-10 gap-2 text-center">
           {NINE_SCALE_FLOWS.map((scale, index) => (
             <button
               key={scale.id}

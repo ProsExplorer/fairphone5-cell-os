@@ -9,6 +9,21 @@
 /** How well a stated fact is supported by the source material. */
 export type ClaimConfidence = "verified" | "indicative" | "unconfirmed";
 
+/**
+ * The eight cellular zone identifiers — canonical axis A of the qi tensor.
+ * Defined here in the domain layer so features, content, and UI can all
+ * import from one source without circular dependencies.
+ */
+export type CellZoneId =
+  | "nucleus"
+  | "cytoplasm"
+  | "cytoskeleton"
+  | "ribosomes"
+  | "mitochondria"
+  | "golgi"
+  | "endoplasmic-reticulum"
+  | "membrane";
+
 /** A biological structure mapped to an operating-system feature. */
 export type Organelle = {
   id: string;
@@ -87,9 +102,9 @@ export type TriadPhase = {
 };
 
 /**
- * One scale in the nine-scale 尺度不變性 (Scale Invariance) table.
+ * One scale in the ten-scale 尺度不變性 (Scale Invariance) table.
  * The same PERCEPTION→AFFECT→EXPRESSION pattern described at a particular
- * level of reality.
+ * level of reality — from symbolic to silicon.
  */
 export type ScaleFlow = {
   id: string;
@@ -106,6 +121,10 @@ export type ScaleFlow = {
  * A documented or proposed biophoton communication link between two organelles.
  * Ultra-weak photon emission (1–1000 photons/cm²/s) from living cells is an
  * emerging biophysics research area.
+ *
+ * attentionWeight (0–1): the relative coherence strength of this link,
+ * interpreted as an analogue of the attention mechanism in transformer inference.
+ * This framing is interpretive, not empirically measured.
  */
 export type BiophotonLink = {
   sourceOrganelleId: string;
@@ -113,6 +132,7 @@ export type BiophotonLink = {
   description: string;
   rateRange: string;
   confidence: ClaimConfidence;
+  attentionWeight?: number;
 };
 
 /** One event in the deep lineage timeline of the triadic pattern. */
@@ -130,4 +150,73 @@ export type EdgeNodeFact = {
   value: string;
   detail: string;
   confidence: ClaimConfidence;
+};
+
+// ─── Quantization Biology ─────────────────────────────────────────────────────
+
+/**
+ * One level in the precision cascade that maps hardware quantization formats
+ * to their biological analogues. FP32→INT4 is a 4-step compression where each
+ * step halves the bytes per weight — mirroring how the cell progressively
+ * compresses information from genome (FP32) to the minimum viable energy
+ * packet (INT4 / ATP).
+ */
+export type QuantizationLayer = {
+  id: string;
+  format: "FP32" | "FP16" | "INT8" | "INT4";
+  bitsPerWeight: number;
+  bytesPerWeight: number;
+  model1BSize: string;
+  biologicalAnalogue: string;
+  biologicalZone: CellZoneId;
+  aiStage: string;
+  hardwareUnit: string;
+  compressionRatio: number;
+  metabolicCost: "maximum" | "high" | "efficient" | "minimal";
+  confidence: ClaimConfidence;
+  glyph: string;
+  color: string;
+  note?: string;
+};
+
+// ─── Qi Matrix ────────────────────────────────────────────────────────────────
+
+/**
+ * One intersection in the 3-axis qi tensor:
+ *   A (zone, 8) × B (triad phase, 3) × C (scale, 10) = 240 cells.
+ *
+ * QI_INTERSECTIONS contains 18 curated high-signal intersections — the ones
+ * where the three axes illuminate each other most clearly.
+ */
+export type QiIntersection = {
+  id: string;
+  zoneId: CellZoneId;
+  phaseId: "perception" | "affect" | "expression";
+  scaleId: string;
+  title: string;
+  narrative: string;
+  hardwareAnalogue?: string;
+  substrateIds?: string[];
+  evidence: ClaimConfidence;
+};
+
+// ─── Fractal Cycles ───────────────────────────────────────────────────────────
+
+/**
+ * One triadic phase within a zone's internal P→A→E cycle.
+ * Maximum navigator depth is 2 (zone → phase → scale narrative) to prevent UI regress.
+ */
+export type FractalPhase = {
+  id: "perception" | "affect" | "expression";
+  title: string;
+  description: string;
+  scaleLabel: string;
+  hardwareAnalogue?: string;
+};
+
+export type FractalCycle = {
+  zoneId: CellZoneId;
+  cycleTitle: string;
+  cycleDescription: string;
+  phases: readonly [FractalPhase, FractalPhase, FractalPhase];
 };

@@ -6,18 +6,12 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import type { CellZoneId } from "@/domain/types";
 
-// ─── Zone registry ────────────────────────────────────────────────────────────
+// ─── Re-export CellZoneId so consumers can import from one place ──────────────
+export type { CellZoneId };
 
-export type CellZoneId =
-  | "nucleus"
-  | "cytoplasm"
-  | "cytoskeleton"
-  | "ribosomes"
-  | "mitochondria"
-  | "golgi"
-  | "endoplasmic-reticulum"
-  | "membrane";
+// ─── Zone metadata ────────────────────────────────────────────────────────────
 
 export type CellZoneMeta = {
   id: CellZoneId;
@@ -61,8 +55,6 @@ export function useCellShell() {
  * Observes all elements with [data-cell-zone] in the DOM using
  * IntersectionObserver. Tracks which zone is currently most visible and
  * provides it to all children via context.
- *
- * Usage: add data-cell-zone="nucleus" (or any CellZoneId) to a section/div.
  */
 export function CellShellProvider({ children }: { children: ReactNode }) {
   const [activeZoneId, setActiveZoneId] = useState<CellZoneId | null>(null);
@@ -91,12 +83,10 @@ export function CellShellProvider({ children }: { children: ReactNode }) {
       { threshold: 0.05 }
     );
 
-    // Small delay so all sections are mounted before we query
     const t = setTimeout(() => {
       const els = Array.from(
         document.querySelectorAll<HTMLElement>("[data-cell-zone]")
       );
-      // Capture document order so we can pick the topmost visible zone
       orderRef.current = els.map((el) => el.dataset.cellZone ?? "");
       els.forEach((el) => observer.observe(el));
     }, 150);

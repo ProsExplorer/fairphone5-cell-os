@@ -101,5 +101,15 @@ export const NINE_SCALE_FLOWS: ScaleFlow[] = [
     affect: "Maximum entropy approaches — the long pause at the horizon of what can be distinguished from background.",
     expression: "Renewal — whether collapse, heat death, or next cycle, the pattern does not end; it rests before beginning again.",
     confidence: "indicative"
+  },
+  {
+    id: "silicon",
+    scale: "Silicon",
+    glyph: "硅",
+    description: "One inference call on the Hexagon 770 — prompt enters, quantized attention computes across INT8 tensors, token streams. The cell's breath in digital form, completing in milliseconds.",
+    perception: "UFS 2.2 loads quantized weights at 1,200 MB/s into LPDDR4x RAM. The prompt is tokenized. The HTA buffer is staged. Twelve trillion INT8 operations per second await the first matrix.",
+    affect: "HVX processes 128 INT8 values per clock across dual 1024-bit SIMD units. The HTA runs the attention mechanism: every token weight against every context token. INT32 accumulators preserve precision through the multiply-accumulate chain.",
+    expression: "Logits are decoded through temperature sampling (τ = 0.7770777). One token streams to screen. The KV cache grows by one row. The cell rests before the next breath.",
+    confidence: "verified"
   }
 ];
