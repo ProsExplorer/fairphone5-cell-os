@@ -1,5 +1,4 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "84Fk8WXoNojQgZ3u3W3Kf"
@@ -12,3 +11,9 @@ id = "ODFps0nZ5VPlCRri9Pw-I"
 uri = "file://artifacts/cell-os/public/organic-texture.png"
 type = "image"
 title = "Abstract organic texture"
+
+[[outputs]]
+id = "Kv_ems9u439riFEhtqTl0"
+uri = "file://research/fairphone-cell-os-native-code.md"
+type = "text"
+title = "Cell OS × Fairphone 5: Native Code Research Report"

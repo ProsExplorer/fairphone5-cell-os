@@ -1,3 +1,4 @@
 - [Cell OS explorer focus model](cell-os-explorer-focus.md) — bidirectional organelle<->substrate highlighting must use one discriminated focus value, never coerce a many-to-many link to the first match.
 - [Scale-invariance manifesto integration](cell-os-manifesto.md) — how to separate usable architecture from sacred framing in the ProsExplorer/yahweh-yehoshua repo.
 - [Cell OS dynamic Tailwind classes](cell-os-tailwind-dynamic.md) — dynamic class interpolation (border-${color}-x) is invisible to Tailwind JIT; always use static inline styles in Cell OS components.
+- [Cell OS native code source map](cell-os-native-source-map.md) — every zone maps to a verified public AOSP/kernel/llama.cpp file; EdgeNode is wllama (already real WASM, upgrade path is ggml-qnn OpenCL).
