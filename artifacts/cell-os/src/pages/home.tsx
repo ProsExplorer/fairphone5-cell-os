@@ -1,4 +1,5 @@
 import { ArrowDown, Cpu, Fingerprint, Shield, Smartphone } from "lucide-react";
+import { Link } from "wouter";
 import { CellDiagram } from "@/components/CellDiagram";
 import { CELL_MAPPINGS } from "@/lib/data";
 import { useExplorerFlow } from "@/features/explorer/useExplorerFlow";
@@ -210,7 +211,10 @@ export default function Home() {
           <span className="font-mono tracking-widest text-sm uppercase">Cell OS Concept</span>
         </div>
         <p className="text-sm opacity-60 mb-2">A visionary software metaphor designed for the Fairphone 5.</p>
-        <p className="text-xs font-mono opacity-30 tracking-widest">尺度不變性 · 0.7770777</p>
+        <p className="text-xs font-mono opacity-30 tracking-widest mb-6">尺度不變性 · 0.7770777</p>
+        <Link href="/philosophy" className="inline-flex items-center gap-2 text-xs font-mono text-cyan-400/50 hover:text-cyan-400 transition-colors tracking-widest uppercase">
+          Read the philosophy &amp; sources →
+        </Link>
       </footer>
     </div>
   );
