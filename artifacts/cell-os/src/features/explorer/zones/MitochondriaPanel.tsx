@@ -6,122 +6,192 @@ import { CELL_ZONES } from "@/features/cell-shell/CellShellProvider";
 /**
  * MitochondriaPanel — the power zone: EdgeNode + precision cascade.
  *
- * Mitochondria are the cell's power plants — they convert raw fuel into
- * usable ATP through a chain of increasingly efficient reactions. Here this
- * maps to two parallel ideas:
- *
- * 1. EdgeNode: the Fairphone 5's on-device LLM running entirely on local
- *    silicon, generating intelligence without a cloud connection. Living proof
- *    that a phone can think for itself.
- *
- * 2. Precision Cascade: the quantization ladder FP32→FP16→INT8→INT4 is the
- *    same chain of efficiency — same information, less energy. ATP = INT4 =
- *    minimum viable token.
- *
- * The full quantization analysis lives on /substrate.
+ * Narrative structure:
+ *   1. Zone frame  — what the Mitochondria zone IS in Cell OS, and why
+ *   2. EdgeNode    — the physical instantiation of that principle (live LLM)
+ *   3. Precision Cascade — the mechanism that makes it fit on a phone
  */
 export function MitochondriaPanel() {
   return (
     <div>
-      {/* Primary: EdgeNode hero section */}
-      <EdgeNodeSection />
 
-      {/* Why the Mitochondria? — the two structural reasons */}
-      <div className="px-6 py-16 border-t border-white/5">
-        <div className="max-w-5xl mx-auto space-y-10">
+      {/* ── 1. Zone frame ────────────────────────────────────────────────
+          This section answers: "Why is the Mitochondria zone in Cell OS
+          the EdgeNode?" before the user sees any EdgeNode content.
+          It is the conceptual key that makes everything below legible.
+      ─────────────────────────────────────────────────────────────── */}
+      <div className="px-6 py-16 border-b border-white/5">
+        <div className="max-w-5xl mx-auto space-y-12">
 
-          <div>
-            <p className="text-xs font-mono tracking-widest uppercase text-muted-foreground mb-2">
-              Why the Mitochondria?
+          {/* Zone identity */}
+          <div className="space-y-4">
+            <div
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full font-mono text-xs tracking-widest uppercase border"
+              style={{ color: "#fb923c", borderColor: "#fb923c30", background: "#fb923c08" }}
+            >
+              <span className="text-base leading-none">粒</span>
+              <span>Mitochondria · Power Zone</span>
+            </div>
+
+            <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight">
+              Can this device generate intelligence<br className="hidden md:block" /> without asking anyone else?
+            </h2>
+
+            <p className="text-muted-foreground text-base leading-relaxed max-w-3xl">
+              In Cell OS, every OS feature maps to a part of the human cell. The Mitochondria
+              is the cell's power plant — the organelle that synthesises ATP from raw fuel,
+              entirely on-site. The cell doesn't request energy from somewhere else. It makes it.
+              That is the defining property of the Mitochondria zone: <em>autonomous generation</em>.
             </p>
-            <h3 className="text-2xl font-bold text-white mb-3">Two reasons. Same structure.</h3>
-            <p className="text-muted-foreground text-sm leading-relaxed max-w-2xl">
-              The mapping is not metaphor. The mitochondrion and the EdgeNode share an identical
-              architectural principle — repeated at two different scales.
+
+            <p className="text-muted-foreground text-base leading-relaxed max-w-3xl">
+              Translated to an operating system: can this device generate intelligence the same
+              way — locally, without a server, without a cloud account, without a round trip across
+              the internet? The Mitochondria zone in Cell OS is where that question is answered.
+              The answer is called the <span className="text-white font-medium">EdgeNode</span>.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-5">
+          {/* Two structural reasons — why this mapping is not loose metaphor */}
+          <div className="space-y-4">
+            <p className="text-xs font-mono tracking-widest uppercase text-muted-foreground">
+              The mapping is structural, not decorative
+            </p>
 
-            {/* Reason 1 — Power independence */}
-            <div
-              className="glass-panel rounded-2xl p-6 border border-white/5 space-y-4"
-              style={{ borderColor: "#fb923c18" }}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-3xl" aria-hidden="true">粒</span>
-                <span
-                  className="text-xs font-mono tracking-widest uppercase"
-                  style={{ color: "#fb923c" }}
-                >
-                  Power Independence
-                </span>
+            <div className="grid md:grid-cols-2 gap-5">
+
+              {/* Power independence */}
+              <div
+                className="glass-panel rounded-2xl p-6 border space-y-4"
+                style={{ borderColor: "#fb923c18" }}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono tracking-widest uppercase" style={{ color: "#fb923c" }}>
+                    Reason 1 — Power Independence
+                  </span>
+                </div>
+
+                <p className="text-sm text-foreground/85 leading-relaxed">
+                  Mitochondria don't request energy from somewhere else — they generate it.
+                  The mitochondrial membrane, the electron transport chain, the ATP synthase
+                  rotor — all of it is on-site chemistry. When the cell needs energy, the
+                  mitochondrion makes it. This is autonomy at the molecular level.
+                </p>
+
+                <p className="text-sm text-foreground/85 leading-relaxed">
+                  The Fairphone 5 running an LLM on the Hexagon DSP is doing the same thing
+                  computationally. Weights live in local storage. Inference runs on the Hexagon's
+                  HTA matrix units. Tokens arrive without any network round trip.
+                </p>
+
+                <p className="text-sm font-medium" style={{ color: "#fb923c" }}>
+                  "The Proof" is that this actually runs — on a phone, on hardware
+                  that was not designed for it, by a company that makes phones to last.
+                </p>
               </div>
 
-              <p className="text-sm text-foreground/85 leading-relaxed">
-                Mitochondria make the cell <em>energetically autonomous</em>. They take raw fuel —
-                glucose and oxygen — and generate ATP entirely from within. No external energy source.
-                No dependency. The cell can sustain itself.
-              </p>
-              <p className="text-sm text-foreground/85 leading-relaxed">
-                The Fairphone 5 running an LLM on the Hexagon DSP does the same thing
-                computationally: it generates intelligence entirely from local silicon.
-                No cloud. No accounts. No GPU. The phone can think for itself.
-              </p>
-              <p
-                className="text-sm font-medium leading-relaxed"
-                style={{ color: "#fb923c" }}
+              {/* Efficiency cascade */}
+              <div
+                className="glass-panel rounded-2xl p-6 border space-y-4"
+                style={{ borderColor: "#fb923c18" }}
               >
-                "The Proof" is that it actually runs. That was not obvious until it did.
-              </p>
-            </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono tracking-widest uppercase" style={{ color: "#fb923c" }}>
+                    Reason 2 — The Efficiency Cascade
+                  </span>
+                </div>
 
-            {/* Reason 2 — Efficiency cascade */}
-            <div
-              className="glass-panel rounded-2xl p-6 border border-white/5 space-y-4"
-              style={{ borderColor: "#fb923c18" }}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-3xl" aria-hidden="true">⚡</span>
-                <span
-                  className="text-xs font-mono tracking-widest uppercase"
-                  style={{ color: "#fb923c" }}
-                >
-                  Efficiency Cascade
-                </span>
+                <p className="text-sm text-foreground/85 leading-relaxed">
+                  The mitochondrion doesn't convert fuel to ATP in one step. The electron
+                  transport chain is a series of four protein complexes — each one extracting
+                  a little more energy from the electron's descent, building the proton gradient
+                  that drives the ATP synthase rotor. Minimum viable output: one ATP molecule.
+                </p>
+
+                <p className="text-sm text-foreground/85 leading-relaxed">
+                  The quantization precision cascade mirrors this exactly:{" "}
+                  <span className="font-mono" style={{ color: "#fb923c" }}>
+                    FP32 → FP16 → INT8 → INT4
+                  </span>.
+                  Each step compresses further — same meaning, fewer bits, less energy.
+                </p>
+
+                <p className="text-sm font-mono font-bold" style={{ color: "#fb923c" }}>
+                  INT4 = ATP — the minimum viable token. Small enough for a phone.
+                  Coherent enough to carry meaning.
+                </p>
               </div>
 
-              <p className="text-sm text-foreground/85 leading-relaxed">
-                The mitochondrion's electron transport chain is a cascade of progressive extraction.
-                Electrons step through four protein complexes — I → II → III → IV → ATP synthase —
-                each stage building the proton gradient. The minimum viable output is one ATP molecule:
-                the smallest unit of chemical energy that can power anything downstream.
-              </p>
-              <p className="text-sm text-foreground/85 leading-relaxed">
-                The quantization precision cascade is structurally identical:{" "}
-                <span className="font-mono" style={{ color: "#fb923c" }}>FP32 → FP16 → INT8 → INT4</span>.
-                Same information content. Less energy (and memory bandwidth) at each step.
-              </p>
-              <p
-                className="text-sm font-mono font-bold leading-relaxed"
-                style={{ color: "#fb923c" }}
-              >
-                ATP = INT4 = the minimum viable token.
-              </p>
             </div>
-
           </div>
+
+          {/* P→A→E cycle — the EdgeNode's three phases, named explicitly */}
+          <div className="space-y-4">
+            <p className="text-xs font-mono tracking-widest uppercase text-muted-foreground">
+              The EdgeNode breathes the same triadic cycle as every Cell OS zone
+            </p>
+            <div className="grid md:grid-cols-3 gap-4">
+              {[
+                {
+                  phase: "P — Perception",
+                  glyph: "門",
+                  color: "#22d3ee",
+                  bio: "Mitochondria receive glucose + O₂ — complete fuel arrival before the chain begins.",
+                  os:  "The full prompt is read before any token is produced. Complete input before response.",
+                },
+                {
+                  phase: "A — Affect",
+                  glyph: "室",
+                  color: "#34d399",
+                  bio: "The electron transport chain runs — a sustained reaction in dedicated protein hardware.",
+                  os:  "HTA matrix multiply accumulates attention across all token pairs. Dedicated silicon, sustained chain.",
+                },
+                {
+                  phase: "E — Expression",
+                  glyph: "窗",
+                  color: "#a3e635",
+                  bio: "ATP synthase releases one ATP — a discrete, portable unit of chemical potential.",
+                  os:  "One token is decoded and streamed to screen. Irreducibly singular. Powers everything downstream.",
+                },
+              ].map(({ phase, glyph, color, bio, os }) => (
+                <div
+                  key={phase}
+                  className="glass-panel rounded-xl p-5 border border-white/5 space-y-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-3xl" aria-hidden="true">{glyph}</span>
+                    <span className="text-xs font-mono tracking-widest uppercase" style={{ color }}>
+                      {phase}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground/60 leading-relaxed border-l-2 pl-3" style={{ borderColor: `${color}40` }}>
+                    <span className="text-muted-foreground/40 font-mono uppercase text-[9px] block mb-1">Biology</span>
+                    {bio}
+                  </p>
+                  <p className="text-[11px] text-foreground/75 leading-relaxed border-l-2 pl-3" style={{ borderColor: `${color}80` }}>
+                    <span className="font-mono uppercase text-[9px] block mb-1" style={{ color }}>Cell OS</span>
+                    {os}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
       </div>
 
-      {/* Precision cascade mini preview */}
+      {/* ── 2. EdgeNode — the live implementation ──────────────────────── */}
+      <EdgeNodeSection />
+
+      {/* ── 3. Precision Cascade — the mechanism ────────────────────────── */}
       <div className="px-6 py-12 border-t border-white/5">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-xl font-bold text-white mb-1">Precision Cascade</h3>
               <p className="text-sm text-muted-foreground">
-                FP32 → INT4 · Same information, less energy. ATP = minimum viable token.
+                The electron transport chain in numbers —
+                FP32 → INT4 · same signal, less energy at each stage.
               </p>
             </div>
             <Link
@@ -146,22 +216,15 @@ export function MitochondriaPanel() {
                     <span className="font-mono font-bold text-sm" style={{ color: layer.color }}>
                       {layer.format}
                     </span>
-                    <span
-                      className="text-base leading-none"
-                      style={{ color: `${zone.color}55` }}
-                    >
+                    <span className="text-base leading-none" style={{ color: `${zone.color}55` }}>
                       {zone.glyph}
                     </span>
                   </div>
 
                   <div className="h-1 rounded-full bg-white/5 overflow-hidden">
                     <div
-                      className="h-full rounded-full transition-all"
-                      style={{
-                        width: `${Math.round(layer.compressionRatio * 100)}%`,
-                        background: layer.color,
-                        opacity: 0.75,
-                      }}
+                      className="h-full rounded-full"
+                      style={{ width: `${Math.round(layer.compressionRatio * 100)}%`, background: layer.color, opacity: 0.75 }}
                     />
                   </div>
 
@@ -178,6 +241,7 @@ export function MitochondriaPanel() {
           </div>
         </div>
       </div>
+
     </div>
   );
 }
