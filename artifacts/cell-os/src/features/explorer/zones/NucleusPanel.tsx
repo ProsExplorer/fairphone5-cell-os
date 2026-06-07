@@ -1,9 +1,47 @@
 import { Link } from "wouter";
+import { CodeSnippet } from "../components/CodeSnippet";
 
 const GATE_POSITIONS = Array.from({ length: 8 }, (_, i) => {
   const a = (i * Math.PI * 2) / 8;
   return { x: Math.sin(a) * 22, y: -Math.cos(a) * 22 };
 });
+
+const QI_TYPE_SNIPPET = `// src/domain/types.ts
+// The QiIntersection type is the atom of the qi tensor matrix.
+// Every curated entry encodes three coordinates + a narrative.
+
+export type QiIntersection = {
+  id:        string;
+  zoneId:    CellZoneId;   // axis A — which of the 8 organelle zones
+  phaseId:   "perception" | "affect" | "expression"; // axis B — P→A→E
+  scaleId:   string;       // axis C — symbolic → quantum → … → silicon
+  title:     string;
+  narrative: string;
+  hardwareAnalogue?: string;  // silicon-scale entries only
+  substrateIds?:    string[]; // links to substrate nodes (Hexagon, etc.)
+  evidence:  "verified" | "indicative" | "unconfirmed";
+};
+
+// Full tensor: 8 zones × 3 phases × 10 scales = 240 intersections.
+// 18 are curated — the ones where the three axes illuminate each other.`;
+
+const QI_ENTRY_SNIPPET = `// src/domain/content/qiMatrix.ts — one curated entry
+{
+  id:      "nucleus-expression-silicon",
+  zoneId:  "nucleus",
+  phaseId: "expression",
+  scaleId: "silicon",
+  title:   "Tokenization — DNA Expressed as Input",
+  narrative:
+    "The prompt is the nucleus's expression: a compressed encoding of intent,
+     passed through the nuclear pore (tokenizer) into the inference engine.
+     UFS 2.2 reads the quantized genome (model weights) at 1,200 MB/s;
+     the prompt tokens are staged in LPDDR4x RAM. The HTA buffer opens.
+     Expression at the silicon scale is the act of becoming readable.",
+  hardwareAnalogue: "UFS 2.2 storage → LPDDR4x RAM → HTA input buffer",
+  substrateIds:     ["ufs", "lpddr4x", "hexagon"],
+  evidence:         "verified",
+}`;
 
 /**
  * NucleusPanel — the core identity of Cell OS.
@@ -13,23 +51,21 @@ const GATE_POSITIONS = Array.from({ length: 8 }, (_, i) => {
  */
 export function NucleusPanel() {
   return (
-    <div
-      className="min-h-full flex flex-col items-center justify-center px-8 py-20 text-center relative"
-    >
+    <div className="flex flex-col items-center px-8 py-20 relative">
+
       {/* Ambient nucleus glow */}
       <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full pointer-events-none"
-        style={{ background: "radial-gradient(ellipse, rgba(34,211,238,0.08) 0%, transparent 70%)" }}
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full pointer-events-none"
+        style={{ background: "radial-gradient(ellipse, rgba(34,211,238,0.07) 0%, transparent 70%)" }}
       />
 
-      <div className="relative max-w-2xl mx-auto space-y-8">
-        {/* Concept badge */}
+      {/* ── Identity centrepiece ───────────────────────────────────── */}
+      <div className="relative max-w-2xl mx-auto space-y-8 text-center mb-20">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel border-primary/30 text-primary font-mono text-sm tracking-widest uppercase">
           <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
           Concept: Fairphone 5
         </div>
 
-        {/* Title */}
         <h1 className="text-6xl md:text-7xl font-bold text-white text-glow">Cell OS</h1>
 
         <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
@@ -42,7 +78,6 @@ export function NucleusPanel() {
           the cell's zones to explore how biology informs the ultimate operating system.
         </p>
 
-        {/* Harmonic constant */}
         <p className="text-xs font-mono text-muted-foreground/35 tracking-widest">
           尺度不變性 · One pattern · Ten scales · 0.7770777
         </p>
@@ -57,10 +92,7 @@ export function NucleusPanel() {
                 <div
                   key={i}
                   className="absolute w-1 h-1 rounded-full bg-primary/20 group-hover:bg-primary/55 transition-colors duration-[777ms]"
-                  style={{
-                    left: `calc(50% + ${x}px - 2px)`,
-                    top: `calc(50% + ${y}px - 2px)`,
-                  }}
+                  style={{ left: `calc(50% + ${x}px - 2px)`, top: `calc(50% + ${y}px - 2px)` }}
                 />
               ))}
               <div className="absolute inset-[14px] rounded-full border border-primary/10 flex items-center justify-center bg-primary/[0.03] group-hover:bg-primary/[0.08] transition-all duration-[777ms]">
@@ -75,6 +107,40 @@ export function NucleusPanel() {
           </Link>
         </div>
       </div>
+
+      {/* ── The code that IS the nucleus ──────────────────────────── */}
+      <div className="w-full max-w-3xl mx-auto space-y-8">
+        <div className="space-y-2 text-center">
+          <p className="text-xs font-mono tracking-widest uppercase" style={{ color: "rgba(34,211,238,0.45)" }}>
+            The genome in code
+          </p>
+          <h3 className="text-lg font-bold text-white">
+            The Qi Tensor Matrix — the DNA of Cell OS
+          </h3>
+          <p className="text-sm text-muted-foreground/70 max-w-xl mx-auto leading-relaxed">
+            Just as the nucleus encodes everything the cell can become in its genome,
+            the qi tensor matrix encodes every intersection of zone, phase, and scale
+            that Cell OS navigates. This is the actual TypeScript that defines it.
+          </p>
+        </div>
+
+        <CodeSnippet filename="src/domain/types.ts">
+          {QI_TYPE_SNIPPET}
+        </CodeSnippet>
+
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground/45 leading-relaxed pl-1">
+            Every interaction you have with Cell OS — clicking an organelle, reading
+            a zone panel, following a biophoton link — is ultimately navigating one
+            or more of these 18 curated intersections. Here is one, fully resolved:
+          </p>
+        </div>
+
+        <CodeSnippet filename="src/domain/content/qiMatrix.ts">
+          {QI_ENTRY_SNIPPET}
+        </CodeSnippet>
+      </div>
+
     </div>
   );
 }
