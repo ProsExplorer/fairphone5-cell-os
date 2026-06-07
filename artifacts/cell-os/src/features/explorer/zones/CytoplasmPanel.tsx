@@ -14,11 +14,17 @@ type Props = {
  * This is where exploration starts: a spatial view of the cell with clickable
  * organelles, biophoton communication links, and an info panel that reveals
  * what each structure does as an OS feature.
+ *
+ * Biophoton links now carry attentionWeight (0–1) which drives strokeWidth
+ * and opacity in the diagram — mirroring transformer attention weights.
+ * Link color derives from the source organelle's zone, so zone identity
+ * is visible in the communication network itself.
  */
 export function CytoplasmPanel({ view, perceive }: Props) {
   const biophotonLinks = view.relatedBiophotonLinks.map((l) => ({
     sourceId: l.sourceOrganelleId,
     targetId: l.targetOrganelleId,
+    attentionWeight: l.attentionWeight ?? 0.5,
   }));
 
   return (
@@ -26,9 +32,9 @@ export function CytoplasmPanel({ view, perceive }: Props) {
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-white mb-2">The Microscopic View</h2>
         <p className="text-muted-foreground max-w-2xl text-sm leading-relaxed">
-          Every operating system feature maps to a part of the human cell. Click an organelle
-          to discover the connection. When an organelle is active, biophoton links illuminate
-          its communication partners — the cell's own signalling network.
+          Every OS feature maps to a part of the human cell. Click an organelle to discover
+          its zone (glyph), OS role, and substrate connections. Biophoton links illuminate
+          communication partners — width reflects attention weight.
         </p>
       </div>
 
