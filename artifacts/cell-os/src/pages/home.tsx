@@ -5,6 +5,7 @@ import { CELL_MAPPINGS } from "@/lib/data";
 
 export default function Home() {
   const [activeOrganelle, setActiveOrganelle] = useState<string | null>(null);
+  const activeMapping = CELL_MAPPINGS.find((m) => m.id === activeOrganelle);
 
   return (
     <div className="min-h-[100dvh] bg-background text-foreground overflow-x-hidden">
@@ -74,24 +75,24 @@ export default function Home() {
 
             {/* Right: The Info Panel */}
             <div className="order-1 lg:order-2 h-[400px] flex items-center justify-center">
-              {activeOrganelle ? (
+              {activeMapping ? (
                 <div 
                   className="w-full glass-panel p-8 rounded-3xl space-y-6 transition-all animate-in fade-in slide-in-from-right-8"
                   style={{
-                    boxShadow: `0 8px 32px 0 ${CELL_MAPPINGS.find(m => m.id === activeOrganelle)?.color.replace('hsl', 'hsla').replace(')', ', 0.2)')}`,
-                    borderColor: `${CELL_MAPPINGS.find(m => m.id === activeOrganelle)?.color.replace('hsl', 'hsla').replace(')', ', 0.3)')}`
+                    boxShadow: `0 8px 32px 0 ${activeMapping.color.replace('hsl', 'hsla').replace(')', ', 0.2)')}`,
+                    borderColor: `${activeMapping.color.replace('hsl', 'hsla').replace(')', ', 0.3)')}`
                   }}
                 >
                   <div className="space-y-2">
                     {/* Organelle Name */}
                     <div 
                       className="text-sm font-mono tracking-widest uppercase"
-                      style={{ color: CELL_MAPPINGS.find(m => m.id === activeOrganelle)?.color }}
+                      style={{ color: activeMapping.color }}
                     >
                       Biological Structure
                     </div>
                     <h3 className="text-4xl font-bold text-white">
-                      {CELL_MAPPINGS.find(m => m.id === activeOrganelle)?.name}
+                      {activeMapping.name}
                     </h3>
                   </div>
 
@@ -101,17 +102,17 @@ export default function Home() {
                       OS Function
                     </div>
                     <div className="text-2xl font-semibold text-white">
-                      {CELL_MAPPINGS.find(m => m.id === activeOrganelle)?.osFeature}
+                      {activeMapping.osFeature}
                     </div>
                   </div>
 
                   <div className="space-y-4 pt-4">
                     <p className="text-lg text-foreground/90 leading-relaxed">
-                      {CELL_MAPPINGS.find(m => m.id === activeOrganelle)?.explanation}
+                      {activeMapping.explanation}
                     </p>
                     <div className="p-4 bg-black/40 rounded-xl border border-white/5">
                       <p className="text-sm font-medium text-muted-foreground italic">
-                        "{CELL_MAPPINGS.find(m => m.id === activeOrganelle)?.analogy}"
+                        "{activeMapping.analogy}"
                       </p>
                     </div>
                   </div>

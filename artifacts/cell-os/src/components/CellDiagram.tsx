@@ -1,9 +1,51 @@
+import type { CSSProperties, ReactNode, KeyboardEvent } from "react";
 import { CELL_MAPPINGS } from "@/lib/data";
 
 interface CellDiagramProps {
   activeId: string | null;
   onHover: (id: string | null) => void;
   onClick: (id: string) => void;
+}
+
+interface OrganelleProps {
+  id: string;
+  activeId: string | null;
+  onHover: (id: string | null) => void;
+  onClick: (id: string) => void;
+  style?: CSSProperties;
+  className?: string;
+  children: ReactNode;
+}
+
+function Organelle({ id, activeId, onHover, onClick, style, className, children }: OrganelleProps) {
+  const mapping = CELL_MAPPINGS.find((m) => m.id === id);
+  const label = mapping ? `${mapping.name}: ${mapping.osFeature}` : id;
+
+  const handleKeyDown = (e: KeyboardEvent<SVGGElement>) => {
+    if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+      e.preventDefault();
+      onClick(id);
+    }
+  };
+
+  return (
+    <g
+      role="button"
+      tabIndex={0}
+      aria-label={label}
+      aria-pressed={activeId === id}
+      className={`cursor-pointer outline-none ${className ?? ""}`}
+      style={style}
+      onMouseEnter={() => onHover(id)}
+      onMouseLeave={() => onHover(null)}
+      onFocus={() => onHover(id)}
+      onBlur={() => onHover(null)}
+      onClick={() => onClick(id)}
+      onKeyDown={handleKeyDown}
+    >
+      {children}
+    </g>
+  );
 }
 
 export function CellDiagram({ activeId, onHover, onClick }: CellDiagramProps) {
@@ -32,11 +74,12 @@ export function CellDiagram({ activeId, onHover, onClick }: CellDiagramProps) {
         </defs>
 
         {/* 5. Cell Membrane */}
-        <g 
-          className="cursor-pointer transition-all duration-500 origin-center"
-          onMouseEnter={() => onHover("cell-membrane")}
-          onMouseLeave={() => onHover(null)}
-          onClick={() => onClick("cell-membrane")}
+        <Organelle
+          id="cell-membrane"
+          activeId={activeId}
+          onHover={onHover}
+          onClick={onClick}
+          className="transition-all duration-500 origin-center"
           style={{ 
             opacity: activeId && activeId !== "cell-membrane" ? 0.4 : 1,
             transform: activeId === "cell-membrane" ? "scale(1.02)" : "scale(1)"
@@ -50,14 +93,15 @@ export function CellDiagram({ activeId, onHover, onClick }: CellDiagramProps) {
             filter={activeId === "cell-membrane" ? "url(#glow-strong)" : "url(#glow)"}
             className="animate-pulse-slow"
           />
-        </g>
+        </Organelle>
 
         {/* 13. Cytoplasm (Background fill inside membrane) */}
-        <g 
-          className="cursor-pointer transition-all duration-500"
-          onMouseEnter={() => onHover("cytoplasm")}
-          onMouseLeave={() => onHover(null)}
-          onClick={() => onClick("cytoplasm")}
+        <Organelle
+          id="cytoplasm"
+          activeId={activeId}
+          onHover={onHover}
+          onClick={onClick}
+          className="transition-all duration-500"
           style={{ opacity: activeId && activeId !== "cytoplasm" ? 0.3 : 1 }}
         >
           <path 
@@ -66,14 +110,15 @@ export function CellDiagram({ activeId, onHover, onClick }: CellDiagramProps) {
             stroke={activeId === "cytoplasm" ? "hsl(260, 60%, 50%)" : "transparent"}
             strokeWidth="4"
           />
-        </g>
+        </Organelle>
 
         {/* 6. Membrane Receptors (Outer antennas) */}
-        <g 
-          className="cursor-pointer transition-all duration-500"
-          onMouseEnter={() => onHover("membrane-receptors")}
-          onMouseLeave={() => onHover(null)}
-          onClick={() => onClick("membrane-receptors")}
+        <Organelle
+          id="membrane-receptors"
+          activeId={activeId}
+          onHover={onHover}
+          onClick={onClick}
+          className="transition-all duration-500"
           style={{ opacity: activeId && activeId !== "membrane-receptors" ? 0.4 : 1 }}
         >
           {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => (
@@ -87,27 +132,29 @@ export function CellDiagram({ activeId, onHover, onClick }: CellDiagramProps) {
               filter="url(#glow)"
             />
           ))}
-        </g>
+        </Organelle>
 
         {/* 14. Cytoskeleton (Structural lines) */}
-        <g 
-          className="cursor-pointer transition-all duration-500"
-          onMouseEnter={() => onHover("cytoskeleton")}
-          onMouseLeave={() => onHover(null)}
-          onClick={() => onClick("cytoskeleton")}
+        <Organelle
+          id="cytoskeleton"
+          activeId={activeId}
+          onHover={onHover}
+          onClick={onClick}
+          className="transition-all duration-500"
           style={{ opacity: activeId && activeId !== "cytoskeleton" ? 0.2 : 0.6 }}
         >
           <path d="M 200 300 Q 500 400 800 200" stroke={activeId === "cytoskeleton" ? "hsl(340, 80%, 60%)" : "rgba(255,255,255,0.15)"} strokeWidth="4" fill="none" strokeDasharray="10, 10"/>
           <path d="M 150 600 Q 500 550 850 700" stroke={activeId === "cytoskeleton" ? "hsl(340, 80%, 60%)" : "rgba(255,255,255,0.15)"} strokeWidth="4" fill="none" strokeDasharray="10, 10"/>
           <path d="M 400 150 Q 450 500 300 850" stroke={activeId === "cytoskeleton" ? "hsl(340, 80%, 60%)" : "rgba(255,255,255,0.15)"} strokeWidth="4" fill="none" strokeDasharray="10, 10"/>
-        </g>
+        </Organelle>
 
         {/* 12. Vacuole */}
-        <g 
-          className="cursor-pointer transition-all duration-500 origin-center"
-          onMouseEnter={() => onHover("vacuole")}
-          onMouseLeave={() => onHover(null)}
-          onClick={() => onClick("vacuole")}
+        <Organelle
+          id="vacuole"
+          activeId={activeId}
+          onHover={onHover}
+          onClick={onClick}
+          className="transition-all duration-500 origin-center"
           style={{ 
             opacity: activeId && activeId !== "vacuole" ? 0.4 : 1,
             transform: activeId === "vacuole" ? "scale(1.05) translate(-10px, 10px)" : "scale(1)"
@@ -120,14 +167,15 @@ export function CellDiagram({ activeId, onHover, onClick }: CellDiagramProps) {
             strokeWidth="6"
             filter="url(#glow)"
           />
-        </g>
+        </Organelle>
 
         {/* 7. Mitochondria */}
-        <g 
-          className="cursor-pointer transition-all duration-500 origin-center"
-          onMouseEnter={() => onHover("mitochondria")}
-          onMouseLeave={() => onHover(null)}
-          onClick={() => onClick("mitochondria")}
+        <Organelle
+          id="mitochondria"
+          activeId={activeId}
+          onHover={onHover}
+          onClick={onClick}
+          className="transition-all duration-500 origin-center"
           style={{ 
             opacity: activeId && activeId !== "mitochondria" ? 0.4 : 1,
             transform: activeId === "mitochondria" ? "scale(1.1) translate(0px, 15px)" : "scale(1)"
@@ -143,27 +191,29 @@ export function CellDiagram({ activeId, onHover, onClick }: CellDiagramProps) {
             <ellipse cx="0" cy="0" rx="90" ry="45" fill="rgba(255, 120, 0, 0.2)" stroke={activeId === "mitochondria" ? "hsl(35, 100%, 60%)" : "hsl(35, 100%, 40%)"} strokeWidth="4" filter="url(#glow)"/>
             <path d="M -70 0 Q -45 -35 -20 0 T 25 0 T 70 0" stroke={activeId === "mitochondria" ? "hsl(35, 100%, 70%)" : "hsl(35, 100%, 50%)"} strokeWidth="3" fill="none" />
           </g>
-        </g>
+        </Organelle>
 
         {/* 11. Lysosomes */}
-        <g 
-          className="cursor-pointer transition-all duration-500 origin-center"
-          onMouseEnter={() => onHover("lysosomes")}
-          onMouseLeave={() => onHover(null)}
-          onClick={() => onClick("lysosomes")}
+        <Organelle
+          id="lysosomes"
+          activeId={activeId}
+          onHover={onHover}
+          onClick={onClick}
+          className="transition-all duration-500 origin-center"
           style={{ opacity: activeId && activeId !== "lysosomes" ? 0.4 : 1 }}
         >
           <circle cx="300" cy="700" r="40" fill="rgba(150, 200, 0, 0.3)" stroke={activeId === "lysosomes" ? "hsl(80, 90%, 60%)" : "hsl(80, 90%, 30%)"} strokeWidth="4" filter="url(#glow)" />
           <circle cx="200" cy="550" r="25" fill="rgba(150, 200, 0, 0.3)" stroke={activeId === "lysosomes" ? "hsl(80, 90%, 60%)" : "hsl(80, 90%, 30%)"} strokeWidth="4" filter="url(#glow)" />
           <circle cx="800" cy="300" r="30" fill="rgba(150, 200, 0, 0.3)" stroke={activeId === "lysosomes" ? "hsl(80, 90%, 60%)" : "hsl(80, 90%, 30%)"} strokeWidth="4" filter="url(#glow)" />
-        </g>
+        </Organelle>
 
         {/* 10. Golgi Apparatus */}
-        <g 
-          className="cursor-pointer transition-all duration-500 origin-center"
-          onMouseEnter={() => onHover("golgi-apparatus")}
-          onMouseLeave={() => onHover(null)}
-          onClick={() => onClick("golgi-apparatus")}
+        <Organelle
+          id="golgi-apparatus"
+          activeId={activeId}
+          onHover={onHover}
+          onClick={onClick}
+          className="transition-all duration-500 origin-center"
           style={{ 
             opacity: activeId && activeId !== "golgi-apparatus" ? 0.4 : 1,
             transform: activeId === "golgi-apparatus" ? "scale(1.05) translate(-10px, -10px)" : "scale(1)"
@@ -175,27 +225,29 @@ export function CellDiagram({ activeId, onHover, onClick }: CellDiagramProps) {
             <path d="M -20 30 Q 50 10 120 30" stroke={activeId === "golgi-apparatus" ? "hsl(25, 90%, 60%)" : "hsl(25, 90%, 40%)"} strokeWidth="12" strokeLinecap="round" fill="none" filter="url(#glow)" />
             <path d="M -30 60 Q 50 40 130 60" stroke={activeId === "golgi-apparatus" ? "hsl(25, 90%, 60%)" : "hsl(25, 90%, 40%)"} strokeWidth="12" strokeLinecap="round" fill="none" filter="url(#glow)" />
           </g>
-        </g>
+        </Organelle>
 
         {/* 15. Vesicles (Small bubbles moving) */}
-        <g 
-          className="cursor-pointer transition-all duration-500 origin-center"
-          onMouseEnter={() => onHover("vesicles")}
-          onMouseLeave={() => onHover(null)}
-          onClick={() => onClick("vesicles")}
+        <Organelle
+          id="vesicles"
+          activeId={activeId}
+          onHover={onHover}
+          onClick={onClick}
+          className="transition-all duration-500 origin-center"
           style={{ opacity: activeId && activeId !== "vesicles" ? 0.4 : 1 }}
         >
           <circle cx="700" cy="450" r="15" fill={activeId === "vesicles" ? "hsl(50, 100%, 70%)" : "hsl(50, 100%, 40%)"} filter="url(#glow)" />
           <circle cx="780" cy="500" r="12" fill={activeId === "vesicles" ? "hsl(50, 100%, 70%)" : "hsl(50, 100%, 40%)"} filter="url(#glow)" />
           <circle cx="620" cy="650" r="18" fill={activeId === "vesicles" ? "hsl(50, 100%, 70%)" : "hsl(50, 100%, 40%)"} filter="url(#glow)" />
-        </g>
+        </Organelle>
 
         {/* 9. Endoplasmic Reticulum (Surrounding Nucleus) */}
-        <g 
-          className="cursor-pointer transition-all duration-500 origin-center"
-          onMouseEnter={() => onHover("endoplasmic-reticulum")}
-          onMouseLeave={() => onHover(null)}
-          onClick={() => onClick("endoplasmic-reticulum")}
+        <Organelle
+          id="endoplasmic-reticulum"
+          activeId={activeId}
+          onHover={onHover}
+          onClick={onClick}
+          className="transition-all duration-500 origin-center"
           style={{ 
             opacity: activeId && activeId !== "endoplasmic-reticulum" ? 0.4 : 1,
             transform: activeId === "endoplasmic-reticulum" ? "scale(1.02)" : "scale(1)"
@@ -217,14 +269,15 @@ export function CellDiagram({ activeId, onHover, onClick }: CellDiagramProps) {
             fill="none"
             filter="url(#glow)"
           />
-        </g>
+        </Organelle>
 
         {/* 8. Ribosomes (Dots on ER) */}
-        <g 
-          className="cursor-pointer transition-all duration-500"
-          onMouseEnter={() => onHover("ribosomes")}
-          onMouseLeave={() => onHover(null)}
-          onClick={() => onClick("ribosomes")}
+        <Organelle
+          id="ribosomes"
+          activeId={activeId}
+          onHover={onHover}
+          onClick={onClick}
+          className="transition-all duration-500"
           style={{ opacity: activeId && activeId !== "ribosomes" ? 0.4 : 1 }}
         >
           {/* Scatter tiny dots along the ER path conceptually */}
@@ -235,28 +288,30 @@ export function CellDiagram({ activeId, onHover, onClick }: CellDiagramProps) {
           ].map(([cx, cy], i) => (
             <circle key={i} cx={cx} cy={cy} r={activeId === "ribosomes" ? 8 : 5} fill={activeId === "ribosomes" ? "hsl(300, 70%, 70%)" : "hsl(300, 70%, 40%)"} filter="url(#glow)" />
           ))}
-        </g>
+        </Organelle>
 
         {/* 1. Nucleus */}
-        <g 
-          className="cursor-pointer transition-all duration-500 origin-center"
-          onMouseEnter={() => onHover("nucleus")}
-          onMouseLeave={() => onHover(null)}
-          onClick={() => onClick("nucleus")}
+        <Organelle
+          id="nucleus"
+          activeId={activeId}
+          onHover={onHover}
+          onClick={onClick}
+          className="transition-all duration-500 origin-center"
           style={{ 
             opacity: activeId && activeId !== "nucleus" ? 0.4 : 1,
             transform: activeId === "nucleus" ? "scale(1.05)" : "scale(1)"
           }}
         >
           <circle cx="500" cy="500" r="140" fill="rgba(150, 50, 200, 0.4)" stroke={activeId === "nucleus" ? "hsl(280, 80%, 70%)" : "hsl(280, 80%, 40%)"} strokeWidth="8" filter="url(#glow-strong)" />
-        </g>
+        </Organelle>
 
         {/* 4. Nuclear Pores */}
-        <g 
-          className="cursor-pointer transition-all duration-500 origin-center"
-          onMouseEnter={() => onHover("nuclear-pores")}
-          onMouseLeave={() => onHover(null)}
-          onClick={() => onClick("nuclear-pores")}
+        <Organelle
+          id="nuclear-pores"
+          activeId={activeId}
+          onHover={onHover}
+          onClick={onClick}
+          className="transition-all duration-500 origin-center"
           style={{ opacity: activeId && activeId !== "nuclear-pores" ? 0.4 : 1 }}
         >
           {[0, 60, 120, 180, 240, 300].map((angle, i) => (
@@ -270,14 +325,15 @@ export function CellDiagram({ activeId, onHover, onClick }: CellDiagramProps) {
               filter="url(#glow)"
             />
           ))}
-        </g>
+        </Organelle>
 
         {/* 2. DNA / Genome */}
-        <g 
-          className="cursor-pointer transition-all duration-500 origin-center"
-          onMouseEnter={() => onHover("dna")}
-          onMouseLeave={() => onHover(null)}
-          onClick={() => onClick("dna")}
+        <Organelle
+          id="dna"
+          activeId={activeId}
+          onHover={onHover}
+          onClick={onClick}
+          className="transition-all duration-500 origin-center"
           style={{ 
             opacity: activeId && activeId !== "dna" ? 0.4 : 1,
             transform: activeId === "dna" ? "scale(1.1)" : "scale(1)"
@@ -288,21 +344,22 @@ export function CellDiagram({ activeId, onHover, onClick }: CellDiagramProps) {
           <line x1="460" y1="455" x2="460" y2="485" stroke={activeId === "dna" ? "hsl(180, 100%, 60%)" : "hsl(180, 100%, 30%)"} strokeWidth="2" />
           <line x1="500" y1="455" x2="500" y2="485" stroke={activeId === "dna" ? "hsl(180, 100%, 60%)" : "hsl(180, 100%, 30%)"} strokeWidth="2" />
           <line x1="540" y1="455" x2="540" y2="485" stroke={activeId === "dna" ? "hsl(180, 100%, 60%)" : "hsl(180, 100%, 30%)"} strokeWidth="2" />
-        </g>
+        </Organelle>
 
         {/* 3. Nucleolus */}
-        <g 
-          className="cursor-pointer transition-all duration-500 origin-center"
-          onMouseEnter={() => onHover("nucleolus")}
-          onMouseLeave={() => onHover(null)}
-          onClick={() => onClick("nucleolus")}
+        <Organelle
+          id="nucleolus"
+          activeId={activeId}
+          onHover={onHover}
+          onClick={onClick}
+          className="transition-all duration-500 origin-center"
           style={{ 
             opacity: activeId && activeId !== "nucleolus" ? 0.4 : 1,
             transform: activeId === "nucleolus" ? "scale(1.1) translate(10px, 10px)" : "scale(1)"
           }}
         >
           <circle cx="530" cy="540" r="35" fill={activeId === "nucleolus" ? "hsl(320, 80%, 70%)" : "hsl(320, 80%, 40%)"} filter="url(#glow)" />
-        </g>
+        </Organelle>
 
       </svg>
     </div>
