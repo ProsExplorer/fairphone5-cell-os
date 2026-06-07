@@ -1,0 +1,14 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "84Fk8WXoNojQgZ3u3W3Kf"
+uri = "file://artifacts/cell-os/public/cellular-bg.png"
+type = "image"
+title = "Bioluminescent cell background"
+
+[[generated]]
+id = "ODFps0nZ5VPlCRri9Pw-I"
+uri = "file://artifacts/cell-os/public/organic-texture.png"
+type = "image"
+title = "Abstract organic texture"

@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Cell OS"
+version = "1.0.0"
+id = "artifacts/cell-os"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21955
+
+[services.development]
+run = "pnpm --filter @workspace/cell-os run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/cell-os", "run", "build" ]
+publicDir = "artifacts/cell-os/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21955"
+BASE_PATH = "/"

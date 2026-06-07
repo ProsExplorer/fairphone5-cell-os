@@ -1,6 +1,6 @@
-# [Project name]
+# Cell OS
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+An interactive concept explainer for "Cell OS" — a visionary operating system for the Fairphone 5 that frames the phone as a living human cell, mapping each cell organelle to an OS feature.
 
 ## Run & Operate
 
@@ -22,15 +22,20 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/cell-os/` — the Cell OS concept explainer web app (React + Vite, frontend-only, served at `/`)
+- `artifacts/cell-os/src/data.ts` — source of truth for the 15 cell-to-OS-feature mappings
+- `artifacts/cell-os/src/components/CellDiagram.tsx` — the interactive SVG cell diagram
+- `artifacts/cell-os/src/pages/home.tsx` — the single-page layout (hero, diagram, reference grid, Fairphone values)
+- `artifacts/cell-os/src/index.css` — theme tokens (bioluminescent palette)
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Frontend-only concept site: no backend, database, or API hooks. All content is static in `data.ts`.
+- The cell diagram is hand-built SVG with filters/animation rather than a generated image, so organelles are individually focusable and interactive.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+A single scroll-through page that introduces the Cell OS concept, lets visitors explore an animated cell where each organelle reveals the OS feature it represents, shows a full reference of all 15 mappings, and ties the metaphor to Fairphone 5's real values (modularity, privacy, sustainability).
 
 ## User preferences
 
