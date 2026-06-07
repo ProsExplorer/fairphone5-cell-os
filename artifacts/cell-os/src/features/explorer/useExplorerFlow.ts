@@ -1,10 +1,11 @@
 import { useMemo, useReducer } from "react";
-import type { Organelle, SubstrateNode } from "@/domain/types";
+import type { Organelle, SubstrateNode, BiophotonLink } from "@/domain/types";
 import {
   getOrganelle,
   getSubstrateNode,
   getSubstrateForOrganelle,
-  getOrganellesForSubstrate
+  getOrganellesForSubstrate,
+  getBiophotonLinks
 } from "./selectors";
 
 /**
@@ -73,6 +74,8 @@ export type ExplorerView = {
   relatedSubstrate: SubstrateNode[];
   /** Organelles linked to the focused substrate, for the reverse info panel. */
   relatedOrganelles: Organelle[];
+  /** Biophoton links involving the currently focused organelle(s). */
+  relatedBiophotonLinks: BiophotonLink[];
   isSubstrateHighlighted: (substrateId: string) => boolean;
   isOrganelleHighlighted: (organelleId: string) => boolean;
   hasFocus: boolean;
@@ -95,12 +98,14 @@ export function useExplorerFlow(): { view: ExplorerView; perceive: ExplorerPerce
       const activeOrganelle = getOrganelle(focus.id);
       const relatedSubstrate = getSubstrateForOrganelle(focus.id);
       const highlightedSubstrate = new Set(relatedSubstrate.map((node) => node.id));
+      const activeOrganelleIds = activeOrganelle ? new Set([activeOrganelle.id]) : new Set<string>();
       return {
         activeOrganelle,
         activeSubstrate: null,
-        activeOrganelleIds: activeOrganelle ? new Set([activeOrganelle.id]) : new Set(),
+        activeOrganelleIds,
         relatedSubstrate,
         relatedOrganelles: [],
+        relatedBiophotonLinks: getBiophotonLinks(activeOrganelleIds),
         isSubstrateHighlighted: (substrateId) => highlightedSubstrate.has(substrateId),
         isOrganelleHighlighted: (organelleId) => organelleId === focus.id,
         hasFocus: true
@@ -117,6 +122,7 @@ export function useExplorerFlow(): { view: ExplorerView; perceive: ExplorerPerce
         activeOrganelleIds: highlightedOrganelles,
         relatedSubstrate: [],
         relatedOrganelles,
+        relatedBiophotonLinks: getBiophotonLinks(highlightedOrganelles),
         isSubstrateHighlighted: (substrateId) => substrateId === focus.id,
         isOrganelleHighlighted: (organelleId) => highlightedOrganelles.has(organelleId),
         hasFocus: true
@@ -129,6 +135,7 @@ export function useExplorerFlow(): { view: ExplorerView; perceive: ExplorerPerce
       activeOrganelleIds: new Set<string>(),
       relatedSubstrate: [],
       relatedOrganelles: [],
+      relatedBiophotonLinks: [],
       isSubstrateHighlighted: () => false,
       isOrganelleHighlighted: () => false,
       hasFocus: false

@@ -4,12 +4,17 @@ import { CELL_MAPPINGS } from "@/lib/data";
 import { useExplorerFlow } from "@/features/explorer/useExplorerFlow";
 import { InfoPanel } from "@/features/explorer/components/InfoPanel";
 import { SubstrateAtlas } from "@/features/explorer/components/SubstrateAtlas";
-import { TriadicFlow } from "@/features/explorer/components/TriadicFlow";
+import { NineScaleFlow } from "@/features/explorer/components/NineScaleFlow";
+import { EdgeNodeSection } from "@/features/explorer/components/EdgeNodeSection";
+import { DeepLineageTimeline } from "@/features/explorer/components/DeepLineageTimeline";
 
 export default function Home() {
-  // PERCEPTION -> AFFECT -> EXPRESSION. The page only wires inputs to outputs;
-  // all derivation lives in the explorer flow.
   const { view, perceive } = useExplorerFlow();
+
+  const biophotonOverlayLinks = view.relatedBiophotonLinks.map((l) => ({
+    sourceId: l.sourceOrganelleId,
+    targetId: l.targetOrganelleId
+  }));
 
   return (
     <div className="min-h-[100dvh] bg-background text-foreground overflow-x-hidden">
@@ -46,6 +51,10 @@ export default function Home() {
           <p className="text-lg text-muted-foreground/80 max-w-xl mx-auto">
             Alive, adaptive, sustainable, and private by nature. Explore how biology informs the ultimate operating system.
           </p>
+
+          <p className="text-xs font-mono text-muted-foreground/40 tracking-widest">
+            尺度不變性 · One pattern · Nine scales · 0.7770777
+          </p>
         </div>
 
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 text-muted-foreground animate-bounce">
@@ -60,7 +69,7 @@ export default function Home() {
           <div className="text-center mb-16 space-y-4">
             <h2 className="text-3xl md:text-5xl font-bold text-white text-glow-secondary">The Microscopic View</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Every operating system feature maps flawlessly to a part of the human cell. Interact with the diagram below to discover the connections.
+              Every operating system feature maps to a part of the human cell. Interact with the diagram to discover the connections. When an organelle is active, faint biophoton links illuminate its communication partners.
             </p>
           </div>
 
@@ -70,18 +79,20 @@ export default function Home() {
               <div className="absolute inset-0 bg-primary/5 rounded-full blur-3xl"></div>
               <CellDiagram
                 activeIds={view.activeOrganelleIds}
+                biophotonLinks={biophotonOverlayLinks}
                 onHover={perceive.hoverOrganelle}
                 onClick={perceive.toggleOrganelle}
               />
             </div>
 
             {/* Right: The Info Panel (EXPRESSION surface) */}
-            <div className="order-1 lg:order-2 h-[400px] flex items-center justify-center">
+            <div className="order-1 lg:order-2 min-h-[400px] flex items-center justify-center">
               <InfoPanel
                 organelle={view.activeOrganelle}
                 substrate={view.activeSubstrate}
                 relatedSubstrate={view.relatedSubstrate}
                 relatedOrganelles={view.relatedOrganelles}
+                relatedBiophotonLinks={view.relatedBiophotonLinks}
                 onSelectSubstrate={perceive.toggleSubstrate}
                 onSelectOrganelle={perceive.toggleOrganelle}
               />
@@ -97,8 +108,11 @@ export default function Home() {
         onToggleSubstrate={perceive.toggleSubstrate}
       />
 
-      {/* TRIADIC DESIGN PRINCIPLE */}
-      <TriadicFlow />
+      {/* NINE-SCALE FLOW — 尺度不變性 */}
+      <NineScaleFlow />
+
+      {/* EDGENODE — the living proof */}
+      <EdgeNodeSection />
 
       {/* FULL REFERENCE LIST SECTION */}
       <section className="relative z-10 py-24 px-6 border-t border-white/5 bg-black/20">
@@ -141,6 +155,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* DEEP LINEAGE TIMELINE */}
+      <DeepLineageTimeline />
 
       {/* FAIRPHONE VALUES SECTION */}
       <section className="relative z-10 py-32 px-6">
@@ -188,11 +205,12 @@ export default function Home() {
 
       {/* FOOTER */}
       <footer className="relative z-10 py-12 border-t border-white/10 bg-black text-center text-muted-foreground">
-        <div className="flex items-center justify-center gap-3 mb-6">
+        <div className="flex items-center justify-center gap-3 mb-4">
           <Smartphone className="w-5 h-5" />
           <span className="font-mono tracking-widest text-sm uppercase">Cell OS Concept</span>
         </div>
-        <p className="text-sm opacity-60">A visionary software metaphor designed for the Fairphone 5.</p>
+        <p className="text-sm opacity-60 mb-2">A visionary software metaphor designed for the Fairphone 5.</p>
+        <p className="text-xs font-mono opacity-30 tracking-widest">尺度不變性 · 0.7770777</p>
       </footer>
     </div>
   );

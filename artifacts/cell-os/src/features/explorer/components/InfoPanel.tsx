@@ -1,4 +1,4 @@
-import type { Organelle, SubstrateNode } from "@/domain/types";
+import type { Organelle, SubstrateNode, BiophotonLink } from "@/domain/types";
 import { ConfidenceBadge } from "./ConfidenceBadge";
 
 interface InfoPanelProps {
@@ -6,6 +6,7 @@ interface InfoPanelProps {
   substrate: SubstrateNode | null;
   relatedSubstrate: SubstrateNode[];
   relatedOrganelles: Organelle[];
+  relatedBiophotonLinks: BiophotonLink[];
   onSelectSubstrate: (id: string) => void;
   onSelectOrganelle: (id: string) => void;
 }
@@ -29,10 +30,12 @@ function EmptyState() {
 function OrganelleView({
   organelle,
   relatedSubstrate,
+  relatedBiophotonLinks,
   onSelectSubstrate
 }: {
   organelle: Organelle;
   relatedSubstrate: SubstrateNode[];
+  relatedBiophotonLinks: BiophotonLink[];
   onSelectSubstrate: (id: string) => void;
 }) {
   return (
@@ -82,6 +85,28 @@ function OrganelleView({
               >
                 {node.name}
               </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {relatedBiophotonLinks.length > 0 && (
+        <div className="space-y-3 border-t border-white/10 pt-4">
+          <div className="text-sm font-mono tracking-widest uppercase text-muted-foreground">
+            Biophoton Communication
+          </div>
+          <div className="space-y-2">
+            {relatedBiophotonLinks.map((link, i) => (
+              <div
+                key={i}
+                className="p-3 rounded-xl bg-black/20 border border-yellow-300/10 space-y-1.5"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-mono text-yellow-300/60">{link.rateRange}</span>
+                  <ConfidenceBadge confidence={link.confidence} />
+                </div>
+                <p className="text-xs text-foreground/75 leading-relaxed">{link.description}</p>
+              </div>
             ))}
           </div>
         </div>
@@ -162,6 +187,7 @@ export function InfoPanel({
   substrate,
   relatedSubstrate,
   relatedOrganelles,
+  relatedBiophotonLinks,
   onSelectSubstrate,
   onSelectOrganelle
 }: InfoPanelProps) {
@@ -170,6 +196,7 @@ export function InfoPanel({
       <OrganelleView
         organelle={organelle}
         relatedSubstrate={relatedSubstrate}
+        relatedBiophotonLinks={relatedBiophotonLinks}
         onSelectSubstrate={onSelectSubstrate}
       />
     );

@@ -1,4 +1,4 @@
-import type { OrganelleSubstrateLink, TriadPhase } from "@/domain/types";
+import type { OrganelleSubstrateLink, TriadPhase, BiophotonLink } from "@/domain/types";
 
 /**
  * The cross-link between the cell metaphor and the real AI substrate. Defined
@@ -20,6 +20,48 @@ export const ORGANELLE_SUBSTRATE_LINKS: OrganelleSubstrateLink[] = [
   { organelleId: "vesicles", substrateId: "nnapi" },
   { organelleId: "golgi-apparatus", substrateId: "nnapi" },
   { organelleId: "dna", substrateId: "quantization" }
+];
+
+/**
+ * Biophoton inter-organelle communication links.
+ *
+ * Living cells emit ultra-weak coherent light — documented in peer-reviewed
+ * biophysics literature (Popp et al., 1974–2010). These links represent
+ * proposed or observed biophoton signaling pathways between organelle pairs.
+ * Confidence is "indicative" (emerging research) or "unconfirmed" (proposed).
+ *
+ * Source: Fritz-Albert Popp, "Biophotons — The Light in Our Cells", 2003;
+ *         general biophysics literature.
+ */
+export const BIOPHOTON_LINKS: BiophotonLink[] = [
+  {
+    sourceOrganelleId: "nucleus",
+    targetOrganelleId: "mitochondria",
+    description: "Ultra-weak photon emission may coordinate energy-state signaling between nucleus and mitochondria — the cell's two most information-dense structures.",
+    rateRange: "10–100 photons/cm²/s",
+    confidence: "indicative"
+  },
+  {
+    sourceOrganelleId: "nucleus",
+    targetOrganelleId: "ribosomes",
+    description: "Biophoton coherence has been proposed as a coordination signal across active transcription sites and ribosomal translation clusters.",
+    rateRange: "1–50 photons/cm²/s",
+    confidence: "indicative"
+  },
+  {
+    sourceOrganelleId: "endoplasmic-reticulum",
+    targetOrganelleId: "golgi-apparatus",
+    description: "The protein-trafficking pathway from ER to Golgi may involve biophoton bursts during vesicle budding events.",
+    rateRange: "1–30 photons/cm²/s",
+    confidence: "unconfirmed"
+  },
+  {
+    sourceOrganelleId: "mitochondria",
+    targetOrganelleId: "nuclear-pores",
+    description: "Mitochondrial membrane potential changes produce detectable biophoton bursts; nuclear pores may respond to the optical gradient.",
+    rateRange: "5–80 photons/cm²/s",
+    confidence: "indicative"
+  }
 ];
 
 /**

@@ -85,3 +85,49 @@ export type TriadPhase = {
   cellRole: string;
   chipRole: string;
 };
+
+/**
+ * One scale in the nine-scale 尺度不變性 (Scale Invariance) table.
+ * The same PERCEPTION→AFFECT→EXPRESSION pattern described at a particular
+ * level of reality.
+ */
+export type ScaleFlow = {
+  id: string;
+  scale: string;
+  glyph: string;
+  description: string;
+  perception: string;
+  affect: string;
+  expression: string;
+  confidence: ClaimConfidence;
+};
+
+/**
+ * A documented or proposed biophoton communication link between two organelles.
+ * Ultra-weak photon emission (1–1000 photons/cm²/s) from living cells is an
+ * emerging biophysics research area.
+ */
+export type BiophotonLink = {
+  sourceOrganelleId: string;
+  targetOrganelleId: string;
+  description: string;
+  rateRange: string;
+  confidence: ClaimConfidence;
+};
+
+/** One event in the deep lineage timeline of the triadic pattern. */
+export type LineageEvent = {
+  year: string;
+  era: string;
+  title: string;
+  description: string;
+  phase: "perception" | "affect" | "expression" | "meta";
+};
+
+/** One factual row about the EdgeNode browser LLM. */
+export type EdgeNodeFact = {
+  label: string;
+  value: string;
+  detail: string;
+  confidence: ClaimConfidence;
+};

@@ -3,9 +3,28 @@ import { CELL_MAPPINGS } from "@/lib/data";
 
 interface CellDiagramProps {
   activeIds: Set<string>;
+  biophotonLinks?: Array<{ sourceId: string; targetId: string }>;
   onHover: (id: string | null) => void;
   onClick: (id: string) => void;
 }
+
+/** Approximate SVG-space centres for each organelle (viewBox 0 0 1000 1000). */
+const ORGANELLE_CENTERS: Record<string, { x: number; y: number }> = {
+  "nucleus":               { x: 500, y: 500 },
+  "nucleolus":             { x: 530, y: 540 },
+  "dna":                   { x: 500, y: 475 },
+  "nuclear-pores":         { x: 500, y: 362 },
+  "mitochondria":          { x: 525, y: 675 },
+  "ribosomes":             { x: 310, y: 445 },
+  "endoplasmic-reticulum": { x: 365, y: 590 },
+  "golgi-apparatus":       { x: 385, y: 445 },
+  "vesicles":              { x: 710, y: 475 },
+  "lysosomes":             { x: 305, y: 700 },
+  "vacuole":               { x: 240, y: 305 },
+  "cytoplasm":             { x: 450, y: 390 },
+  "cytoskeleton":          { x: 640, y: 380 },
+  "cell-membrane":         { x: 500, y: 500 }
+};
 
 interface OrganelleProps {
   id: string;
@@ -48,7 +67,7 @@ function Organelle({ id, activeIds, onHover, onClick, style, className, children
   );
 }
 
-export function CellDiagram({ activeIds, onHover, onClick }: CellDiagramProps) {
+export function CellDiagram({ activeIds, biophotonLinks, onHover, onClick }: CellDiagramProps) {
   // A stylized abstract organic cell SVG
   return (
     <div className="relative w-full aspect-square max-w-[600px] mx-auto animate-float">
@@ -360,6 +379,28 @@ export function CellDiagram({ activeIds, onHover, onClick }: CellDiagramProps) {
         >
           <circle cx="530" cy="540" r="35" fill={activeIds.has("nucleolus") ? "hsl(320, 80%, 70%)" : "hsl(320, 80%, 40%)"} filter="url(#glow)" />
         </Organelle>
+
+        {/* Biophoton inter-organelle communication overlay */}
+        {biophotonLinks && biophotonLinks.length > 0 && (
+          <g id="biophoton-overlay" aria-hidden="true">
+            {biophotonLinks.map(({ sourceId, targetId }) => {
+              const src = ORGANELLE_CENTERS[sourceId];
+              const tgt = ORGANELLE_CENTERS[targetId];
+              if (!src || !tgt) return null;
+              return (
+                <line
+                  key={`${sourceId}-${targetId}`}
+                  x1={src.x} y1={src.y}
+                  x2={tgt.x} y2={tgt.y}
+                  stroke="hsl(55, 90%, 68%)"
+                  strokeWidth="1.5"
+                  strokeDasharray="6 10"
+                  className="biophoton-link"
+                />
+              );
+            })}
+          </g>
+        )}
 
       </svg>
     </div>

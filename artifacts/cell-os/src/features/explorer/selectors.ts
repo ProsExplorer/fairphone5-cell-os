@@ -1,7 +1,7 @@
-import type { Organelle, SubstrateNode } from "@/domain/types";
+import type { Organelle, SubstrateNode, BiophotonLink } from "@/domain/types";
 import { CELL_MAPPINGS } from "@/domain/content/organelles";
 import { SUBSTRATE_NODES } from "@/domain/content/substrate";
-import { ORGANELLE_SUBSTRATE_LINKS } from "@/domain/content/mappings";
+import { ORGANELLE_SUBSTRATE_LINKS, BIOPHOTON_LINKS } from "@/domain/content/mappings";
 
 /**
  * AFFECT — pure derivations over the domain content.
@@ -39,4 +39,17 @@ export function getOrganellesForSubstrate(substrateId: string | null): Organelle
     .map((link) => link.organelleId);
   if (linkedIds.length === 0) return [];
   return CELL_MAPPINGS.filter((organelle) => linkedIds.includes(organelle.id));
+}
+
+/**
+ * Biophoton communication links involving any of the given organelle ids.
+ * Returns only links where at least one end is in the active set.
+ */
+export function getBiophotonLinks(organelleIds: Set<string>): BiophotonLink[] {
+  if (organelleIds.size === 0) return [];
+  return BIOPHOTON_LINKS.filter(
+    (link) =>
+      organelleIds.has(link.sourceOrganelleId) ||
+      organelleIds.has(link.targetOrganelleId)
+  );
 }

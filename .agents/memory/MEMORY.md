@@ -1,1 +1,2 @@
 - [Cell OS explorer focus model](cell-os-explorer-focus.md) — bidirectional organelle<->substrate highlighting must use one discriminated focus value, never coerce a many-to-many link to the first match.
+- [Scale-invariance manifesto integration](cell-os-manifesto.md) — how to separate usable architecture from sacred framing in the ProsExplorer/yahweh-yehoshua repo.
