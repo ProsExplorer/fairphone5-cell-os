@@ -1,0 +1,1 @@
+- [Cell OS explorer focus model](cell-os-explorer-focus.md) — bidirectional organelle<->substrate highlighting must use one discriminated focus value, never coerce a many-to-many link to the first match.

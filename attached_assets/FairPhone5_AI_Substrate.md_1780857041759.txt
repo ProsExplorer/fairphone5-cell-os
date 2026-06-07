@@ -1,0 +1,207 @@
+# The FairPhone 5 AI Processors and Chips
+
+> **Accuracy note:** This document has been through **three rounds of systematic architect review**.
+> - **Round 1:** Corrected foundational chipset error (Snapdragon 695 → Qualcomm QCM6490) and all downstream chip identifiers.
+> - **Round 2:** Corrected the TOPS comparison table (Snapdragon 8 Gen 2 entry) and K-quant description (not k-means; super-block linear quantisation). Softened unverified thermal and power claims.
+> - **Round 3:** Qualified NNAPI as an optional delegate path (not universal default). Qualified Hexagon microarchitecture internals (HVX dual-unit, INT4 HTA, HMX) as consistent with 6th-Gen AI Engine documentation but not independently confirmed in public silicon datasheets. Added confirmed UFS 2.2 storage spec. Verified and retained Adreno 643 and LPDDR4x against official FairPhone and Qualcomm product brief sources — both correct.
+>
+> Remaining performance figures (tokens/sec, thermal throttle onset, power envelope) are indicative estimates — not confirmed benchmarks.
+
+---
+
+## The Chipset: Qualcomm QCM6490
+
+The FairPhone 5 is powered by the **Qualcomm QCM6490** — a 6nm SoC (manufactured by TSMC) architecturally derived from the Snapdragon 778G. Qualcomm designed the QCM6490 specifically for industrial and commercial applications where extended product lifecycles matter. The FairPhone 5's use of this chip is philosophically consistent with its repairability mission.
+
+The SoC contains three distinct processing units sharing a common LPDDR4x memory bus:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Qualcomm QCM6490 SoC  (6 nm)                 │
+│                                                                 │
+│  ┌─────────────┐   ┌─────────────┐   ┌───────────────────┐    │
+│  │  Kryo 670   │   │  Adreno 643 │   │   Hexagon 770     │    │
+│  │    CPU      │   │     GPU     │   │   DSP / NPU       │    │
+│  │  8 cores    │   │  @ 812 MHz  │   │   12 TOPS INT8    │    │
+│  └─────────────┘   └─────────────┘   └───────────────────┘    │
+│                                                                 │
+│   Shared LPDDR4x memory bus  (8 GB, ~34 GB/s theoretical peak) │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**RAM:** 8 GB LPDDR4x in the standard 256 GB configuration (a 6 GB / 128 GB variant exists in some markets — both confirmed in official FairPhone press releases).
+**Storage:** 256 GB UFS 2.2 (standard); 128 GB UFS 2.2 (6 GB variant). UFS 2.2 delivers sequential read speeds of ~1,200 MB/s, which determines how quickly model weights load from storage into RAM before inference begins.
+
+---
+
+## 1. CPU — Kryo 670
+
+The CPU has 8 cores in **three clusters**:
+
+| Cluster | Count | Core | Clock |
+|---|---|---|---|
+| Prime | 1× | Kryo Gold Plus (Cortex-A78) | 2.71 GHz |
+| Performance | 3× | Kryo Gold (Cortex-A78) | 2.40 GHz |
+| Efficiency | 4× | Kryo Silver (Cortex-A55) | 1.96 GHz |
+
+The Cortex-A78 is a high-performance out-of-order core. The Cortex-A55 is an in-order efficiency core designed for low-power background work. Android's scheduler moves threads between clusters dynamically based on load and thermal state.
+
+**What the CPU is good at:** sequential logic, branching, control flow, anything where the next instruction depends on the result of the last. Every OS call, network request, and application decision runs on the CPU.
+
+**What the CPU is poor at:** matrix multiplication at scale. Neural network inference is fundamentally dense matrix math. A CPU can do it, but processes numbers in small batches even with SIMD extensions — far slower than the dedicated units below.
+
+---
+
+## 2. GPU — Adreno 643
+
+| Spec | Value |
+|---|---|
+| Model | Adreno 643 |
+| Clock | 812 MHz |
+| OpenCL | 2.0 (general compute) |
+| Vulkan | 1.x |
+| OpenGL ES | 3.2 |
+| DirectX | Feature Level 12 |
+
+The Adreno 643 was designed for graphics rendering — computing millions of pixels in parallel. Because neural network layers are similarly parallel (each neuron's activation is independent of its neighbours), GPU architecture translates well to inference workloads.
+
+**No dedicated VRAM:** The Adreno 643 shares the device's LPDDR4x memory with the CPU. There is no separate graphics memory pool. The GPU and CPU compete for the same ~34 GB/s theoretical bandwidth, which becomes a bottleneck for large models.
+
+**Precision support:** The Adreno 643 handles both FP32 and FP16. FP16 doubles effective compute throughput and halves memory footprint for the same model, making it the preferred precision for GPU-path inference.
+
+**Thermal profile:** GPU inference is significantly more power-intensive than DSP inference. Sustained GPU load will warm the device and engage Android's thermal governor, which reduces clock speeds to stay within temperature limits.
+
+---
+
+## 3. Hexagon 770 DSP / NPU — The AI Engine
+
+The Hexagon 770 is the dedicated neural processing unit. It is part of Qualcomm's **6th Generation AI Engine** and delivers **12 TOPS** (Tera Operations Per Second) at INT8 precision under vendor-declared conditions.
+
+Unlike the CPU (general purpose) and GPU (repurposed from graphics), the Hexagon was designed specifically for the mathematics of signal processing and neural inference — dense multiply-accumulate operations on integer-quantised tensors.
+
+### Internal architecture: four layers
+
+The Hexagon 770 fuses four computational subsystems that operate together:
+
+#### Scalar Core
+A small conventional processor embedded within the Hexagon. Handles:
+- Control flow and branching
+- Integer operations (INT8, INT16, INT32)
+- Coordination between the vector and tensor units
+
+#### HVX — Hexagon Vector eXtensions
+Operates on **1024-bit wide vectors**, processing 128 INT8 values or 64 INT16 values in a single clock cycle. The Hexagon 770 is documented with dual HVX units operating in parallel — though Qualcomm does not publish per-model internal unit counts in public datasheets, this is consistent with 6th-Gen AI Engine documentation.
+
+HVX is a SIMD engine (Single Instruction, Multiple Data) — one instruction applied to 128 numbers simultaneously. For neural networks, where the same operation is applied to thousands of values per layer, this is the foundation of the Hexagon's throughput advantage over the CPU.
+
+#### HTA — Hexagon Tensor Accelerator
+A dedicated **matrix multiply-accumulate unit** — physical circuits designed specifically to compute `C = A × B`. Matrix multiplication is the fundamental operation of neural network inference.
+
+Based on Qualcomm's 6th Generation AI Engine documentation, the HTA supports:
+- **INT8** multiply-accumulate (primary inference format)
+- **INT4** (hardware-supported; exact behaviour on QCM6490 is not independently confirmed in public silicon documentation)
+- Accumulates into **INT32** registers, preserving precision through the computation chain before final output is written back
+
+#### HMX — Hexagon Matrix eXtensions
+Additional matrix operation hardware introduced with the 6th Generation AI Engine and present in the Hexagon 770. HMX provides additional matrix multiply throughput for transformer-relevant kernels (dense matrix multiply, fused multiply-add sequences). The precise mapping of HMX to specific model layer types is an inference from Qualcomm's AI Engine architecture documentation — Qualcomm does not publish detailed per-unit microarchitecture specs for public consumption.
+
+### TOPS context
+
+| Chip | NPU | TOPS | Notes |
+|---|---|---|---|
+| QCM6490 (FairPhone 5) | Hexagon 770 | ~12 TOPS | Vendor-declared, INT8 |
+| Snapdragon 888 | Hexagon 780 | ~26 TOPS | Vendor-declared, INT8 |
+| Snapdragon 8 Gen 2 | Hexagon v73 | ~26 TOPS | "4.35×" is a gen-on-gen multiplier, not a TOPS figure |
+| Apple A16 | Neural Engine | ~17 TOPS | Apple-declared |
+
+> These figures are not directly comparable. Each vendor measures TOPS under different conditions (batch size, operator mix, precision format, burst vs sustained). They convey order-of-magnitude capability only.
+
+---
+
+## 4. How Android Connects to the Hardware — The NNAPI Stack
+
+Applications do not call the Hexagon directly. There are several software layers between an app and the silicon:
+
+```
+Application (Java / Kotlin / C++ / React Native)
+        ↓
+ML Framework
+  TensorFlow Lite  ─────────────────────► Android NNAPI
+  ONNX Runtime     ─────────────────────►   (Neural Networks API)
+  llama.cpp (QNN backend) ──────────────► QNN SDK directly (bypasses NNAPI)
+        ↓
+Qualcomm Vendor HAL / QNN Runtime
+        ↓
+Hardware: Hexagon HTA  /  Adreno GPU  /  Kryo CPU
+         (chosen per operator at graph compilation time)
+```
+
+**NNAPI** (Android Neural Networks API) is the system abstraction layer. TFLite and ONNX Runtime can route through NNAPI as an optional hardware acceleration delegate — it is not the default for every deployment, but it is the standard path for hardware-accelerated inference on Android. When NNAPI is used, Qualcomm's vendor driver partitions the model graph across available hardware. Operations the HTA doesn't support are delegated back to CPU automatically and silently.
+
+**llama.cpp** with its QNN backend bypasses NNAPI entirely and calls Qualcomm's QNN SDK directly. This is a different code path with different logs and different operator coverage.
+
+**Graph compilation:** When using a delegated backend (NNAPI or QNN), the first inference call compiles the model graph — partitioning layers across hardware units and uploading compiled kernels to the HTA's dedicated memory. This compilation step is expensive. Subsequent calls reuse the compiled graph and are significantly faster. CPU-only backends (WASM, plain TFLite CPU) do not have this compilation step.
+
+---
+
+## 5. Quantization — Number Formats the Hardware Speaks
+
+| Format | Bytes/weight | 1B model size | Hardware path |
+|---|---|---|---|
+| FP32 | 4 | ~4 GB | CPU or GPU; Hexagon HTA does not accelerate |
+| FP16 | 2 | ~2 GB | Adreno GPU (efficient); CPU (slower) |
+| INT8 | 1 | ~1 GB | Hexagon HTA (primary format) |
+| INT4 | 0.5 | ~500 MB | Hexagon HTA (hardware supported) |
+
+**Quantisation** is the process of converting trained FP32 weights to a lower-precision integer format. It reduces memory footprint and enables hardware acceleration at the cost of some numerical precision.
+
+For INT8: the INT32 accumulation registers mean precision is preserved *through the multiply-accumulate chain* — the precision loss is bounded to the quantised weight values, not to intermediate computations.
+
+**GGUF quantisation schemes (llama.cpp):**
+
+| Scheme | Avg bits/weight | Method | Notes |
+|---|---|---|---|
+| `Q8_0` | 8 | Block quantisation, uniform scale per block | Highest quality; Hexagon HTA natural fit |
+| `Q5_K_M` | ~5.5 | Super-block quantisation, mixed precision | Good quality/size balance |
+| `Q4_K_M` | ~4.5 | Super-block quantisation, mixed precision | Standard memory-constrained choice |
+| `Q4_0` | 4 | Block quantisation, uniform scale per block | Smallest size; lower quality |
+
+The `K` suffix does **not** mean k-means clustering. K-quants use **hierarchical super-block quantisation**: weights are divided into blocks, each block gets its own quantised scale factor, and those scale factors are themselves quantised and stored in a super-block. The `_M` variant applies higher precision to the most accuracy-sensitive layers within the model.
+
+> **Runtime overhead:** Model size figures are weight-only. At runtime, the model also allocates a KV cache (grows with context length), activation buffers, and allocator overhead. A 600 MB weight file typically occupies 900 MB–1.2 GB total at 2k context.
+
+---
+
+## 6. Power and Thermal Reality
+
+The QCM6490's total SoC TDP is not officially published by Qualcomm. Based on ecosystem measurements with similarly-classed 6nm SoCs, sustained inference is estimated at **3–5 watts** — treat this as an indicative range, not a confirmed platform figure.
+
+This power budget is shared across:
+- CPU (OS, applications, tokenisation)
+- Hexagon DSP (inference)
+- 5G modem
+- Memory controller
+- Display pipeline
+
+**Thermal throttling:** Android's thermal governor reduces clock speeds when the SoC temperature exceeds its threshold. For sustained inference workloads (long continuous generation), throttling typically begins within a few minutes at full utilisation.
+
+> **Note on FairPhone 5 cooling:** Whether the device uses a vapour chamber or conventional graphite/copper thermal spreader is not confirmed in official Fairphone specifications.
+
+---
+
+## 7. Software Stack Licences
+
+| Component | Licence | Notes |
+|---|---|---|
+| FairPhone 5 kernel sources | GPL-2.0 | Published by Fairphone |
+| Android NNAPI | Apache 2.0 | Part of AOSP |
+| TensorFlow Lite | Apache 2.0 | Google |
+| ONNX Runtime | MIT | Microsoft |
+| llama.cpp | MIT | QNN backend included |
+| Termux | GPL-3.0 (app); varies per package | F-Droid; individual tools carry own licences |
+| WebLibre | AGPL-3.0 | F-Droid; GeckoView-based |
+| Qualcomm QNN SDK | Proprietary | Free to use; closed source; required for direct Hexagon access |
+
+---
+
+*Document generated: June 2026. Hardware reference: Qualcomm QCM6490 SM6375 platform, FairPhone 5, Android 13. Two-pass architect review completed.*
