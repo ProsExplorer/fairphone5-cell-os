@@ -1,17 +1,41 @@
 import { Cpu, Fingerprint, Shield } from "lucide-react";
+import { CodeSnippet } from "../components/CodeSnippet";
+
+const HAL_NATIVE_SNIPPET = `// platform/hardware/interfaces/neuralnetworks/1.3/IDevice.hal
+// The HAL is the cell membrane — a precisely specified interface
+// between the generic Android framework and the proprietary silicon.
+// What may pass. In what form. Nothing else enters.
+
+interface IDevice extends @1.2::IDevice {
+
+  // The framework hands a neural network model to the hardware.
+  // The HAL decides: can I run this? At what precision?
+  // The membrane is not a wall — it is an intelligent gatekeeper.
+  prepareModel_1_3(
+      Model model,
+      ExecutionPreference preference,  // FAST_SINGLE_ANSWER | SUSTAINED_SPEED
+      Priority priority,               // LOW | MEDIUM | HIGH
+      OptionalTimePoint deadline,
+      vec<hidl_handle> modelCache,
+      vec<hidl_handle> dataCache,
+      HidlToken token)
+  generates (ErrorStatus status, IPreparedModel preparedModel);
+
+  // Nothing reaches the Hexagon HTA or Adreno GPU directly.
+  // All traffic crosses this interface — like a membrane receptor,
+  // it decides what enters and how, protecting the cell's interior.
+};`;
 
 /**
- * MembranePanel — the outermost zone: Fairphone values.
+ * MembranePanel — the outermost zone: Fairphone values + HAL boundary.
  *
  * The cell membrane is the cell's selective boundary — it decides what enters
  * and exits, maintains the cell's identity, and interfaces with the outside world.
  * It is not a wall but a highly intelligent gatekeeper.
  *
- * Here it maps to the three core Fairphone 5 values that the membrane analogy
- * makes concrete: Modularity (repair = regeneration), Privacy (selective
- * permeability), and Longevity (biology wastes nothing).
- *
- * This is the edge of the cell. You have navigated from the inside out.
+ * Here it maps to: the three core Fairphone 5 values that the membrane analogy
+ * makes concrete, and the actual HAL interface that implements the selective
+ * boundary in software.
  */
 export function MembranePanel() {
   return (
@@ -33,7 +57,7 @@ export function MembranePanel() {
       </div>
 
       {/* Value columns */}
-      <div className="grid md:grid-cols-3 gap-10">
+      <div className="grid md:grid-cols-3 gap-10 mb-20">
         <div className="space-y-5 text-center">
           <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-primary">
             <Cpu className="w-8 h-8" />
@@ -68,8 +92,32 @@ export function MembranePanel() {
         </div>
       </div>
 
+      {/* ── Native reality — the software membrane ──────────────────── */}
+      <div className="border-t border-white/5 pt-12 space-y-5">
+        <p className="text-xs font-mono tracking-widest uppercase" style={{ color: "rgba(125,211,252,0.35)" }}>
+          The software membrane
+        </p>
+        <h3 className="text-lg font-bold text-white">
+          The HAL: selective permeability in C++
+        </h3>
+        <p className="text-sm text-muted-foreground/65 leading-relaxed max-w-2xl">
+          Privacy and selectivity are not just Fairphone values — they are the literal
+          architecture of the Android software stack. The Hardware Abstraction Layer
+          interface below is the membrane between the generic Android framework
+          and the Qualcomm silicon. Nothing reaches the Hexagon HTA or Adreno GPU
+          directly. Every request crosses{" "}
+          <code className="font-mono text-xs" style={{ color: "rgba(125,211,252,0.65)" }}>IDevice.hal</code>{" "}
+          — like a membrane receptor, it decides what enters and in what form.
+        </p>
+        <CodeSnippet
+          filename="platform/hardware/interfaces/neuralnetworks/1.3/IDevice.hal"
+          language="hidl"
+          sourceUrl="https://android.googlesource.com/platform/hardware/interfaces/+/refs/heads/master/neuralnetworks/1.3/IDevice.hal"
+        >{HAL_NATIVE_SNIPPET}</CodeSnippet>
+      </div>
+
       {/* Footer — you have reached the outer edge */}
-      <div className="mt-20 text-center border-t border-white/5 pt-12">
+      <div className="mt-16 text-center border-t border-white/5 pt-12">
         <p className="text-xs font-mono text-muted-foreground/25 tracking-widest mb-1">
           尺度不變性 · 0.7770777
         </p>

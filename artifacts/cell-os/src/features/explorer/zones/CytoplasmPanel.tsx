@@ -31,6 +31,26 @@ const ORGANELLE_ZONE_MAP: Record<string, CellZoneId> = {
   "vacuole":               "membrane",
 };`;
 
+const BINDER_NATIVE_SNIPPET = `// Every Android IPC call — camera, clipboard, sensor, AI model —
+// crosses this exact function. The cytoplasm is not a metaphor:
+// every process swims through BBinder::transact() to reach another.
+
+status_t BBinder::transact(
+    uint32_t code, const Parcel& data, Parcel* reply, uint32_t flags)
+{
+  data.setDataPosition(0);
+  if (reply != nullptr && (flags & FLAG_CLEAR_BUF)) {
+    reply->markSensitive();
+  }
+  switch (code) {
+    case PING_TRANSACTION:
+      return pingBinder();
+    default:
+      return onTransact(code, data, reply, flags);
+      // ↑ every IPC dispatch lands here: one cytoplasm, all organelles
+  }
+}`;
+
 const BIOPHOTON_SNIPPET = `// src/features/explorer/selectors.ts
 // Biophoton links are not pre-filtered — they are derived at runtime
 // from which organelles are currently active. Click two organelles;
@@ -130,6 +150,25 @@ export function CytoplasmPanel({ view, perceive }: Props) {
         <CodeSnippet filename="src/features/explorer/selectors.ts">
           {BIOPHOTON_SNIPPET}
         </CodeSnippet>
+
+        {/* ── Native reality ──────────────────────────────────────── */}
+        <div className="pt-6 border-t border-white/5 space-y-4">
+          <p className="text-xs font-mono tracking-widest uppercase" style={{ color: "rgba(52,211,153,0.3)" }}>
+            The kernel this maps to
+          </p>
+          <p className="text-sm text-muted-foreground/60 leading-relaxed">
+            In Android, the cytoplasm is{" "}
+            <code className="font-mono text-xs" style={{ color: "rgba(52,211,153,0.55)" }}>Binder.cpp</code>.
+            Every process — camera, AI inference, clipboard, keystore — communicates
+            by passing through <code className="font-mono text-xs text-white/40">BBinder::transact()</code>.
+            There is no other path. One fluid, all organelles.
+          </p>
+          <CodeSnippet
+            filename="platform/frameworks/native/libs/binder/Binder.cpp"
+            language="c++"
+            sourceUrl="https://android.googlesource.com/platform/frameworks/native/+/refs/heads/master/libs/binder/Binder.cpp"
+          >{BINDER_NATIVE_SNIPPET}</CodeSnippet>
+        </div>
       </div>
     </div>
   );

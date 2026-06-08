@@ -1,7 +1,33 @@
 import { useState } from "react";
 import { CELL_MAPPINGS } from "@/lib/data";
 import { FractalNavigator } from "../components/FractalNavigator";
+import { CodeSnippet } from "../components/CodeSnippet";
 import type { ExplorerView, ExplorerPerception } from "../useExplorerFlow";
+
+const ZYGOTE_NATIVE_SNIPPET = `// platform/frameworks/base/.../ZygoteInit.java
+// The Golgi sorts and packages — Zygote does the same.
+// preloadClasses() loads the entire Android framework into a single
+// process, then fork() sends a pre-sorted copy to every new app.
+// Sort once. Distribute cheaply. Nothing is reprocessed.
+
+private static void preloadClasses() {
+  final VMRuntime runtime = VMRuntime.getRuntime();
+
+  // Read the genome: a manifest of all pre-loadable framework classes.
+  // This is the Golgi's package list — the complete sorted proteome.
+  InputStream is = ClassLoader.getSystemResourceAsStream(PRELOADED_CLASSES);
+
+  try (BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
+    String line;
+    while ((line = br.readLine()) != null) {
+      if (line.startsWith("#") || line.isEmpty()) continue;
+      // Sort and package each class into the Zygote's address space.
+      // When an app starts, fork() ships a pre-sorted copy instantly.
+      Class.forName(line, true, null);
+    }
+  }
+  // The Golgi has packaged the proteome. All forks inherit it for free.
+}`;
 
 type Tab = "genome" | "fractal";
 
@@ -89,6 +115,33 @@ export function GolgiPanel({ view, perceive }: Props) {
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* Native reality — Zygote */}
+      {tab === "genome" && (
+        <div className="mt-10 border-t border-white/5 pt-10 space-y-5">
+          <p className="text-xs font-mono tracking-widest uppercase" style={{ color: "rgba(192,132,252,0.4)" }}>
+            The sorting apparatus in native code
+          </p>
+          <h3 className="text-lg font-bold text-white">
+            Zygote: sort once, distribute to every app
+          </h3>
+          <p className="text-sm text-muted-foreground/65 leading-relaxed max-w-2xl">
+            The OS Genome above is the Cell OS vocabulary — 15 sorted mappings.
+            In Android, the Golgi equivalent is{" "}
+            <code className="font-mono text-xs" style={{ color: "rgba(192,132,252,0.65)" }}>ZygoteInit.preloadClasses()</code>.
+            It reads a manifest of every framework class, sorts and packages them
+            into a single process, then ships a pre-sorted copy to every app via{" "}
+            <code className="font-mono text-xs text-white/40">fork()</code>.
+            The Golgi does not reprocess proteins for each destination —
+            it sorts once, packages, distributes.
+          </p>
+          <CodeSnippet
+            filename="platform/frameworks/base/core/java/com/android/internal/os/ZygoteInit.java"
+            language="java"
+            sourceUrl="https://android.googlesource.com/platform/frameworks/base/+/refs/heads/master/core/java/com/android/internal/os/ZygoteInit.java"
+          >{ZYGOTE_NATIVE_SNIPPET}</CodeSnippet>
         </div>
       )}
 

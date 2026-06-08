@@ -25,6 +25,26 @@ export type QiIntersection = {
 // Full tensor: 8 zones × 3 phases × 10 scales = 240 intersections.
 // 18 are curated — the ones where the three axes illuminate each other.`;
 
+const INIT_NATIVE_SNIPPET = `// PID 1 — the first userspace process on every Android device.
+// Reads .rc files (the device's "genome") and spawns every service.
+// This is the nucleus: not metaphor, not analogy — the actual boot DNA.
+
+static Result<void> HandleBuiltinCommand(
+    const BuiltinFunctionMap& function_map,
+    const Action& current_action,
+    const Command& command) {
+
+  auto builtin_handler = function_map.FindFunction(command);
+  if (!builtin_handler.ok()) return builtin_handler.error();
+
+  // Execute service declared in .rc genome — this is DNA expression.
+  // The command args are codon sequences. The handler is the ribosome.
+  return (*builtin_handler)(command.args());
+}
+
+// On the Fairphone 5, init reads /vendor/etc/init/fp5.rc —
+// a file in the Fairphone Gerrit that you can read right now.`;
+
 const QI_ENTRY_SNIPPET = `// src/domain/content/qiMatrix.ts — one curated entry
 {
   id:      "nucleus-expression-silicon",
@@ -139,6 +159,24 @@ export function NucleusPanel() {
         <CodeSnippet filename="src/domain/content/qiMatrix.ts">
           {QI_ENTRY_SNIPPET}
         </CodeSnippet>
+
+        {/* ── Native reality ──────────────────────────────────────── */}
+        <div className="pt-6 border-t border-white/5 space-y-4">
+          <p className="text-xs font-mono tracking-widest uppercase" style={{ color: "rgba(34,211,238,0.3)" }}>
+            The kernel this maps to
+          </p>
+          <p className="text-sm text-muted-foreground/60 leading-relaxed">
+            On the Fairphone 5, the nucleus is <code className="font-mono text-xs" style={{ color: "rgba(34,211,238,0.55)" }}>init.cpp</code> — PID 1,
+            the first userspace process. It reads <code className="font-mono text-xs text-white/40">.rc</code> files exactly as a ribosome
+            reads RNA: declarative intent compressed into a bootable sequence.
+            Every service, every permission, every mount — encoded in text, executed at boot.
+          </p>
+          <CodeSnippet
+            filename="platform/system/core/init/init.cpp"
+            language="c++"
+            sourceUrl="https://android.googlesource.com/platform/system/core/+/refs/heads/master/init/init.cpp"
+          >{INIT_NATIVE_SNIPPET}</CodeSnippet>
+        </div>
       </div>
 
     </div>
