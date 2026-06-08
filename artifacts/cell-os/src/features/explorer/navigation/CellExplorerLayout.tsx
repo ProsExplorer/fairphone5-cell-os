@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link } from "wouter";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useExplorerNavigation, ZONE_DEPTH_ORDER } from "./useExplorerNavigation";
@@ -5,6 +6,7 @@ import { useExplorerFlow } from "../useExplorerFlow";
 import { CellMapNav } from "./CellMapNav";
 import { ZoneContentViewport } from "./ZoneContentViewport";
 import { CELL_ZONES } from "@/features/cell-shell/CellShellProvider";
+import { useCellVitalStore } from "@/features/cell-shell/state/useCellVitalStore";
 import type { CellZoneId } from "@/domain/types";
 
 /**
@@ -25,6 +27,15 @@ export function CellExplorerLayout() {
   const { activeZone, selectZone, goInward, goOutward, canGoInward, canGoOutward } =
     useExplorerNavigation("cytoplasm");
   const { view, perceive } = useExplorerFlow();
+  const setActiveZone = useCellVitalStore((s) => s.setActiveZone);
+  const emitSignal    = useCellVitalStore((s) => s.emitSignal);
+
+  // Sync active zone to the vital store so the living cell diagram reacts.
+  // Also emit a brief zone-pulse signal so the navigated-to ring brightens.
+  useEffect(() => {
+    setActiveZone(activeZone);
+    emitSignal(activeZone, "pulse", 0.7, 1800);
+  }, [activeZone, setActiveZone, emitSignal]);
 
   const zone = CELL_ZONES[activeZone];
 

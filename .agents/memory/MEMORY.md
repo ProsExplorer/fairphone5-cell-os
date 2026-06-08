@@ -3,3 +3,4 @@
 - [Cell OS dynamic Tailwind classes](cell-os-tailwind-dynamic.md) — dynamic class interpolation (border-${color}-x) is invisible to Tailwind JIT; always use static inline styles in Cell OS components.
 - [Cell OS native code source map](cell-os-native-source-map.md) — every zone maps to a verified public AOSP/kernel/llama.cpp file; EdgeNode is wllama (already real WASM, upgrade path is ggml-qnn OpenCL).
 - [Cell OS corpus alignment](cell-os-corpus-alignment.md) — yahweh-yehoshua corpus is the source ontology; three architect-flagged gaps closed; decisions to keep consistent going forward.
+- [Cell OS vital store architecture](cell-os-vital-architecture.md) — Zustand store is the nervous system; CSS animation pattern, biophoton ring links, signal burst key trick, sacred pulse bridge.

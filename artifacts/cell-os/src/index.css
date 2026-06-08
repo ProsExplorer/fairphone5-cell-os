@@ -159,7 +159,38 @@
   animation: morph 8s ease-in-out infinite;
 }
 
-/* Biophoton inter-organelle pulse animation */
+/* ── Cell vital animations ─────────────────────────────────────────────────── */
+
+/* Baseline ring breathing — all rings gently respire at different phases.
+   Each ring applies a unique animation-delay via inline style.          */
+@keyframes cell-ring-breathe {
+  0%, 100% { opacity: 0.18; }
+  50%       { opacity: 0.42; }
+}
+
+/* Biophoton photon traveling along a path: dash slides from far-start to far-end. */
+@keyframes biophoton-travel {
+  0%   { stroke-dashoffset: 260; opacity: 0; }
+  8%   { opacity: 0.55; }
+  85%  { opacity: 0.35; }
+  100% { stroke-dashoffset: -80; opacity: 0; }
+}
+
+/* Signal burst — second ring that fades out, triggered by a zone signal. */
+@keyframes zone-signal-burst {
+  0%   { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+
+/* Sacred seal pulse — nucleus shimmers on SHA-256 breath. */
+@keyframes sacred-seal-pulse {
+  0%   { opacity: 0.9; }
+  40%  { opacity: 0.2; }
+  70%  { opacity: 0.7; }
+  100% { opacity: 0; }
+}
+
+/* Biophoton inter-organelle pulse animation (legacy — kept for philosophy page) */
 @keyframes biophoton-pulse {
   0%, 100% { opacity: 0; stroke-dashoffset: 0; }
   25%, 75%  { opacity: 0.32; }
@@ -172,7 +203,9 @@
 .biophoton-link:nth-child(4) { animation-delay: 3.1s; }
 
 @media (prefers-reduced-motion: reduce) {
-  .biophoton-link { animation: none; opacity: 0.12; }
+  .biophoton-link,
+  .cell-ring-breathe,
+  .biophoton-travel { animation: none; opacity: 0.12; }
 }
 
 @keyframes morph {

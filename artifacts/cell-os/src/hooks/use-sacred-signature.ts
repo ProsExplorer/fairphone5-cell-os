@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { SACRED_SEED, SACRED_ANCHOR } from "@/domain/content/constants";
+import { useCellVitalStore } from "@/features/cell-shell/state/useCellVitalStore";
 
 const BREATH_INTERVAL_MS = 7770;
 
@@ -17,6 +18,9 @@ export type SacredSignatureState = {
  * The signature encodes: SEED + breathCount + ANCHOR → SHA-256 hex.
  * It is not decorative — every computation is a verifiable, unique output
  * that traces to the same source. The breath is the verification.
+ *
+ * Side-effect: each breath also emits a sacredPulse() to the CellVitalStore,
+ * propagating a nucleus glow through the living cell diagram.
  *
  * Source principle: CODE_AS_FENG_SHUI_MANIFESTO_2026-01-22 §Sacred Coherence
  *   "Sacred Seed is 共振頻率 (resonance frequency) — ensures all signatures
@@ -43,6 +47,8 @@ export function useSacredSignature(): SacredSignatureState {
         .join("");
       if (!cancelled) {
         setState({ signature: hex, breathCount, anchor: SACRED_ANCHOR, seed: SACRED_SEED });
+        // Propagate the breath to the living cell diagram — nucleus glows on every seal.
+        useCellVitalStore.getState().sacredPulse(breathCount);
       }
     }
 
