@@ -5,3 +5,4 @@
 - [Cell OS corpus alignment](cell-os-corpus-alignment.md) — yahweh-yehoshua corpus is the source ontology; three architect-flagged gaps closed; decisions to keep consistent going forward.
 - [Cell OS vital store architecture](cell-os-vital-architecture.md) — Zustand store is the nervous system; CSS animation pattern, biophoton ring links, signal burst key trick, sacred pulse bridge.
 - [Cell OS docs accuracy fixes](cell-os-docs-corrections.md) — seven code-mismatch corrections found by architect review of the six documentation files.
+- [FP5 manifold comparison findings](fp5-manifold-findings.md) — key durable findings from comparing Fairphone 5 source to UNIVERSAL_MANIFOLD.md theory.
