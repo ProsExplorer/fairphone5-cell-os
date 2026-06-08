@@ -7,6 +7,8 @@ import {
   type MetricHealth,
 } from "@/domain/content/manifoldMetrics";
 import { ZONE_CONFIDENCE_ORDER, RELATED_ZONE_JUMPS } from "@/features/explorer/navigation/useExplorerNavigation";
+import { useLearnedManifold } from "@/features/learning/useLearnedManifold";
+import { parsePairKey } from "@/features/learning/hebbianAdapter";
 
 const HEALTH_COLOR: Record<MetricHealth, string> = {
   healthy:    "#4ade80",
@@ -139,7 +141,8 @@ function MetricRow({
 }
 
 export default function Metrics() {
-  const m = useMemo(() => computeManifoldMetrics(), []);
+  const m  = useMemo(() => computeManifoldMetrics(), []);
+  const lm = useLearnedManifold();
 
   return (
     <div
@@ -289,8 +292,120 @@ export default function Metrics() {
         </div>
       </section>
 
+      {/* ── Organism Memory ──────────────────────────────────────────────── */}
+      <section style={{ marginBottom: "3rem" }}>
+        <h2 style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#475569", marginBottom: "0.4rem" }}>
+          Organism Memory
+        </h2>
+        <p style={{ fontSize: "0.78rem", color: "#64748b", marginBottom: "1.25rem" }}>
+          Accumulated interaction tensors — the epigenome. Persists across sessions via localStorage.
+          See <code style={{ color: "#94a3b8" }}>hebbianAdapter.ts</code> for the derivation model.
+        </p>
+
+        {/* Interaction count */}
+        <div style={{ display: "flex", alignItems: "baseline", gap: "0.75rem", marginBottom: "1.5rem", borderLeft: "3px solid #334155", paddingLeft: "1rem" }}>
+          <span style={{ fontSize: "1.05rem", fontWeight: 600, color: "#e2e8f0" }}>Total Interactions</span>
+          <span style={{ fontSize: "1.4rem", fontWeight: 700, color: lm.totalInteractions === 0 ? "#475569" : "#7dd3fc", fontVariantNumeric: "tabular-nums" }}>
+            {lm.totalInteractions}
+          </span>
+          {lm.totalInteractions === 0 && (
+            <span style={{ fontSize: "0.72rem", color: "#475569", fontStyle: "italic" }}>virgin state — no learning recorded yet</span>
+          )}
+          {lm.isAdapted && (
+            <span style={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "#4ade80", border: "1px solid #4ade80", borderRadius: "3px", padding: "1px 5px" }}>
+              adapted
+            </span>
+          )}
+        </div>
+
+        {/* Visit intensity heatmap */}
+        {lm.totalInteractions > 0 && (
+          <div style={{ marginBottom: "1.5rem" }}>
+            <div style={{ fontSize: "0.72rem", color: "#475569", marginBottom: "0.5rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+              Organelle Visit Intensity (σ, sqrt-scaled)
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "0.4rem" }}>
+              {Object.entries(lm.organelleVisitIntensity)
+                .sort(([, a], [, b]) => b - a)
+                .map(([id, intensity]) => {
+                  const barWidth = Math.round(intensity * 100);
+                  const barColor = intensity > 0.7 ? "#7dd3fc" : intensity > 0.35 ? "#38bdf8" : "#1e3a5f";
+                  return (
+                    <div key={id} style={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: "4px", padding: "0.4rem 0.6rem" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.25rem" }}>
+                        <span style={{ fontSize: "0.7rem", color: "#94a3b8" }}>{id}</span>
+                        <span style={{ fontSize: "0.7rem", color: barColor, fontVariantNumeric: "tabular-nums" }}>{intensity.toFixed(2)}</span>
+                      </div>
+                      <div style={{ height: "3px", background: "#1e293b", borderRadius: "2px" }}>
+                        <div style={{ height: "100%", width: `${barWidth}%`, background: barColor, borderRadius: "2px", transition: "width 0.5s ease" }} />
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        )}
+
+        {/* Emergent biophoton pairs */}
+        {Object.keys(lm.learnedBiophotonWeights).length > 0 && (
+          <div style={{ marginBottom: "1.5rem" }}>
+            <div style={{ fontSize: "0.72rem", color: "#475569", marginBottom: "0.5rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+              Emergent Co-activation Links (Hebbian, top pairs)
+            </div>
+            {Object.entries(lm.learnedBiophotonWeights)
+              .sort(([, a], [, b]) => b - a)
+              .slice(0, 6)
+              .map(([pair, weight]) => {
+                const [a, b] = parsePairKey(pair);
+                const barColor = weight > 0.7 ? "#a78bfa" : "#6d28d9";
+                return (
+                  <div key={pair} style={{ display: "flex", alignItems: "center", gap: "0.75rem", background: "#0f172a", border: "1px solid #1e3a5f", borderRadius: "6px", padding: "0.5rem 0.85rem", marginBottom: "0.35rem" }}>
+                    <span style={{ color: "#7dd3fc", fontSize: "0.82rem", fontWeight: 600 }}>{a}</span>
+                    <span style={{ color: "#475569", fontSize: "0.8rem" }}>⟷</span>
+                    <span style={{ color: "#7dd3fc", fontSize: "0.82rem", fontWeight: 600 }}>{b}</span>
+                    <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <div style={{ width: "48px", height: "3px", background: "#1e293b", borderRadius: "2px" }}>
+                        <div style={{ height: "100%", width: `${Math.round(weight * 100)}%`, background: barColor, borderRadius: "2px" }} />
+                      </div>
+                      <span style={{ fontSize: "0.68rem", color: barColor, fontVariantNumeric: "tabular-nums" }}>{weight.toFixed(2)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        )}
+
+        {/* Confidence boosts */}
+        {Object.keys(lm.confidenceBoosts).length > 0 && (
+          <div style={{ marginBottom: "1.5rem" }}>
+            <div style={{ fontSize: "0.72rem", color: "#475569", marginBottom: "0.5rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+              Substrate σ Boosts (max +0.15 — attention evidence, not verification)
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "0.4rem" }}>
+              {Object.entries(lm.confidenceBoosts)
+                .sort(([, a], [, b]) => b - a)
+                .map(([id, boost]) => (
+                  <div key={id} style={{ background: "#0f172a", border: "1px solid #1e3a5f", borderRadius: "4px", padding: "0.4rem 0.6rem" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ fontSize: "0.7rem", color: "#94a3b8" }}>{id}</span>
+                      <span style={{ fontSize: "0.7rem", color: "#facc15", fontVariantNumeric: "tabular-nums" }}>+{boost.toFixed(3)}</span>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {lm.totalInteractions === 0 && (
+          <div style={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: "6px", padding: "1rem 1.25rem", fontSize: "0.8rem", color: "#475569" }}>
+            The organism has not yet been observed. Click organelles and substrate nodes in the
+            Explorer to begin accumulating the epigenome. Learning persists across sessions.
+          </div>
+        )}
+      </section>
+
       <footer style={{ borderTop: "1px solid #1e293b", paddingTop: "1rem", fontSize: "0.72rem", color: "#334155" }}>
-        Hidden developer surface · /metrics · Cell OS · Manifold Analysis rev 2
+        Hidden developer surface · /metrics · Cell OS · Manifold Analysis rev 2 · epigenome v1
       </footer>
     </div>
   );

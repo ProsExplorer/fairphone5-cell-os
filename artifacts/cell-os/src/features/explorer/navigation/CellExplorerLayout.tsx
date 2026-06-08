@@ -7,6 +7,7 @@ import { CellMapNav } from "./CellMapNav";
 import { ZoneContentViewport } from "./ZoneContentViewport";
 import { CELL_ZONES } from "@/features/cell-shell/CellShellProvider";
 import { useCellVitalStore } from "@/features/cell-shell/state/useCellVitalStore";
+import { useLearningStore } from "@/features/learning/useLearningStore";
 import type { CellZoneId } from "@/domain/types";
 
 /**
@@ -29,6 +30,8 @@ export function CellExplorerLayout() {
   const { view, perceive } = useExplorerFlow();
   const setActiveZone = useCellVitalStore((s) => s.setActiveZone);
   const emitSignal    = useCellVitalStore((s) => s.emitSignal);
+  const recordOrganelleVisit    = useLearningStore((s) => s.recordOrganelleVisit);
+  const recordSubstrateEngagement = useLearningStore((s) => s.recordSubstrateEngagement);
   const [ringExpanded, setRingExpanded] = useState(true);
 
   // Sync active zone to the vital store so the living cell diagram reacts.
@@ -41,6 +44,16 @@ export function CellExplorerLayout() {
     emitSignal(activeZone, "pulse", 0.7, 1800);
     setRingExpanded(true);
   }, [activeZone, setActiveZone, emitSignal]);
+
+  // Epigenome observer: record intentional click-selections to the learning
+  // store. Only fires on locked focus (click, not hover) — hover is transient
+  // attention; click is deliberate engagement that warrants recording.
+  useEffect(() => {
+    if (!view.isLocked) return;
+    if (view.activeOrganelle) recordOrganelleVisit(view.activeOrganelle.id);
+    if (view.activeSubstrate) recordSubstrateEngagement(view.activeSubstrate.id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view.activeOrganelle?.id, view.activeSubstrate?.id, view.isLocked]);
 
   const zone = CELL_ZONES[activeZone];
 

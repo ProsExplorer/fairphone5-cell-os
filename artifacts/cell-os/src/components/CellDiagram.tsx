@@ -98,6 +98,13 @@ interface CellDiagramProps {
   }>;
   onHover: (id: string | null) => void;
   onClick: (id: string) => void;
+  /**
+   * Per-organelle visit intensity (0–1) from the learning store.
+   * Renders a subtle memory-glow ring behind well-visited organelles —
+   * the organism's accumulated attention made visually present.
+   * When absent or empty, no glow rings are rendered (silent default).
+   */
+  visitIntensity?: Record<string, number>;
 }
 
 interface OrganelleProps {
@@ -141,7 +148,7 @@ function Organelle({ id, activeIds, onHover, onClick, style, className, children
   );
 }
 
-export function CellDiagram({ activeIds, biophotonLinks, onHover, onClick }: CellDiagramProps) {
+export function CellDiagram({ activeIds, biophotonLinks, visitIntensity, onHover, onClick }: CellDiagramProps) {
   return (
     <div className="relative w-full aspect-square max-w-[600px] mx-auto animate-float">
       <svg
@@ -483,6 +490,39 @@ export function CellDiagram({ activeIds, biophotonLinks, onHover, onClick }: Cel
             );
           })}
         </g>
+
+        {/* ── Organism memory glows — learned visit intensity ───────────────
+            Rendered BELOW biophoton links. A subtle concentric ring marks
+            each organelle in proportion to how often the user has visited
+            it (sqrt-scaled, max opacity 0.28). The ring grows outward as
+            intensity increases. Invisible at zero; barely perceptible at
+            first; clearly present only after sustained focused attention.
+            pointer-events: none — the glow is purely expressive, never
+            intercepts interaction.
+        ──────────────────────────────────────────────────────────────── */}
+        {visitIntensity && (
+          <g id="memory-glow" aria-hidden="true">
+            {Object.entries(visitIntensity).map(([id, intensity]) => {
+              if (intensity < 0.04) return null;
+              const center = ORGANELLE_CENTERS[id];
+              if (!center) return null;
+              const color = zc(id);
+              return (
+                <circle
+                  key={`mem-${id}`}
+                  cx={center.x}
+                  cy={center.y}
+                  r={38 + intensity * 32}
+                  fill="none"
+                  stroke={color}
+                  strokeWidth={1.5 + intensity * 1.5}
+                  strokeOpacity={intensity * 0.28}
+                  style={{ pointerEvents: "none" }}
+                />
+              );
+            })}
+          </g>
+        )}
 
         {/* ── Biophoton inter-organelle communication overlay ───────────────
             Links are colored by the SOURCE organelle's zone color, so

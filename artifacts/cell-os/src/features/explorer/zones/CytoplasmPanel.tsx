@@ -1,6 +1,9 @@
+import { useMemo } from "react";
 import { CellDiagram } from "@/components/CellDiagram";
 import { InfoPanel } from "../components/InfoPanel";
 import { CodeSnippet } from "../components/CodeSnippet";
+import { useLearningStore } from "@/features/learning/useLearningStore";
+import { getOrganelleVisitIntensity } from "@/features/learning/hebbianAdapter";
 import type { ExplorerView, ExplorerPerception } from "../useExplorerFlow";
 
 type Props = {
@@ -82,6 +85,15 @@ export function CytoplasmPanel({ view, perceive }: Props) {
     attentionWeight: l.attentionWeight ?? 0.5,
   }));
 
+  // Organism memory: derive per-organelle visit intensity from the epigenome.
+  // The diagram renders a subtle concentric ring on each visited organelle —
+  // a visual expression of accumulated attention that evolves across sessions.
+  const organelleVisits = useLearningStore((s) => s.organelleVisits);
+  const visitIntensity = useMemo(
+    () => getOrganelleVisitIntensity(organelleVisits),
+    [organelleVisits]
+  );
+
   return (
     <div className="px-6 py-8">
       <div className="mb-8">
@@ -103,6 +115,7 @@ export function CytoplasmPanel({ view, perceive }: Props) {
           <CellDiagram
             activeIds={view.activeOrganelleIds}
             biophotonLinks={biophotonLinks}
+            visitIntensity={visitIntensity}
             onHover={perceive.hoverOrganelle}
             onClick={perceive.toggleOrganelle}
           />
