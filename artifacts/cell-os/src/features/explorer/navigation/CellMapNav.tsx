@@ -5,10 +5,6 @@ import { useCellVitalStore } from "@/features/cell-shell/state/useCellVitalStore
 import { ZONE_DEPTH_ORDER } from "./useExplorerNavigation";
 import type { CellZoneId } from "@/domain/types";
 
-/**
- * Concentric ring radii — outer membrane to inner nucleus.
- * Each ring corresponds to one zone, arranged spatially as a cell cross-section.
- */
 const RINGS: Array<{ zoneId: CellZoneId; r: number }> = [
   { zoneId: "membrane",               r: 100 },
   { zoneId: "endoplasmic-reticulum",  r: 86  },
@@ -21,8 +17,12 @@ const RINGS: Array<{ zoneId: CellZoneId; r: number }> = [
 ];
 
 /**
- * Biophoton links — six biologically grounded zone-pair connections.
+ * Label positions for compact mode — each ring gets its glyph label placed
+ * at a unique angle (45° apart) just outside the ring so they don't overlap.
+ * Angles start at 0° (3-o'clock) and step clockwise by 45° per ring (outer→inner).
  */
+const LABEL_ANGLES_DEG: number[] = [0, 45, 90, 135, 180, 225, 270, 315];
+
 const BIOPHOTON_LINKS: Array<{
   fromZone: CellZoneId;
   toZone: CellZoneId;
@@ -32,15 +32,14 @@ const BIOPHOTON_LINKS: Array<{
   animDelay: number;
   animDuration: number;
 }> = [
-  { fromZone: "nucleus",               toZone: "mitochondria",           fromR: 15, toR: 60, angleDeg: 60,  animDelay: 0,    animDuration: 3.2 },
-  { fromZone: "mitochondria",          toZone: "ribosomes",              fromR: 60, toR: 48, angleDeg: 135, animDelay: 0.9,  animDuration: 2.4 },
-  { fromZone: "ribosomes",             toZone: "endoplasmic-reticulum",  fromR: 48, toR: 86, angleDeg: 285, animDelay: 1.7,  animDuration: 2.8 },
-  { fromZone: "endoplasmic-reticulum", toZone: "golgi",                  fromR: 86, toR: 72, angleDeg: 210, animDelay: 2.5,  animDuration: 3.5 },
-  { fromZone: "golgi",                 toZone: "membrane",               fromR: 72, toR: 100,angleDeg: 330, animDelay: 0.5,  animDuration: 2.9 },
-  { fromZone: "cytoplasm",             toZone: "nucleus",                fromR: 26, toR: 15, angleDeg: 245, animDelay: 3.1,  animDuration: 2.1 },
+  { fromZone: "nucleus",               toZone: "mitochondria",           fromR: 15, toR: 60,  angleDeg: 60,  animDelay: 0,   animDuration: 3.2 },
+  { fromZone: "mitochondria",          toZone: "ribosomes",              fromR: 60, toR: 48,  angleDeg: 135, animDelay: 0.9, animDuration: 2.4 },
+  { fromZone: "ribosomes",             toZone: "endoplasmic-reticulum",  fromR: 48, toR: 86,  angleDeg: 285, animDelay: 1.7, animDuration: 2.8 },
+  { fromZone: "endoplasmic-reticulum", toZone: "golgi",                  fromR: 86, toR: 72,  angleDeg: 210, animDelay: 2.5, animDuration: 3.5 },
+  { fromZone: "golgi",                 toZone: "membrane",               fromR: 72, toR: 100, angleDeg: 330, animDelay: 0.5, animDuration: 2.9 },
+  { fromZone: "cytoplasm",             toZone: "nucleus",                fromR: 26, toR: 15,  angleDeg: 245, animDelay: 3.1, animDuration: 2.1 },
 ];
 
-/** Convert polar (cx,cy,r,angleDeg) → SVG Cartesian point. */
 function ringPoint(cx: number, cy: number, r: number, angleDeg: number) {
   const rad = (angleDeg * Math.PI) / 180;
   return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
@@ -50,26 +49,25 @@ type Props = {
   activeZone: CellZoneId;
   onSelectZone: (zone: CellZoneId) => void;
   /**
-   * compact=true — renders only the animated ring SVG with no zone list or footer.
-   * Used by the mobile layout to embed the navigator inline without the full sidebar chrome.
+   * compact=true — renders only the animated ring SVG (no zone list, no footer).
+   * Used by the mobile collapsible navigator strip.
    */
   compact?: boolean;
 };
 
-/**
- * The shared ring SVG — used in both desktop sidebar and mobile compact strip.
- * All animation, signal, and interaction logic lives here.
- */
 function CellRingSvg({
   activeZone,
   onSelectZone,
   signals,
   maxSize,
+  showLabels = false,
 }: {
   activeZone: CellZoneId;
   onSelectZone: (zone: CellZoneId) => void;
   signals: ReturnType<typeof useCellVitalStore.getState>["signals"];
   maxSize: number;
+  /** Show glyph labels around every ring — used in compact mode for legibility. */
+  showLabels?: boolean;
 }) {
   const zone = CELL_ZONES[activeZone];
   const now = Date.now();
@@ -79,7 +77,7 @@ function CellRingSvg({
       viewBox="0 0 220 220"
       style={{ width: "100%", maxWidth: maxSize, display: "block" }}
       className="mx-auto select-none"
-      aria-label="Cell cross-section zone navigator"
+      aria-label="Cell cross-section zone navigator — tap a ring to navigate"
     >
       <defs>
         <radialGradient id="cell-bg" cx="50%" cy="50%" r="50%">
@@ -145,6 +143,14 @@ function CellRingSvg({
         const breathDelay = `${((RINGS.length - 1 - ringIndex) * 0.2).toFixed(1)}s`;
         const breathDuration = `${(5.5 + ringIndex * 0.7).toFixed(1)}s`;
 
+        // Label position — staggered at 45° per ring so they never overlap.
+        const labelAngle = LABEL_ANGLES_DEG[ringIndex];
+        const labelRad = (labelAngle * Math.PI) / 180;
+        // Place label 10 SVG units outside the ring, clamped near viewBox edge.
+        const labelOffset = Math.min(r + 10, 108);
+        const lx = 110 + labelOffset * Math.cos(labelRad);
+        const ly = 110 + labelOffset * Math.sin(labelRad);
+
         return (
           <g key={zoneId}>
             <circle
@@ -196,7 +202,8 @@ function CellRingSvg({
               />
             )}
 
-            {isActive && (
+            {/* Desktop active-ring label (inside ring, right side) */}
+            {!showLabels && isActive && (
               <text
                 x={110 + r - 6}
                 y={110 + 4}
@@ -209,6 +216,42 @@ function CellRingSvg({
               >
                 {z.glyph}
               </text>
+            )}
+
+            {/* Compact mode: glyph + short name label outside each ring */}
+            {showLabels && (
+              <g style={{ pointerEvents: "none" }} aria-hidden="true">
+                {/* Glyph */}
+                <text
+                  x={lx}
+                  y={ly - 2}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fill={z.color}
+                  fontSize={isActive ? 11 : 9}
+                  fontFamily="monospace"
+                  opacity={isActive ? 1 : 0.45}
+                  style={{ transition: "all 0.5s ease" }}
+                >
+                  {z.glyph}
+                </text>
+                {/* Short English name — tiny, shown for active only to avoid clutter */}
+                {isActive && (
+                  <text
+                    x={lx}
+                    y={ly + 9}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill={z.color}
+                    fontSize={6}
+                    fontFamily="monospace"
+                    opacity={0.7}
+                    letterSpacing={0.3}
+                  >
+                    {z.name.split(" ")[0].substring(0, 7).toUpperCase()}
+                  </text>
+                )}
+              </g>
             )}
           </g>
         );
@@ -244,7 +287,8 @@ export function CellMapNav({ activeZone, onSelectZone, compact = false }: Props)
         activeZone={activeZone}
         onSelectZone={onSelectZone}
         signals={signals}
-        maxSize={140}
+        maxSize={160}
+        showLabels
       />
     );
   }
@@ -254,7 +298,6 @@ export function CellMapNav({ activeZone, onSelectZone, compact = false }: Props)
   return (
     <aside className="flex flex-col h-full overflow-y-auto border-r border-white/5 bg-background/40 backdrop-blur-sm">
 
-      {/* Living cell cross-section diagram */}
       <div className="p-5 border-b border-white/5 shrink-0">
         <p className="font-mono text-[8px] tracking-[0.25em] uppercase text-muted-foreground/30 mb-3 text-center">
           Explore Inside → Out
@@ -267,7 +310,6 @@ export function CellMapNav({ activeZone, onSelectZone, compact = false }: Props)
         />
       </div>
 
-      {/* Zone list */}
       <nav className="flex-1 overflow-y-auto py-2 px-2" aria-label="Zone navigation">
         {ZONE_DEPTH_ORDER.map((zoneId, i) => {
           const z = CELL_ZONES[zoneId];
@@ -333,7 +375,6 @@ export function CellMapNav({ activeZone, onSelectZone, compact = false }: Props)
         })}
       </nav>
 
-      {/* Footer context links */}
       <div className="p-2 border-t border-white/5 shrink-0 space-y-0.5">
         <Link
           href="/philosophy"

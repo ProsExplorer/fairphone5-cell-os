@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { useExplorerNavigation, ZONE_DEPTH_ORDER } from "./useExplorerNavigation";
 import { useExplorerFlow } from "../useExplorerFlow";
 import { CellMapNav } from "./CellMapNav";
@@ -38,6 +38,7 @@ export function CellExplorerLayout() {
   }, [activeZone, setActiveZone, emitSignal]);
 
   const zone = CELL_ZONES[activeZone];
+  const [ringExpanded, setRingExpanded] = useState(true);
 
   return (
     <div className="flex flex-col bg-background text-foreground" style={{ height: "100dvh", overflow: "hidden" }}>
@@ -142,13 +143,59 @@ export function CellExplorerLayout() {
         </div>
       </div>
 
-      {/* ── MOBILE RING DIAGRAM ──────────────────────────────────────────────── */}
-      {/* Compact living cell cross-section — same animated rings as desktop
-          sidebar, rendered inline above the content on narrow viewports.      */}
-      <div className="lg:hidden flex-shrink-0 flex items-center justify-center py-3 border-b border-white/5 bg-background/50 backdrop-blur-sm z-20">
-        <div style={{ width: 140, height: 140 }}>
-          <CellMapNav compact activeZone={activeZone} onSelectZone={selectZone} />
-        </div>
+      {/* ── MOBILE RING DIAGRAM (collapsible) ───────────────────────────────── */}
+      <div className="lg:hidden flex-shrink-0 border-b border-white/5 bg-background/50 backdrop-blur-sm z-20">
+
+        {/* Toggle header — always visible, labels the navigator clearly */}
+        <button
+          onClick={() => setRingExpanded((v) => !v)}
+          className="w-full flex items-center justify-between px-4 py-2.5 text-left"
+          aria-expanded={ringExpanded}
+          aria-controls="mobile-ring-diagram"
+        >
+          <div className="flex items-center gap-2.5">
+            {/* Active-zone color dot */}
+            <span
+              className="w-2 h-2 rounded-full shrink-0"
+              style={{
+                backgroundColor: zone.color,
+                boxShadow: `0 0 6px ${zone.color}`,
+              }}
+            />
+            <span className="font-mono text-[9px] tracking-[0.22em] uppercase text-muted-foreground/50">
+              Zone Navigator
+            </span>
+            {/* Active zone badge */}
+            <span
+              className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono"
+              style={{
+                color: zone.color,
+                background: `${zone.color}15`,
+              }}
+            >
+              <span>{zone.glyph}</span>
+              <span className="opacity-75">{zone.name}</span>
+            </span>
+          </div>
+
+          <ChevronDown
+            className="w-3.5 h-3.5 text-muted-foreground/30 shrink-0 transition-transform duration-300"
+            style={{ transform: ringExpanded ? "rotate(180deg)" : "rotate(0deg)" }}
+          />
+        </button>
+
+        {/* Collapsible ring diagram */}
+        {ringExpanded && (
+          <div
+            id="mobile-ring-diagram"
+            className="flex flex-col items-center pb-3 px-4"
+          >
+            <CellMapNav compact activeZone={activeZone} onSelectZone={selectZone} />
+            <p className="font-mono text-[8px] tracking-[0.2em] uppercase text-muted-foreground/25 mt-1">
+              Tap a ring · Inside → Out
+            </p>
+          </div>
+        )}
       </div>
 
       {/* ── BODY: sidebar + content viewport ────────────────────────────────── */}
