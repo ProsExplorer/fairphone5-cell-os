@@ -142,6 +142,15 @@ export function CellExplorerLayout() {
         </div>
       </div>
 
+      {/* ── MOBILE RING DIAGRAM ──────────────────────────────────────────────── */}
+      {/* Compact living cell cross-section — same animated rings as desktop
+          sidebar, rendered inline above the content on narrow viewports.      */}
+      <div className="lg:hidden flex-shrink-0 flex items-center justify-center py-3 border-b border-white/5 bg-background/50 backdrop-blur-sm z-20">
+        <div style={{ width: 140, height: 140 }}>
+          <CellMapNav compact activeZone={activeZone} onSelectZone={selectZone} />
+        </div>
+      </div>
+
       {/* ── BODY: sidebar + content viewport ────────────────────────────────── */}
       <div className="relative z-10 flex flex-1" style={{ overflow: "hidden" }}>
 
