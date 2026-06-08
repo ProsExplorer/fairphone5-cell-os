@@ -357,7 +357,7 @@ export default function Substrate() {
             18 High-Signal Intersections
           </h2>
           <p className="text-muted-foreground leading-relaxed mb-6 max-w-2xl">
-            The full tensor is 8 zones × 3 phases × 10 scales = 240 cells. These 18 curated
+            The full tensor is 8 zones × 3 phases × 11 scales = 264 cells. These 18 curated
             intersections are where all three axes illuminate each other most sharply.
           </p>
 

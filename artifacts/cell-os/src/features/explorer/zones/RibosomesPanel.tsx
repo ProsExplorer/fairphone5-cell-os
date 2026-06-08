@@ -40,7 +40,7 @@ export function RibosomesPanel() {
             NNAPI: pattern translation in C++
           </h3>
           <p className="text-sm text-muted-foreground/65 leading-relaxed max-w-2xl">
-            The same pattern you see across ten scales above —{" "}
+            The same pattern you see across eleven scales above —{" "}
             <em>translate blueprint into action</em> — is what Android's Neural Networks API
             does at the silicon scale.{" "}
             <code className="font-mono text-xs" style={{ color: "rgba(163,230,53,0.65)" }}>ANeuralNetworksModel_addOperation()</code>{" "}

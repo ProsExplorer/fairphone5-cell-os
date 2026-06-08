@@ -6,9 +6,9 @@ import type { QiIntersection } from "@/domain/types";
  * Three axes:
  *   A: CellZoneId  (8 values)  — which organelle zone
  *   B: triad phase (3 values)  — PERCEPTION / AFFECT / EXPRESSION
- *   C: scale       (10 values) — symbolic → quantum → … → silicon
+ *   C: scale       (11 values) — symbolic → quantum → … → silicon
  *
- * Full tensor: 8 × 3 × 10 = 240 intersections.
+ * Full tensor: 8 × 3 × 11 = 264 intersections.
  * This file exports 18 curated intersections — the ones where the three axes
  * illuminate each other most sharply. They are chosen for conceptual coherence
  * and evidence quality, not for their count's sacred geometry.
@@ -20,7 +20,7 @@ import type { QiIntersection } from "@/domain/types";
 export const QI_AXES = {
   zones: ["nucleus", "cytoplasm", "cytoskeleton", "ribosomes", "mitochondria", "golgi", "endoplasmic-reticulum", "membrane"] as const,
   phases: ["perception", "affect", "expression"] as const,
-  scales: ["symbolic", "quantum", "molecular", "cellular", "organic", "apparatus", "textual", "generational", "cosmic", "silicon"] as const,
+  scales: ["symbolic", "quantum", "molecular", "cellular", "organic", "apparatus", "textual", "generational", "relational", "cosmic", "silicon"] as const,
 } as const;
 
 export const QI_INTERSECTIONS: QiIntersection[] = [
@@ -46,7 +46,7 @@ export const QI_INTERSECTIONS: QiIntersection[] = [
     narrative:
       "The prompt is the nucleus's expression: a compressed encoding of intent, passed through the nuclear pore (tokenizer) into the inference engine. UFS 2.2 reads the quantized genome (model weights) at 1,200 MB/s; the prompt tokens are staged in LPDDR4x RAM. The HTA buffer opens. Expression at the silicon scale is the act of becoming readable.",
     hardwareAnalogue: "UFS 2.2 storage → LPDDR4x RAM → HTA input buffer",
-    substrateIds: ["ufs", "lpddr4x", "hexagon"],
+    substrateIds: ["qcm6490", "lpddr4x", "hexagon770"],
     evidence: "verified",
   },
 
@@ -84,7 +84,7 @@ export const QI_INTERSECTIONS: QiIntersection[] = [
     narrative:
       "Distillation begins when raw liquid enters the flask — everything present, undifferentiated. The cytoskeleton's equivalent is weight loading: UFS 2.2 reads quantized model weights at 1,200 MB/s, staging them into LPDDR4x RAM. The structural lattice (microtubules, actin) assembles before the cell can move; the weight tensor must be loaded before inference can begin. Perception is the arrival of raw material.",
     hardwareAnalogue: "UFS 2.2 → LPDDR4x: weight load before inference",
-    substrateIds: ["ufs", "lpddr4x"],
+    substrateIds: ["qcm6490", "lpddr4x"],
     evidence: "verified",
   },
   {
@@ -119,7 +119,7 @@ export const QI_INTERSECTIONS: QiIntersection[] = [
     narrative:
       "The Hexagon's HVX processes 128 INT8 values per clock across dual 1024-bit SIMD units — one instruction applied to 128 values simultaneously. The ribosome's peptidyl transferase center does the same: one enzymatic conformation applies one peptide bond formation to the assembled substrate. Both are dedicated hardware for a single, repeated operation. The ribosome and the HVX are convergent evolution toward the same molecular insight: specialize the machinery to the operation.",
     hardwareAnalogue: "Hexagon HVX — dual 1024-bit SIMD units, 128 INT8 per clock",
-    substrateIds: ["hexagon"],
+    substrateIds: ["hexagon770"],
     evidence: "indicative",
   },
   {
@@ -154,7 +154,7 @@ export const QI_INTERSECTIONS: QiIntersection[] = [
     narrative:
       "The HTA (Hexagon Tensor Accelerator) computes the attention mechanism: each token's key vector multiplied against every other token's query vector, accumulated in INT32 registers. The mitochondrial electron transport chain does the same: electrons move stepwise through four protein complexes, each step building the proton gradient. Both are sustained chain reactions in dedicated hardware, each step depending on the previous, each producing a gradient that drives the final output.",
     hardwareAnalogue: "Hexagon HTA — dedicated matrix multiply-accumulate, INT32 accumulators",
-    substrateIds: ["hexagon"],
+    substrateIds: ["hexagon770"],
     evidence: "indicative",
   },
   {
@@ -212,7 +212,7 @@ export const QI_INTERSECTIONS: QiIntersection[] = [
     narrative:
       "The rough ER receives polypeptides from ribosomes as they are being synthesized — co-translational import. The digital equivalent: UFS 2.2 loads quantized FP16 or INT8 weights from storage into LPDDR4x RAM as the model is being prepared. In both cases, perception is co-process reception: the ER and the RAM don't wait for synthesis to complete — they receive incrementally, as it is produced.",
     hardwareAnalogue: "UFS 2.2 → LPDDR4x: model weight streaming",
-    substrateIds: ["ufs", "lpddr4x"],
+    substrateIds: ["qcm6490", "lpddr4x"],
     evidence: "verified",
   },
 
@@ -227,7 +227,7 @@ export const QI_INTERSECTIONS: QiIntersection[] = [
     narrative:
       "Surface receptor proteins are highly specific: a ligand must match the receptor's binding pocket before any cascade begins. Android's NNAPI performs the same function — at graph compilation time, it inspects each model operator and decides which hardware unit handles it: Hexagon HTA, Adreno GPU, or CPU. Only operators that fit the hardware's capability profile are routed to it; the rest fall back to the CPU. Perception at the membrane is discrimination before admission.",
     hardwareAnalogue: "Android NNAPI — model graph partitioning across Hexagon/GPU/CPU",
-    substrateIds: ["hexagon", "adreno", "kryo"],
+    substrateIds: ["hexagon770", "adreno643", "kryo670"],
     evidence: "verified",
   },
   {

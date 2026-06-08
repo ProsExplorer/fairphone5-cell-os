@@ -1,11 +1,3 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
 import type { CellZoneId } from "@/domain/types";
 
 // ─── Re-export CellZoneId so consumers can import from one place ──────────────
@@ -25,6 +17,9 @@ export type CellZoneMeta = {
  * Each zone maps to both a biological organelle and the Cell OS section it
  * governs. The UI literally IS the cell — navigating the page is navigating
  * through organelles.
+ *
+ * CELL_ZONES is the single canonical zone registry. Import it directly;
+ * no context provider is needed — active zone state lives in useExplorerFlow.
  */
 export const CELL_ZONES: Record<CellZoneId, CellZoneMeta> = {
   nucleus:                  { id: "nucleus",                  name: "Nucleus",                osFeature: "Core Identity · DNA",      glyph: "核",  color: "#22d3ee" },
@@ -36,72 +31,3 @@ export const CELL_ZONES: Record<CellZoneId, CellZoneMeta> = {
   "endoplasmic-reticulum":  { id: "endoplasmic-reticulum",   name: "Endoplasmic Reticulum",  osFeature: "Deep Lineage · Memory",    glyph: "網",  color: "#f472b6" },
   membrane:                 { id: "membrane",                 name: "Cell Membrane",          osFeature: "Selective Boundary",       glyph: "膜",  color: "#7dd3fc" },
 };
-
-// ─── Context ──────────────────────────────────────────────────────────────────
-
-type CellShellContextValue = {
-  activeZone: CellZoneMeta | null;
-};
-
-const CellShellContext = createContext<CellShellContextValue>({ activeZone: null });
-
-export function useCellShell() {
-  return useContext(CellShellContext);
-}
-
-// ─── Provider ─────────────────────────────────────────────────────────────────
-
-/**
- * Observes all elements with [data-cell-zone] in the DOM using
- * IntersectionObserver. Tracks which zone is currently most visible and
- * provides it to all children via context.
- */
-export function CellShellProvider({ children }: { children: ReactNode }) {
-  const [activeZoneId, setActiveZoneId] = useState<CellZoneId | null>(null);
-  const visibleRef = useRef<Set<string>>(new Set());
-  const orderRef   = useRef<string[]>([]);
-
-  useEffect(() => {
-    const updateActive = () => {
-      const first = orderRef.current.find((z) => visibleRef.current.has(z));
-      setActiveZoneId((first as CellZoneId) ?? null);
-    };
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          const zone = (e.target as HTMLElement).dataset.cellZone;
-          if (!zone) return;
-          if (e.isIntersecting) {
-            visibleRef.current.add(zone);
-          } else {
-            visibleRef.current.delete(zone);
-          }
-        });
-        updateActive();
-      },
-      { threshold: 0.05 }
-    );
-
-    const t = setTimeout(() => {
-      const els = Array.from(
-        document.querySelectorAll<HTMLElement>("[data-cell-zone]")
-      );
-      orderRef.current = els.map((el) => el.dataset.cellZone ?? "");
-      els.forEach((el) => observer.observe(el));
-    }, 150);
-
-    return () => {
-      clearTimeout(t);
-      observer.disconnect();
-    };
-  }, []);
-
-  const activeZone = activeZoneId ? CELL_ZONES[activeZoneId] ?? null : null;
-
-  return (
-    <CellShellContext.Provider value={{ activeZone }}>
-      {children}
-    </CellShellContext.Provider>
-  );
-}

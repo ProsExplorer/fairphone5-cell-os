@@ -22,7 +22,7 @@ export type QiIntersection = {
   evidence:  "verified" | "indicative" | "unconfirmed";
 };
 
-// Full tensor: 8 zones × 3 phases × 10 scales = 240 intersections.
+// Full tensor: 8 zones × 3 phases × 11 scales = 264 intersections.
 // 18 are curated — the ones where the three axes illuminate each other.`;
 
 const INIT_NATIVE_SNIPPET = `static Result<void> HandleBuiltinCommand(

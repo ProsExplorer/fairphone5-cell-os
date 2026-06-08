@@ -102,7 +102,7 @@ export type TriadPhase = {
 };
 
 /**
- * One scale in the ten-scale 尺度不變性 (Scale Invariance) table.
+ * One scale in the eleven-scale 尺度不變性 (Scale Invariance) table.
  * The same PERCEPTION→AFFECT→EXPRESSION pattern described at a particular
  * level of reality — from symbolic to silicon.
  */
@@ -183,7 +183,7 @@ export type QuantizationLayer = {
 
 /**
  * One intersection in the 3-axis qi tensor:
- *   A (zone, 8) × B (triad phase, 3) × C (scale, 10) = 240 cells.
+ *   A (zone, 8) × B (triad phase, 3) × C (scale, 11) = 264 cells.
  *
  * QI_INTERSECTIONS contains 18 curated high-signal intersections — the ones
  * where the three axes illuminate each other most clearly.
