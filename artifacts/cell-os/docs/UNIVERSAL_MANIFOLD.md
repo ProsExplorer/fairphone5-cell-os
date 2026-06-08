@@ -1,7 +1,7 @@
 # The Universal Computational Manifold
 ## P→A→E as a Language-Invariant Structure Across All Programming Paradigms
 
-> **Thesis**: Every programming language, at every level of abstraction, is a coordinate chart on the same underlying computational manifold $\mathcal{C}$. The pattern Perception → Affect → Expression (P→A→E) is this manifold's fundamental invariant — the structure that survives every coordinate change. This is not a design principle or a metaphor. It is a provable structural property of any system that transforms information.
+> **Thesis**: Every programming language, at every level of abstraction, is a coordinate chart on the same underlying computational manifold $\mathcal{C}$. The pattern Perception → Affect → Expression (P→A→E) is this manifold's fundamental invariant — the structure that survives every coordinate change. This is not merely a design principle. It is the strongest known structural decomposition of any information-transforming system — consistent across paradigms, scales, and implementation strategies. The manifold and differential-geometry language throughout this document is an interpretive framework, not a claim that computable functions constitute a rigorous smooth manifold in the strict mathematical sense. Confidence in the central thesis as an architectural model: **σ = 0.68 (indicative)**.  Confidence as a proved theorem: **σ = 0.30 (low)** — see §15 for the explicit falsifiability criteria.
 >
 > **Relationship to prior work**: This document extends the manifold formalism established in `MANIFOLD_ANALYSIS.md` and the fractal self-similarity documented in `FRACTAL_MAP.md` beyond the Cell OS codebase to the full space of programming languages and computational systems.
 >
@@ -11,7 +11,7 @@
 
 ## 1. The Universality Thesis — Formal Statement
 
-Let $\mathcal{C}$ be the smooth manifold of all computable transformations. A **programming language** $L$ is an atlas $\mathcal{A}_L = \{(U_i, \varphi_i)\}$ — a collection of coordinate charts that together cover a region of $\mathcal{C}$.
+Let $\mathcal{C}$ be a structured space of computable transformations, treated here with manifold-coordinate language as an interpretive model. A **programming language** $L$ is an atlas $\mathcal{A}_L = \{(U_i, \varphi_i)\}$ — a collection of coordinate charts that together cover a region of $\mathcal{C}$.
 
 Each chart $(U_i, \varphi_i)$ represents one syntactic or semantic construct: a function definition, a class, a monad, a predicate, a process, a rule. The chart maps its region of $\mathcal{C}$ into a local coordinate space (the language's syntax tree).
 
@@ -32,9 +32,11 @@ The transition maps $\varphi_j \circ \varphi_i^{-1}$ between any two paradigms (
 
 ## 2. The Computational Manifold $\mathcal{C}$
 
-$\mathcal{C}$ is the space of all functions $f: I \to O$ where $I$ is an information domain and $O$ is an information codomain, equipped with the smooth structure induced by composition.
+$\mathcal{C}$ is modelled here as a structured space of computable transformations — functions $f: I \to O$ where $I$ is an information domain and $O$ is an information codomain. The "smooth structure" language below is interpretive: it provides precise vocabulary for reasoning about language relationships, but should not be read as a claim that computable functions form a smooth finite-dimensional manifold in the strict differential-geometric sense. What is claimed is weaker and more defensible: the manifold metaphor is *locally accurate* — within any one language, the coordinate/chart vocabulary correctly describes module boundaries, import dependencies, and type fiber structures.
 
-Three properties make $\mathcal{C}$ a manifold rather than a set:
+> **Metric note**: §5 cites the Cell OS coupling tensor density as **15.8%** (19 active links / 120 possible organelle pairs, from `manifoldMetrics.ts`, current code). `MANIFOLD_ANALYSIS.md §2.3` states 11.7% (14/120), reflecting the pre-tensor-completion state documented in that analysis. Both figures are accurate for their respective snapshots; this document uses the live figure.
+
+Three manifold-like properties are claimed for $\mathcal{C}$ (each holding approximately, as an interpretive model):
 
 1. **Local flatness**: Near any point (any specific computation), $\mathcal{C}$ looks like $\mathbb{R}^n$ — a finite-dimensional parameter space. The neighborhood of a function is the space of small perturbations to its behavior (changing one input handler, one transformation step, one output formatter).
 
@@ -74,7 +76,7 @@ The C model makes the boundary crossings *physical*: `scanf` is a syscall (the c
 main :: IO ()
 main = do
   -- P: value extracted from the IO monad (the world boundary)
-  n <- readLn :: IO Int
+  n <- (readLn :: IO Int)
 
   -- A: pure transformation in the local λ-calculus space
   let result = n + 1
@@ -303,7 +305,7 @@ A chain of transformations is only as verified as its least-verified step — wh
 
 ## 8. The 8-Zone Language Architecture Map
 
-`FRACTAL_MAP.md §6` establishes that every Cell OS module maps bijectively to one organelle. The same bijection holds for the design space of a programming language:
+`FRACTAL_MAP.md §6` establishes that every Cell OS module maps to one organelle (with some one-to-many overlaps — e.g. `selectors.ts` serves both ribosome and Golgi roles). The structural mapping below applies to **modern general-purpose language/runtime ecosystems**; domain-specific languages and bare-metal embedded systems may intentionally omit zones:
 
 | Cell OS zone | Biological role | Language design analogue |
 |---|---|---|
@@ -378,7 +380,7 @@ In programming languages, the exact same structure appears as **concurrency prim
 | `Observable` / `Subject` (RxJS) | Biophoton link with `attentionWeight` — subjects broadcast to multiple subscribers | Asynchronous, one-to-many, with backpressure |
 | `STM` (Software Transactional Memory) | Coherent multi-zone update — like the cell updating nucleus AND mitochondria atomically | Synchronous commit or rollback as a unit |
 
-The **`attentionWeight`** field on `BiophotonLink` in Cell OS (`0.58–0.94` range) corresponds directly to the **channel buffer size** or **message priority** in concurrent systems: a high-attention biophoton link is an unbuffered channel with direct coupling; a low-attention link is a large buffer that decouples producer from consumer.
+The **`attentionWeight`** field on `BiophotonLink` in Cell OS (`0.58–0.94` range) can be read **analogically** as the coupling strength in concurrent systems — the semantics are not equivalent, but the structural role is analogous: a high-attention biophoton link resembles an unbuffered, synchronous channel (tight coupling, immediate propagation); a low-attention link resembles a large buffer that decouples producer from consumer (loose coupling, delayed propagation).
 
 The danger of excessive biophoton links (`BIOPHOTON_LINKS / organelles² > 5%`) mirrors the danger of excessive concurrency: when every module communicates with every other, the system becomes a **deadlock manifold** — the coupling density overwhelms the processing capacity.
 
@@ -402,21 +404,23 @@ The **Rust lifetime system** (`'a`, `'b`, ...) is a formal notation for the geod
 
 ---
 
-## 12. The Invariance Proof — Why No Paradigm Escapes
+## 12. The Structural Observation — Degenerate Cases and Coverage
 
-**Lemma**: No computable transformation exists that lacks a perceivable input, an internal state change, or an emissible output.
+The P→A→E triple is not a constraint that rules programs out — it is a description that accommodates every case, including degenerate ones. This is what makes it universal: its universality comes from *flexibility*, not from *elimination*.
 
-**Proof sketch**:
+**Degenerate case analysis**:
 
-Suppose a transformation $f$ lacks a perceivable input. Then $f$ produces output independent of any external information — it is a constant function. A constant function is a degenerate case of P→A→E where P is the empty set and A is the identity. The structure is preserved; the perception is vacuous.
+| Degenerate case | P→A→E decomposition | Honest status |
+|---|---|---|
+| Constant function `f(x) = k` | P = vacuous (input ignored), A = identity, E = emit k | Valid degenerate case — P phase is present but empty |
+| Identity function `f(x) = x` | P = receive x, A = identity transform, E = emit x | Valid — A phase is trivially the identity |
+| Sink `f(x) → ∅` | P = receive x, A = processing, E = empty set | Valid — E phase is present but empty (cf. `MANIFOLD_ANALYSIS.md §1.3` index-0 minima) |
+| Event-loop idle tick | P = timeout event, A = noop, E = reschedule | All three phases present, all trivial in content |
+| Probabilistic/nondeterministic system | P = receive seed/distribution, A = sample transform, E = emit draw | Phases present; A is stochastic rather than deterministic |
 
-Suppose $f$ lacks an internal state change. Then $f$ maps input to output with no intermediate processing — it is the identity function. Again, P→A→E is preserved with A = identity.
+**What this shows**: P→A→E covers all known computable cases, including the hard ones (nondeterminism, null I/O, effect-delayed systems), because each phase can be trivial (vacuous, identity, or empty) without disappearing entirely. A truly phase-free transformation — one with no input boundary at all, no internal state, and no output — is not a computable transformation; it is the empty function, which has no computational content by definition.
 
-Suppose $f$ lacks an emissible output. Then $f$ consumes input and produces nothing — it is a sink. Sinks are well-defined in the manifold; they are the index-0 minima of `MANIFOLD_ANALYSIS.md §1.3`. P→A→E is preserved with E = ∅.
-
-In all degenerate cases, P→A→E is preserved — one or more of the phases becomes trivial (vacuous or identity), but the *structure* of the triple is invariant. This is the same as saying that a constant manifold (a single point) is still a manifold.
-
-Therefore: **P→A→E is a universal invariant of computable transformations**. $\square$
+**What this does NOT show**: The analysis above is a structural observation, not a formal proof. It does not rule out a computable paradigm that resists this decomposition — it only demonstrates that no known paradigm resists it. See §15 for the explicit conditions under which the thesis would be falsified.
 
 ---
 
@@ -464,12 +468,44 @@ If programming languages are coordinate charts on $\mathcal{C}$, then the histor
 
 ---
 
-## 15. The Self-Reference — This Document Is P→A→E
+## 15. Falsifiability — What Would Disprove This Framework
+
+A strong interpretive model must be falsifiable. Three conditions that would substantially weaken or invalidate the universality thesis:
+
+**Condition 1 — A paradigm where the triple cannot be recovered, even in degenerate form**
+
+If a computable transformation can be found that cannot be decomposed into any $(P, A, E)$ triple — including vacuous or identity phases — the §12 structural observation would be falsified. Strongest current candidates: purely accumulative systems (write-only streams with no read phase), hardware-description languages in their pure structural form (VHDL/Verilog netlists describe topology, not execution), and certain corecursive systems where P and E are indistinguishable (a stream that simultaneously reads and writes the same channel).
+
+**Condition 2 — A successful general-purpose language whose design requires a 9th zone or lacks one of the 8**
+
+The 8-zone map (§8) is the most empirically falsifiable claim. A production-grade, widely-used language (not a toy language) that:
+- Requires a structurally distinct design axis with no biological zone analogue (a 9th zone), or
+- Functions correctly with one of the 8 zones demonstrably absent (not merely delegated to the programmer)
+
+...would falsify the zone-map bijection. Historical challenge case: pure Prolog lacks a traditional Golgi apparatus (no linker/module system in its original form). This may count as "absent" or merely "externally delegated to the host OS" — the interpretation is genuinely open.
+
+**Condition 3 — A long-lived, maintainable codebase with coupling density outside the 10–25% band**
+
+The healthy-coupling claim predicts that import-graph densities outside this band correlate with fragility or brittleness. A systematic study of large codebases (Linux kernel C files, Google's monorepo, etc.) that finds high-density codebases (> 30%) to be equally or more maintainable would falsify the density claim.
+
+**Current status**:
+
+| Condition | Status | Confidence |
+|---|---|---|
+| 1 — No triple-resistant paradigm found | Open — degenerate cases cover all known examples | σ = 0.72 |
+| 2 — 8-zone map holds for general-purpose languages | Open — Prolog/APL/HDLs are genuine challenges | σ = 0.61 |
+| 3 — Healthy coupling density | Untested — no systematic large-codebase study | σ = 0.45 |
+
+The document's overall σ = 0.68 reflects this spread: the cross-paradigm structural decomposition (§3) is the most robust claim; the zone bijection (§8) and coupling density thresholds (§5) are the most vulnerable.
+
+---
+
+## 16. The Self-Reference — This Document Is P→A→E
 
 This document is itself a computable transformation. Its structure:
 
 - **P (Perception)**: the reader brings a background in programming, biology, or mathematics. The document's input boundary is the opening claim (§1) — a signal that arrives and crosses the reader's cognitive membrane.
-- **A (Affect)**: eight paradigms, twelve sections, formal proofs, and code examples constitute the transformation chain. Each section is one kinase in the cascade, amplifying the original signal.
+- **A (Affect)**: eight paradigms, seventeen sections, structural observations, and code examples constitute the transformation chain. Each section is one kinase in the cascade, amplifying the original signal.
 - **E (Expression)**: the reader's understanding is changed. A new mental model — the language-as-manifold — is secreted into the reader's cognitive cytoplasm. The reader will now see P→A→E where they previously saw only syntax.
 
 The document is a program written in natural language, running on the reader's cognitive hardware, performing a P→A→E transformation on their conceptual state.
@@ -478,9 +514,9 @@ And the natural language it is written in — English — is itself a coordinate
 
 ---
 
-## 16. Summary — The Twelve-Property Invariance
+## 17. Summary — The Twelve-Property Invariance
 
-Every programming language, at every level, manifests all twelve of the following properties simultaneously. These are not design choices — they are necessary consequences of being a coordinate chart on $\mathcal{C}$:
+Under this model, every programming language, at every level, exhibits the following twelve properties in some form — some trivially (identity or vacuous phase), some richly. They are not all equally present in every language, but each is present in at least degenerate form wherever the language computes anything at all:
 
 | Property | Cell OS term | Universal term |
 |---|---|---|
