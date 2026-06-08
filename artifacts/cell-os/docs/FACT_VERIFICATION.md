@@ -178,7 +178,7 @@ The Fairphone 5 receives Android updates. Substrate facts should be reviewed:
 - When Qualcomm publishes new QCM6490 or Hexagon documentation
 - When AOSP paths change between Android versions
 
-Add a `lastVerified` field to `SpecRow` or `SubstrateNode` notes when completing a review.
+Add a verification comment to the `note` field of the relevant `SubstrateNode` or `Citation` entry — for example: `note: "Verified against Qualcomm QCM6490 product brief, June 2026."`. There is no `lastVerified` field in the TypeScript schema; use inline notes until the schema is extended.
 
 ---
 

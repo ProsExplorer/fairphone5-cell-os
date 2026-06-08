@@ -4,3 +4,4 @@
 - [Cell OS native code source map](cell-os-native-source-map.md) — every zone maps to a verified public AOSP/kernel/llama.cpp file; EdgeNode is wllama (already real WASM, upgrade path is ggml-qnn OpenCL).
 - [Cell OS corpus alignment](cell-os-corpus-alignment.md) — yahweh-yehoshua corpus is the source ontology; three architect-flagged gaps closed; decisions to keep consistent going forward.
 - [Cell OS vital store architecture](cell-os-vital-architecture.md) — Zustand store is the nervous system; CSS animation pattern, biophoton ring links, signal burst key trick, sacred pulse bridge.
+- [Cell OS docs accuracy fixes](cell-os-docs-corrections.md) — seven code-mismatch corrections found by architect review of the six documentation files.

@@ -37,7 +37,7 @@ Kernel / Control Center — the root of device authority; holds system code and 
 | Component | AOSP path | Status |
 |---|---|---|
 | Linux kernel PID 1 / `init` | `system/core/init/init.cpp` | 🔶 Mentioned |
-| Zygote — the process-forking daemon | `frameworks/base/core/java/com/android/internal/os/ZygoteInit.java` | ❌ |
+| Zygote — the process-forking daemon (`preloadClasses()`, `forkAndSpecialize()`) | `frameworks/base/core/java/com/android/internal/os/ZygoteInit.java` | ❌ |
 | SELinux policy compilation | `system/sepolicy/` | ❌ |
 | Kernel namespace isolation | kernel `unshare(2)`, cgroup hierarchy | ❌ |
 | `init.rc` declarative service graph | `system/core/rootdir/init.rc` | ❌ |
@@ -98,7 +98,7 @@ AI Substrate Lattice — the structural rendering and scheduling framework.
 | SurfaceFlinger — compositing engine | `frameworks/native/services/surfaceflinger/` | ❌ |
 | Choreographer — VSYNC gating | `frameworks/base/core/java/android/view/Choreographer.java` | ❌ |
 | HWC2 (Hardware Composer) interface | `hardware/interfaces/graphics/composer/2.1/` | ❌ |
-| `select_task_rq` — task scheduling | `kernel/sched/fair.c` | 🔶 Cited |
+| `select_task_rq` — task scheduling | `kernel/sched/core.c` | 🔶 Cited |
 | RenderThread | `frameworks/base/libs/hwui/renderthread/` | ❌ |
 | Display HAL pipeline | Qualcomm DRM/KMS driver | ❌ |
 
@@ -220,7 +220,7 @@ Deep Lineage / Memory — the AI inference network; the framework fabric connect
 | NNAPI (`ANeuralNetworks*`) | `frameworks/ml/nn/runtime/include/NeuralNetworks.h` | 🔶 Cited |
 | NNAPI operation set (ops coverage) | 120+ ops: `frameworks/ml/nn/runtime/Operations.cpp` | ❌ |
 | QNN (Qualcomm Neural Network) SDK | QNN delegate path → Hexagon HTP | ❌ |
-| TFLite NNAPI delegate | `tensorflow/lite/delegates/nnapi/` | ❌ |
+| TFLite NNAPI delegate | `external/tensorflow/tensorflow/lite/delegates/nnapi/` (AOSP external tree) | ❌ |
 | Hexagon HTP (High-performance Tensor Processor) | Sub-unit of Hexagon 770 | ❌ |
 | `ion_alloc` / DMA-buf memory | Shared memory between CPU and DSP | 🔶 ion_alloc cited (legacy) |
 | NN HAL `IDevice.hal` | `hardware/interfaces/neuralnetworks/` | 🔶 Cited |
@@ -260,7 +260,7 @@ Selective Boundary — security, permissions, and network I/O filtering.
 
 | Component | Detail | Status |
 |---|---|---|
-| Qualcomm X62 modem | Cellular boundary — LTE/5G sub-6GHz | ❌ |
+| Integrated modem (5G sub-6GHz, part of QCM6490 SoC) | Cellular boundary — exact modem model designation needs primary source confirmation | ❌ |
 | Wi-Fi 6 (802.11ax) | QCA6391 or equivalent chipset | ❌ |
 | Bluetooth 5.2 | Co-located with Wi-Fi on combo chip | ❌ |
 | NFC | ST54 NFC controller | ❌ |

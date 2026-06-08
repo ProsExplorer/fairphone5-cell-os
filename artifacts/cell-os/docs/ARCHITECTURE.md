@@ -119,14 +119,30 @@ Tracks the "living" state of the cell for animations. All animated UI subscribes
 
 ```typescript
 {
-  activeZone: CellZoneId;           // drives ambient color + ring highlight
-  breathCount: number;              // increments every 7770ms
-  signals: Record<CellZoneId, Signal | undefined>; // timed pulse bursts
-  setActiveZone(zone): void;
-  emitSignal(zone, type, intensity, durationMs): void;
+  // ── State ──────────────────────────────────────────────────────────────────
+  activeZoneId: CellZoneId;         // drives ambient color + ring highlight
+  inferencePhase: InferencePhase;   // "idle" | "loading" | "running" | "complete" | "error"
+  breathCount: number;              // increments every 7770ms via sacredPulse
+  signals: Partial<Record<CellZoneId, ZoneSignal>>;  // transient TTL pulse bursts
+
+  // ── Actions ────────────────────────────────────────────────────────────────
+  setActiveZone(zoneId: CellZoneId): void;
+  setBreathCount(count: number): void;
+  setInferencePhase(phase: InferencePhase): void;
+  emitSignal(zoneId, type, intensity?, ttlMs?): void;
   clearExpiredSignals(): void;
+
+  // ── Composite events (emit coordinated multi-zone signals) ─────────────────
+  sacredPulse(breathCount: number): void;   // nucleus + cytoplasm — fires every 7770ms
+  inferenceStart(): void;                   // membrane + nucleus + cytoplasm
+  tokenEmit(): void;                        // mitochondria + golgi + ribosomes
+  inferenceComplete(): void;                // membrane + golgi
+  inferenceError(): void;                   // endoplasmic-reticulum + membrane
 }
 ```
+
+`ZoneSignal` carries `type: SignalType`, `intensity: number` (0–1), and `expiresAt: number` (Unix ms).  
+`SignalType`: `"pulse" | "sacred" | "inference" | "atp" | "token" | "error"`.
 
 `CellMapNav` calls `clearExpiredSignals` every 500ms via `setInterval`. Zone navigation calls `emitSignal` to briefly illuminate the navigated-to ring.
 

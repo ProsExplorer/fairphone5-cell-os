@@ -9,11 +9,15 @@ The app has three conceptual layers:
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/cell-os run dev` — start the Cell OS frontend (Vite dev server, reads `PORT` env)
+- `pnpm --filter @workspace/cell-os run dev` — start the Cell OS frontend (Vite dev server)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 
 **Cell OS is frontend-only** — no backend, no database, no API server required.
+
+**Required env vars** (Vite hard-fails at startup if either is missing):
+- `PORT` — port for the dev server (set by Replit automatically)
+- `BASE_PATH` — URL base path (e.g. `/`) — set by Replit via the artifact config
 
 ## Stack
 

@@ -44,7 +44,7 @@ type Organelle = {
 - `id` must exactly match the key used in `CellDiagram.tsx`'s `ORGANELLE_ZONE_MAP`. Changing an ID breaks the click interaction.
 - `explanation` should reference real Fairphone 5 / Android behaviour, not generic smartphone behaviour.
 - `analogy` should be crisp and biologically accurate. Don't invent biology.
-- `color` must be the same HSL string used in `CELL_ZONES` for the corresponding zone.
+- `color` should visually align with the zone's ambient palette. Note: `CELL_MAPPINGS` entries use HSL strings while `CELL_ZONES` uses hex — they are not required to be identical strings, but should be perceptually consistent.
 
 **Current organelle IDs** (do not rename without updating `ORGANELLE_ZONE_MAP` in `CellDiagram.tsx`):
 ```
@@ -141,9 +141,11 @@ One organelle can link to many substrate nodes, and one substrate node can be li
 type BiophotonLink = {
   sourceOrganelleId: string;
   targetOrganelleId: string;
-  description: string;       // What the biophoton link represents biologically
-  rateRange: string;         // e.g. "10–100 photons/cm²/s"
+  description: string;          // What the biophoton link represents biologically
+  rateRange: string;            // e.g. "10–100 photons/cm²/s"
   confidence: ClaimConfidence;
+  attentionWeight?: number;     // 0–1; interpretive analogue of transformer attention strength
+                                // Not empirically measured — label with confidence "unconfirmed"
 };
 ```
 

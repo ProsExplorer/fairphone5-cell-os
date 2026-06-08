@@ -250,16 +250,20 @@ Zone panels are plain React components. Add new sections as child components or 
 
 **For a section with real hardware data**: use `SubstrateAtlas` or a custom card grid that sources from `SUBSTRATE_NODES`.
 
-**For a section with AOSP code**: use `CodeSnippet`:
+**For a section with AOSP code**: use `CodeSnippet`. The code is passed as `children` (a string), not a `code` prop. Optionally include a `sourceUrl` for a live "↗ view source" link:
 ```tsx
 import { CodeSnippet } from "../components/CodeSnippet";
 
 <CodeSnippet
   filename="frameworks/base/core/java/android/os/Binder.java"
   language="java"
-  code={MY_CODE_SNIPPET}
-  caption="Binder transaction dispatch — the cytoplasm's actual message-passing mechanism."
-/>
+  sourceUrl="https://cs.android.com/android/platform/superproject/+/main:frameworks/native/libs/binder/Binder.cpp"
+>
+  {`// Binder transaction dispatch
+status_t BBinder::transact(uint32_t code, const Parcel& data, ...) {
+    return onTransact(code, data, reply, flags);
+}`}
+</CodeSnippet>
 ```
 
 **For a section with confidence-tagged facts**: use `ConfidenceBadge`:
