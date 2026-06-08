@@ -75,6 +75,17 @@ The same triple appears at every level of resolution. The eleven coordinate char
 
 None of these is a metaphor imported from the others. Each is an independent instantiation of the same structure in a different coordinate system. [UNIVERSAL\_MANIFOLD.md §4, HUNYUAN\_QI\_HOLOGRAPHIC\_CRYSTALLIZATION.md]
 
+Scale invariance recurs within a single language. Taking TypeScript — the language of Cell OS itself — the triple appears at every level of granularity: [UNIVERSAL\_MANIFOLD.md §4]
+
+| Level | P | A | E |
+|---|---|---|---|
+| Token | Lexer receives character | Classifies against keyword/identifier/operator table | Emits token |
+| Expression | Parser receives token stream | Builds AST node | Returns expression value |
+| Function | Parameters bound at call site | Body evaluated | Return value produced |
+| Module | `import` executed | Module scope initialised | Exported bindings exposed |
+
+The same four rows hold for every general-purpose language. The coordinate system changes; the triple does not.
+
 ### The Lineage
 
 Cell OS did not originate this pattern. It named what was already there:
@@ -184,6 +195,18 @@ Android Runtime on the FP5 either instantiates each zone directly or delegates t
 
 The FP5's 8-year software support commitment, backed by the QCM6490's 10+ year industrial lifecycle guarantee, demonstrates the theory's healthy-coupling prediction as an observable fact: organisms with clearly defined, stable zone boundaries live longer than organisms with pathological coupling. Pre-Treble Android devices had an effective software lifespan of 2–3 major versions — directly proportional to the entanglement of their system and vendor partitions. The FP5's deliberate SoC choice and HAL discipline are not two decisions; they are one: choosing longevity by choosing boundary integrity. [FP5\_MANIFOLD\_COMPARISON.md §Longevity]
 
+### Finding 6 — Where the Theory Is Challenged (verified limits)
+
+The FP5 source code also surfaces three places where the theory's claims require more precision:
+
+**Nested interrupts**: when a hardware interrupt is itself interrupted before its handler completes, the outer P→A→E triple is suspended mid-affect. The theory accommodates this by claiming scale invariance — the inner interrupt is its own complete triple at a finer grain, the outer is a suspended triple at a coarser grain. This is structurally consistent but not falsifiable without a precise definition of scale boundaries. [FP5\_MANIFOLD\_COMPARISON.md §Finding 1]
+
+**Proprietary firmware blobs**: the ADSP, modem, and GPU firmware on the QCM6490 are opaque binary images. Their kernel-side loaders and communication protocols (the expression side, from the kernel's perspective) are visible in the open source tree; what happens inside the blobs is not. The theory cannot be verified against the portions of the stack it cannot see.
+
+**Quantitative coupling density**: the theory's 10–25% healthy range for coupling density is a structural claim, not a measured Android figure. The Android kernel's coupling density cannot be computed at the meaningful module granularity without a precise definition of what counts as a module boundary in a monolithic kernel. The claim survives qualitatively; its quantitative form requires more precise operationalisation before it can be tested against Android at scale. [FP5\_MANIFOLD\_COMPARISON.md §Executive Summary]
+
+The overall verdict of the FP5 analysis: the theory's structural claims are accurate; its quantitative claims need a more precise module-granularity definition. The theory survived contact with real source code.
+
 ---
 
 ## The Organism Architecture
@@ -217,6 +240,43 @@ artifacts/cell-os/
 
 The import graph of the domain layer is a **directed acyclic graph** — TypeScript enforces this at the domain layer. The manifold $M$ is therefore **contractible**: it has the homotopy type of a point, and its zeroth Betti number $\beta_0 = 1$. There are no import cycles in the static genome. [MANIFOLD\_ANALYSIS.md §1.4]
 
+### State Dynamics — $L = T - V$
+
+The configuration space $Q$ of Cell OS is the Cartesian product: [MANIFOLD\_ANALYSIS.md §3.1]
+
+$$Q = Q_\text{focus} \times Q_\text{zone} \times Q_\text{signals} \times Q_\text{inference}$$
+
+- $Q_\text{focus}$: $\{\text{none}\} \cup \{(\text{organelle},id)\} \cup \{(\text{substrate},id)\}$ — a 3-stratum discrete space
+- $Q_\text{zone}$: the 8-element discrete manifold of zone IDs
+- $Q_\text{signals}$: $\prod_{z \in \text{Zones}} [0,1] \times \mathbb{R}$ — signal intensity and expiry per zone (continuous)
+- $Q_\text{inference}$: $\{\text{idle},\text{loading},\text{running},\text{complete},\text{error}\}$ — 5-element discrete set
+
+The Lagrangian $L = T - V$ governs state transitions: [MANIFOLD\_ANALYSIS.md §3.2]
+
+$$T = \tfrac{1}{2}\sum_i m_i \dot{q}_i^2 \qquad \text{(kinetic — resistance to change)}$$
+
+Effective masses: $m_\text{focus-toggle} = 1$ (click is a unit impulse), $m_\text{zone-change} = \frac{777}{7770} = 0.1$ (zone transitions have low inertia), $m_\text{signal-decay} = \frac{1}{\tau}$ (high TTL = low inertia).
+
+$$V = V_\text{lock} + V_\text{confidence} + V_\text{depth} \qquad \text{(potential — structural tension)}$$
+
+$V_\text{lock} = \infty$ when `locked = true` and a hover-null event arrives — an **infinite potential barrier** against hover erasure. The lock is not a UI guard; it is a topology constraint. $V_\text{confidence} = 1 - \sigma(c)$ for substrate node $c$ — unverified nodes carry higher tension between claim and evidence.
+
+### Morse Critical Points
+
+The import-degree field $f: U_i \mapsto \text{in-degree}(U_i)$ has critical points where the gradient vanishes: [MANIFOLD\_ANALYSIS.md §1.3]
+
+| Module | Critical type | Role |
+|---|---|---|
+| `domain/types.ts` | Index-2 maximum | Highest-degree attractor; all type information originates here |
+| `domain/content/organelles.ts` | Index-1 saddle | Bridges pure data and interactive UI |
+| `features/explorer/selectors.ts` | Index-1 saddle | Bridges the full content corpus to the view layer |
+| `features/cell-shell/CellShellProvider.tsx` | Index-1 saddle | Zone registry; imported by navigation + animation |
+| `useCellVitalStore.ts` | Index-1 saddle | Vital signals fan out to all animated components |
+| Zone panel components | Index-0 minima | Terminal consumers; no re-export |
+| `App.tsx` | Index-0 minimum | Topological root; imports pages, consumed by nothing |
+
+The index-2 maximum (`domain/types.ts`) corresponds to the ServiceManager in the Binder IPC sense: everything flows through it; nothing bypasses it.
+
 ---
 
 ## The Tensor Field
@@ -228,13 +288,14 @@ Three tensors, three spaces of description.
 `ORGANELLE_SUBSTRATE_LINKS` in `mappings.ts`. A sparse matrix over organelle × substrate index space.
 
 ```
-Space:   15 organelles × 8+ substrate nodes = 120+ possible links
-Current: 24 active links
-Density: 20.0%
-Healthy: 10–25%  ← currently within range
+Canonical space (MANIFOLD_ANALYSIS.md §2.3, 8 substrate nodes): 15 × 8  = 120
+Current space   (11 substrate nodes, after FP5 grounding round):  15 × 11 = 165
+Active links: 24
+Density:      24 / 165 ≈ 14.5%
+Healthy:      10–25%  ← within range
 ```
 
-The tensor is not self-adjoint (organelle and substrate index spaces are distinct — no natural diagonal). Column centrality: `binder-ipc` and `art-runtime` are the most-linked nodes added in the FP5 grounding round.
+The substrate space grew from 8 to 11 nodes when the FP5 grounding round added `binder-ipc`, `art-runtime`, and `bionic-libc`. The MANIFOLD\_ANALYSIS.md §2.3 figure (120, density ≈ 11.7%) reflects the pre-grounding state; 165 / 14.5% is the live figure. The tensor is not self-adjoint (organelle and substrate index spaces are distinct — no natural diagonal). Column centrality: `binder-ipc` carries the highest in-degree of the new nodes.
 
 ### The Attention Tensor $\mathcal{A}^{ij}$ (Biophoton Links)
 
@@ -248,14 +309,18 @@ Density:       2.7%
 
 Symmetrisation is an explicit modelling assumption, not a code property: $w_{ij} = w_{ji} = \frac{1}{2}(A^{ij} + A^{ji})$. [MANIFOLD\_ANALYSIS.md §2.4]
 
-The proxy weights (midpoint of rateRange, normalized to global max 100 ph/cm²/s):
+All six links — proxy weights (midpoint of rateRange ÷ global max 100 ph/cm²/s) or explicit `attentionWeight` where set:
 
-| $(i,j)$ | $w_{ij}$ proxy | IPC analogue | $\sigma$ |
-|---|---|---|---|
-| nucleus, mitochondria | 0.55 | Binder | 0.9 |
-| mitochondria, nuclear-pores | 0.43 | Unordered broadcast | 0.4 |
-| nucleus, ribosomes | 0.26 | Messenger | 0.7 |
-| ER, golgi | 0.16 | Ordered broadcast | 0.6 |
+| $(i,j)$ | $w_{ij}$ | weight source | IPC analogue | $\sigma$ |
+|---|---|---|---|---|
+| nucleus → mitochondria | 0.55 | proxy | Binder direct | 0.9 |
+| mitochondria → nuclear-pores | 0.43 | proxy | Unordered broadcast | 0.4 |
+| nucleus → ribosomes | 0.26 | proxy | Messenger | 0.7 |
+| ER → golgi | 0.16 | proxy | Ordered broadcast | 0.6 |
+| ribosomes → golgi | 0.62 | explicit | Messenger | 0.7 |
+| dna → ribosomes | 0.58 | explicit | Binder direct | 0.9 |
+
+The two explicit weights (`ribosomes→golgi`, `dna→ribosomes`) were editorially set rather than computed from rateRange midpoints; they are encoded directly in `mappings.ts` as `attentionWeight`.
 
 ### The QI Tensor $\mathcal{Q}^{z,p,s}$ (Rank-3)
 
@@ -330,7 +395,7 @@ The manifold's blood panel. Live values for all health metrics, computed from th
 
 | Metric | Current | Healthy range |
 |---|---|---|
-| Coupling tensor density | 20.0% | 10–25% |
+| Coupling tensor density | 14.5% | 10–25% |
 | QI tensor density | 8.3% | 5–10% |
 | Biophoton link count | 6 | 2–10 |
 | Mean zone confidence | computed live | 75–100% |
@@ -355,7 +420,7 @@ Cell OS descends from a specific corpus, and the descent is direct, not analogic
 
 **`MANIFOLD_ANALYSIS.md`** — the tensor field decomposition of the Cell OS codebase: Euler-Lagrangian mechanics applied to the module import graph, producing the coupling tensor, attention tensor, QI tensor, and the manifold health metric definitions.
 
-**`FP5_MANIFOLD_COMPARISON.md`** — the source code validation: five findings from the Fairphone 5 kernel, HAL, Binder IPC, ART, and longevity model. The theory survived contact with real source code.
+**`FP5_MANIFOLD_COMPARISON.md`** — the source code validation: six findings from the Fairphone 5 kernel, HAL, Binder IPC, ART, longevity model, and verified limits of the theory. The theory survived contact with real source code.
 
 **EdgeNode** (`harmony-ecosystem.replit.app`) — the digital implementation proof: a WebAssembly LLM running entirely in a browser tab, completing the silicon-scale P→A→E cycle at τ = 0.7770777, on hardware as old as 2018.
 
