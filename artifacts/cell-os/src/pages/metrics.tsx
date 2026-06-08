@@ -9,6 +9,7 @@ import {
 import { ZONE_CONFIDENCE_ORDER, RELATED_ZONE_JUMPS } from "@/features/explorer/navigation/useExplorerNavigation";
 import { useLearnedManifold } from "@/features/learning/useLearnedManifold";
 import { parsePairKey } from "@/features/learning/hebbianAdapter";
+import { useLearningStore } from "@/features/learning/useLearningStore";
 
 const HEALTH_COLOR: Record<MetricHealth, string> = {
   healthy:    "#4ade80",
@@ -141,8 +142,9 @@ function MetricRow({
 }
 
 export default function Metrics() {
-  const m  = useMemo(() => computeManifoldMetrics(), []);
-  const lm = useLearnedManifold();
+  const m      = useMemo(() => computeManifoldMetrics(), []);
+  const lm     = useLearnedManifold();
+  const reset  = useLearningStore((s) => s.reset);
 
   return (
     <div
@@ -294,9 +296,31 @@ export default function Metrics() {
 
       {/* ── Organism Memory ──────────────────────────────────────────────── */}
       <section style={{ marginBottom: "3rem" }}>
-        <h2 style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#475569", marginBottom: "0.4rem" }}>
-          Organism Memory
-        </h2>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: "0.4rem" }}>
+          <h2 style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#475569", margin: 0 }}>
+            Organism Memory
+          </h2>
+          {lm.totalInteractions > 0 && (
+            <button
+              type="button"
+              onClick={reset}
+              style={{
+                fontSize: "0.65rem",
+                fontFamily: "monospace",
+                textTransform: "uppercase",
+                letterSpacing: "0.08em",
+                color: "#475569",
+                background: "transparent",
+                border: "1px solid #1e293b",
+                borderRadius: "3px",
+                padding: "2px 8px",
+                cursor: "pointer",
+              }}
+            >
+              reset epigenome
+            </button>
+          )}
+        </div>
         <p style={{ fontSize: "0.78rem", color: "#64748b", marginBottom: "1.25rem" }}>
           Accumulated interaction tensors — the epigenome. Persists across sessions via localStorage.
           See <code style={{ color: "#94a3b8" }}>hebbianAdapter.ts</code> for the derivation model.

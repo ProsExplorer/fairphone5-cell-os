@@ -1,5 +1,8 @@
+import { useMemo } from "react";
 import type { Organelle, SubstrateNode, BiophotonLink } from "@/domain/types";
 import { ConfidenceBadge } from "./ConfidenceBadge";
+import { useLearningStore } from "@/features/learning/useLearningStore";
+import { getConfidenceBoosts } from "@/features/learning/hebbianAdapter";
 
 interface InfoPanelProps {
   organelle: Organelle | null;
@@ -124,6 +127,13 @@ function SubstrateView({
   relatedOrganelles: Organelle[];
   onSelectOrganelle: (id: string) => void;
 }) {
+  const substrateEngagement = useLearningStore((s) => s.substrateEngagement);
+  const totalInteractions   = useLearningStore((s) => s.totalInteractions);
+  const boost = useMemo(() => {
+    const boosts = getConfidenceBoosts(substrateEngagement, totalInteractions);
+    return boosts[substrate.id] ?? 0;
+  }, [substrateEngagement, totalInteractions, substrate.id]);
+
   return (
     <div
       className="w-full glass-panel p-8 rounded-3xl space-y-6 transition-all animate-in fade-in slide-in-from-right-8"
@@ -137,7 +147,22 @@ function SubstrateView({
           <div className="text-sm font-mono tracking-widest uppercase" style={{ color: substrate.color }}>
             Hardware Substrate
           </div>
-          <ConfidenceBadge confidence={substrate.confidence} />
+          <div className="flex items-center gap-2">
+            <ConfidenceBadge confidence={substrate.confidence} />
+            {boost > 0.001 && (
+              <span
+                style={{
+                  fontSize: "0.62rem",
+                  fontFamily: "monospace",
+                  color: "hsl(45,90%,62%)",
+                  opacity: 0.8,
+                  letterSpacing: "0.04em",
+                }}
+              >
+                +{boost.toFixed(3)}σ
+              </span>
+            )}
+          </div>
         </div>
         <h3 className="text-4xl font-bold text-white">{substrate.name}</h3>
         <div className="text-base font-mono text-muted-foreground">{substrate.role}</div>

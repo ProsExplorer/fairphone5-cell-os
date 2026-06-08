@@ -36,6 +36,15 @@ Learning fires in `CellExplorerLayout` via a `useEffect` watching `view.activeOr
 
 `/metrics` reads `useLearnedManifold()` (live, reactive to store changes). Shows: total interactions, visit intensity heatmap with inline progress bars, emergent co-activation pairs, substrate σ boost amounts. Empty state shown when `totalInteractions === 0`.
 
+## Architect-identified bugs (now fixed)
+
+1. **totalInteractions accounting** — `recordSubstrateEngagement` was not incrementing `totalInteractions`. This distorted `getConfidenceBoosts` (wrong denominator) and `isAdapted` threshold. Fixed: both record actions now increment the counter.
+
+2. **Open adaptation loops (now closed)** — Learned outputs were computed but not fed back. Three loops now closed:
+   - `learnedBiophotonWeights` → `CytoplasmPanel` blends into `attentionWeight` (up to +0.4, capped at 1.0). Frequently co-explored links visibly thicken.
+   - `confidenceBoosts` → `InfoPanel.SubstrateView` reads boost for current substrate; shows `+{n}σ` amber text next to ConfidenceBadge when boost > 0.001.
+   - `reset` action → "reset epigenome" button in `/metrics` Organism Memory section, only visible when totalInteractions > 0.
+
 ## Key constraint to maintain
 
 The confidence boost cap (+0.15 max) must never be raised high enough to reach σ=1.0 ("verified") from σ=0.5 ("indicative") or σ=0.0 ("unconfirmed") via user interaction alone. The static genome's confidence values are editorially calibrated; the epigenome adds evidence weight, not authority.

@@ -3,7 +3,10 @@ import { CellDiagram } from "@/components/CellDiagram";
 import { InfoPanel } from "../components/InfoPanel";
 import { CodeSnippet } from "../components/CodeSnippet";
 import { useLearningStore } from "@/features/learning/useLearningStore";
-import { getOrganelleVisitIntensity } from "@/features/learning/hebbianAdapter";
+import {
+  getOrganelleVisitIntensity,
+  getLearnedBiophotonWeights,
+} from "@/features/learning/hebbianAdapter";
 import type { ExplorerView, ExplorerPerception } from "../useExplorerFlow";
 
 type Props = {
@@ -79,20 +82,36 @@ export function getBiophotonLinks(organelleIds: Set<string>): BiophotonLink[] {
  * and an info panel revealing what each structure does as an OS feature.
  */
 export function CytoplasmPanel({ view, perceive }: Props) {
-  const biophotonLinks = view.relatedBiophotonLinks.map((l) => ({
-    sourceId: l.sourceOrganelleId,
-    targetId: l.targetOrganelleId,
-    attentionWeight: l.attentionWeight ?? 0.5,
-  }));
-
-  // Organism memory: derive per-organelle visit intensity from the epigenome.
-  // The diagram renders a subtle concentric ring on each visited organelle —
-  // a visual expression of accumulated attention that evolves across sessions.
+  // Organism memory: derive per-organelle visit intensity and learned
+  // biophoton weights from the epigenome. Both update reactively as
+  // the user interacts with the cell, closing the adaptation loop.
   const organelleVisits = useLearningStore((s) => s.organelleVisits);
+  const coActivations   = useLearningStore((s) => s.coActivations);
+
   const visitIntensity = useMemo(
     () => getOrganelleVisitIntensity(organelleVisits),
     [organelleVisits]
   );
+
+  const learnedWeights = useMemo(
+    () => getLearnedBiophotonWeights(coActivations),
+    [coActivations]
+  );
+
+  // Blend base attentionWeight with learned co-activation strength.
+  // Learned weight adds up to +0.4 on top of the genomic baseline,
+  // clamped at 1.0. Links between frequently co-explored organelles
+  // visibly thicken — expressing what the organism has learned to attend to.
+  const biophotonLinks = view.relatedBiophotonLinks.map((l) => {
+    const pairKey = [l.sourceOrganelleId, l.targetOrganelleId].sort().join("|");
+    const learned  = learnedWeights[pairKey] ?? 0;
+    const base     = l.attentionWeight ?? 0.5;
+    return {
+      sourceId: l.sourceOrganelleId,
+      targetId: l.targetOrganelleId,
+      attentionWeight: Math.min(1.0, base + learned * 0.4),
+    };
+  });
 
   return (
     <div className="px-6 py-8">

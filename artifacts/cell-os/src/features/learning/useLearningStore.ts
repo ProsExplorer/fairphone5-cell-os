@@ -88,12 +88,13 @@ export const useLearningStore = create<LearningState>()(
       },
 
       recordSubstrateEngagement: (id) => {
-        const { substrateEngagement } = get();
+        const { substrateEngagement, totalInteractions } = get();
         set({
           substrateEngagement: {
             ...substrateEngagement,
             [id]: (substrateEngagement[id] ?? 0) + 1,
           },
+          totalInteractions: totalInteractions + 1,
         });
       },
 
