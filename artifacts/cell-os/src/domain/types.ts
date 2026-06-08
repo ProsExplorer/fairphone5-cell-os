@@ -59,6 +59,16 @@ export type SubstrateNode = {
 export type OrganelleSubstrateLink = {
   organelleId: string;
   substrateId: string;
+  /** Human-readable explanation of why this organelle maps to this substrate. */
+  description?: string;
+  /** Representative rate, precision range, or throughput descriptor for this link. */
+  rateRange?: string;
+  /**
+   * Manifold-derived relevance score (0–1) for this link.
+   * 1.0 = primary/canonical mapping; lower values indicate weaker or derived mappings.
+   * Derived from the tensor completion analysis in MANIFOLD_ANALYSIS.md §11.2.
+   */
+  relevance?: number;
 };
 
 /** One sub-unit inside a larger compute block (e.g. the Hexagon's four engines). */

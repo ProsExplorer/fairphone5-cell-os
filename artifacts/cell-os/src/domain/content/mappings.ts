@@ -19,7 +19,46 @@ export const ORGANELLE_SUBSTRATE_LINKS: OrganelleSubstrateLink[] = [
   { organelleId: "nuclear-pores", substrateId: "nnapi" },
   { organelleId: "vesicles", substrateId: "nnapi" },
   { organelleId: "golgi-apparatus", substrateId: "nnapi" },
-  { organelleId: "dna", substrateId: "quantization" }
+  { organelleId: "dna", substrateId: "quantization" },
+
+  // ── Tensor-completion additions (MANIFOLD_ANALYSIS.md §11.2) ────────────────
+  // These five links complete the four previously unlinked organelles.
+  // relevance scores are manifold-derived (substrate affinity analysis).
+  {
+    organelleId: "nucleolus",
+    substrateId: "hexagon770",
+    description: "The nucleolus pre-assembles ribosomal machinery through dense, repetitive rRNA synthesis — in Cell OS this maps to boot-time preparation of Hexagon tensor paths for sustained matrix work.",
+    rateRange: "INT8 primary · up to 12 TOPS (indicative)",
+    relevance: 0.93
+  },
+  {
+    organelleId: "nucleolus",
+    substrateId: "quantization",
+    description: "Ribosome assembly compresses genomic complexity into executable units; analogously, quantization packs full-precision weights into deployable tiers, trading fidelity for throughput.",
+    rateRange: "FP32 → INT4 packing cascade",
+    relevance: 0.89
+  },
+  {
+    organelleId: "membrane-receptors",
+    substrateId: "nnapi",
+    description: "Receptors classify incoming signals before intracellular cascades fire; NNAPI / QNN likewise classifies graph operations and dispatches each to the correct execution unit — CPU, GPU, or Hexagon.",
+    rateRange: "Graph partition at compile / first-run",
+    relevance: 0.94
+  },
+  {
+    organelleId: "lysosomes",
+    substrateId: "nnapi",
+    description: "Lysosomes clear obsolete cellular cargo through selective degradation; the dispatch layer evicts stale compiled graphs and reallocates delegate slots during model lifecycle turnover.",
+    rateRange: "Delegate / compiled-graph eviction cycle",
+    relevance: 0.82
+  },
+  {
+    organelleId: "vacuole",
+    substrateId: "power",
+    description: "Vacuolar pressure regulates the cell's osmotic balance and storage; sustained file-system I/O and memory pressure directly reshape the SoC's thermal and power envelope.",
+    rateRange: "~3–5W sustained I/O envelope (indicative)",
+    relevance: 0.78
+  }
 ];
 
 /**
@@ -61,6 +100,25 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
     description: "Mitochondrial membrane potential changes produce detectable biophoton bursts; nuclear pores may respond to the optical gradient.",
     rateRange: "5–80 photons/cm²/s",
     confidence: "indicative"
+  },
+
+  // ── Attention-map completion additions (MANIFOLD_ANALYSIS.md §11.5) ──────────
+  // Pattern: all biophoton links are cross-zone. Both additions maintain this.
+  {
+    sourceOrganelleId: "ribosomes",
+    targetOrganelleId: "golgi-apparatus",
+    description: "Translation pulses in ribosomes may entrain Golgi packaging cadence — the mRNA-to-vesicle coherence pathway mirrored by the runtime-to-dispatch flow in on-device inference.",
+    rateRange: "2–40 photons/cm²/s",
+    confidence: "unconfirmed",
+    attentionWeight: 0.62
+  },
+  {
+    sourceOrganelleId: "dna",
+    targetOrganelleId: "ribosomes",
+    description: "Genome-origin coherence guiding ribosomal translation forms the transcription loop — the instruction stream to execution engine, closing the expression cycle.",
+    rateRange: "1–45 photons/cm²/s",
+    confidence: "unconfirmed",
+    attentionWeight: 0.58
   }
 ];
 

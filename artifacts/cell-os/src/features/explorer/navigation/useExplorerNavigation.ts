@@ -17,6 +17,50 @@ export const ZONE_DEPTH_ORDER: CellZoneId[] = [
   "membrane",
 ];
 
+/**
+ * Evidence-first traversal order — zones sorted by descending confidence
+ * centroid (σ̄), derived from the manifold's confidence gradient field.
+ * (MANIFOLD_ANALYSIS.md §11.4)
+ *
+ * σ̄ = 1.0: nucleus, cytoplasm, cytoskeleton, golgi, endoplasmic-reticulum
+ * σ̄ = 0.5: ribosomes, mitochondria, membrane
+ *
+ * Within each confidence tier the depth ordering is preserved.
+ */
+export const ZONE_CONFIDENCE_ORDER: CellZoneId[] = [
+  "nucleus",
+  "cytoplasm",
+  "cytoskeleton",
+  "golgi",
+  "endoplasmic-reticulum",
+  "ribosomes",
+  "mitochondria",
+  "membrane",
+];
+
+/**
+ * Geodesically close zone pairs that are not sequential in ZONE_DEPTH_ORDER.
+ * Derived from the biophoton-corrected zone metric g_ij.
+ * (MANIFOLD_ANALYSIS.md §11.3)
+ *
+ * nucleus ↔ mitochondria: effective geodesic distance 3.45 vs graph distance 4.
+ * ER ↔ golgi: adjacent with additional biophoton coupling (d = 0.84).
+ */
+export const RELATED_ZONE_JUMPS: ReadonlyArray<readonly [CellZoneId, CellZoneId]> = [
+  ["nucleus", "mitochondria"],
+  ["endoplasmic-reticulum", "golgi"],
+] as const;
+
+/** Returns the set of geodesically related (non-sequential) zones for a given zone. */
+export function getRelatedZones(zoneId: CellZoneId): CellZoneId[] {
+  const related: CellZoneId[] = [];
+  for (const [a, b] of RELATED_ZONE_JUMPS) {
+    if (a === zoneId) related.push(b);
+    else if (b === zoneId) related.push(a);
+  }
+  return related;
+}
+
 export type ExplorerNavigation = {
   activeZone: CellZoneId;
   selectZone: (zone: CellZoneId) => void;
@@ -24,7 +68,11 @@ export type ExplorerNavigation = {
   goOutward: () => void;
   canGoInward: boolean;
   canGoOutward: boolean;
-  depthIndex: number; // 0 = innermost, 7 = outermost
+  depthIndex: number;
+  /** Geodesically related zones — non-sequential but informationally close. */
+  relatedZones: CellZoneId[];
+  /** Jump directly to a geodesically related zone. */
+  jumpToZone: (zone: CellZoneId) => void;
 };
 
 /**
@@ -59,6 +107,10 @@ export function useExplorerNavigation(
     });
   }, []);
 
+  const jumpToZone = useCallback((zone: CellZoneId) => {
+    setActiveZone(zone);
+  }, []);
+
   return {
     activeZone,
     selectZone,
@@ -67,5 +119,7 @@ export function useExplorerNavigation(
     canGoInward: currentIndex > 0,
     canGoOutward: currentIndex < ZONE_DEPTH_ORDER.length - 1,
     depthIndex: currentIndex,
+    relatedZones: getRelatedZones(activeZone),
+    jumpToZone,
   };
 }
