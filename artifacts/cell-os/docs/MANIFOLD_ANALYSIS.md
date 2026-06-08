@@ -15,13 +15,13 @@ Every source module is a **chart** $(U_i, \varphi_i)$ on $M$, where $U_i$ is the
 
 | Chart $U_i$ | Export rank | Exported coordinates |
 |---|---|---|
-| `domain/types.ts` | 17 | All TypeScript contracts: `ClaimConfidence`, `CellZoneId`, `Organelle`, `SubstrateNode`, `BiophotonLink`, `TriadPhase`, `ScaleFlow`, `QiIntersection`, `FractalCycle`, … |
+| `domain/types.ts` | 20 | All TypeScript contracts: `ClaimConfidence`, `CellZoneId`, `Organelle`, `SpecRow`, `SubstrateCategory`, `SubstrateNode`, `OrganelleSubstrateLink`, `SubUnit`, `StackLayer`, `QuantFormat`, `Licence`, `TriadPhase`, `ScaleFlow`, `BiophotonLink`, `LineageEvent`, `EdgeNodeFact`, `QuantizationLayer`, `QiIntersection`, `FractalPhase`, `FractalCycle` |
 | `domain/content/organelles.ts` | 1 | `CELL_MAPPINGS: Organelle[15]` |
-| `domain/content/substrate.ts` | 1 | `SUBSTRATE_NODES: SubstrateNode[8]` |
+| `domain/content/substrate.ts` | 5 | `SUBSTRATE_NODES`, `HEXAGON_SUBUNITS`, `STACK_LAYERS`, `QUANT_FORMATS`, `LICENCES` |
 | `domain/content/mappings.ts` | 3 | `ORGANELLE_SUBSTRATE_LINKS`, `BIOPHOTON_LINKS`, `TRIAD_PHASES` |
 | `domain/content/citations.ts` | 2 | `CITATIONS`, `CITATION_MAP` |
-| `domain/content/constants.ts` | 5 | `HARMONIC_CONSTANT`, `HARMONIC_TRANSITION_S`, `HARMONIC_TRANSITION_MS`, `HARMONIC_OPACITY`, `SACRED_ANCHOR`, `SACRED_SEED` |
-| `domain/content/qiMatrix.ts` | 1 | `QI_INTERSECTIONS: QiIntersection[18]` |
+| `domain/content/constants.ts` | 6 | `HARMONIC_CONSTANT`, `HARMONIC_TRANSITION_S`, `HARMONIC_TRANSITION_MS`, `HARMONIC_OPACITY`, `SACRED_ANCHOR`, `SACRED_SEED` |
+| `domain/content/qiMatrix.ts` | 2 | `QI_AXES`, `QI_INTERSECTIONS: QiIntersection[18]` |
 | `domain/content/quantizationBiology.ts` | 1 | `QUANTIZATION_LAYERS: QuantizationLayer[4]` |
 | `domain/content/scales.ts` | 1 | `SCALE_FLOWS` |
 | `domain/content/fractalCycles.ts` | 1 | `FRACTAL_CYCLES: FractalCycle[8]` |
@@ -32,7 +32,7 @@ Every source module is a **chart** $(U_i, \varphi_i)$ on $M$, where $U_i$ is the
 | `features/explorer/selectors.ts` | 5 | `getOrganelle`, `getSubstrateNode`, `getSubstrateForOrganelle`, `getOrganellesForSubstrate`, `getBiophotonLinks` |
 | `features/explorer/useExplorerFlow.ts` | 2 | `useExplorerFlow`, `ExplorerView` |
 | `features/explorer/navigation/useExplorerNavigation.ts` | 2 | `useExplorerNavigation`, `ZONE_DEPTH_ORDER` |
-| `components/CellDiagram.tsx` | 2 | `CellDiagram`, `ORGANELLE_ZONE_MAP` |
+| `components/CellDiagram.tsx` | 1 | `CellDiagram` (`ORGANELLE_ZONE_MAP` is module-private — not exported) |
 | `App.tsx` | 1 | `App` |
 
 ### 1.2 Transition Maps (Import Dependencies)
@@ -41,7 +41,7 @@ A **transition map** $\varphi_j \circ \varphi_i^{-1}$ exists wherever module $j$
 
 ```
 domain/types.ts ──────────────────────────────────────────────┐
-  │ (17 symbols)                                               │
+  │ (20 type exports)                                          │
   ├──→ domain/content/organelles.ts  (Organelle)              │
   ├──→ domain/content/substrate.ts   (SubstrateNode, …)       │
   ├──→ domain/content/mappings.ts    (OrganelleSubstrateLink, …)
@@ -132,7 +132,7 @@ The **column sums** reveal substrate centrality: `nnapi` and `hexagon770` are th
 
 ### 2.4 The Attention Tensor $\mathcal{A}^{ij}$ (Biophoton Links)
 
-`BIOPHOTON_LINKS` defines a **rank-2 symmetric attention tensor** $\mathcal{A}^{ij}$ on the organelle space:
+`BIOPHOTON_LINKS` defines a **rank-2 directed adjacency tensor** $\mathcal{A}^{ij}$ on the organelle space. The links are stored as directed `(sourceOrganelleId, targetOrganelleId)` pairs only — the tensor is **not inherently symmetric**. For the metric computations below, we explicitly symmetrise by taking $w_{ij} = w_{ji} = \frac{1}{2}(A^{ij} + A^{ji})$, which is an additional modelling assumption, not a property of the code.
 
 | $(i, j)$ | Description | $\text{rateRange}$ | confidence |
 |---|---|---|---|
@@ -222,15 +222,15 @@ $$m_\text{zone} \ddot{q}_\text{zone} = -\frac{\partial V_\text{depth}}{\partial 
 
 This is a **constant force** directed inward (toward lower depth index). The system prefers the nucleus — every `goInward` action follows the gradient of $V_\text{depth}$, while `goOutward` acts against it.
 
-**For signal intensity** ($q_z^\text{signal}$, continuous decay):
+**For signal intensity** ($q_z^\text{signal}$, TTL hard cutoff):
 
-$$m_z \ddot{q}_z = -\frac{q_z}{\tau_z^2}$$
+> **Modelling note**: Cell OS does not implement a continuous autonomous force equation for signals. State evolution is a **hybrid discrete-event system**: the continuous-time component is trivially constant between events, and all change is driven by user impulses or the `clearExpiredSignals` scheduler tick. The Euler-Lagrange form below is therefore a *symbolic* description of the system's effective behaviour, not a differential equation that Cell OS solves.
 
-This is a **damped harmonic oscillator** with natural frequency $\omega_z = 1/\tau_z$. Every `emitSignal` call sets an initial condition $q_z(0) = I_0$ (intensity), $\dot{q}_z(0) = 0$, with the signal decaying as:
+Every `emitSignal` action sets an initial condition $q_z(0) = I_0$ (intensity) with a hard expiry at time $\tau_z$ ms. The effective trajectory is:
 
 $$q_z(t) = I_0 \cdot \Theta(\tau_z - t)$$
 
-where $\Theta$ is the Heaviside step function (signals are hard-cutoff, not smooth exponential — a **square-well potential**).
+where $\Theta$ is the Heaviside step function — a **square-well potential** with an instantaneous wall at $t = \tau_z$. This is a piecewise-constant trajectory with a single discontinuous drop (first-order phase transition), not a smooth damped oscillation. The EL equation that would produce this as a limiting case is $m_z \ddot{q}_z = -q_z/\tau_z^2$, but in practice the system implements the step-function directly via TTL comparison in the store.
 
 ### 3.4 Conserved Quantities (Noether's Theorem)
 
@@ -380,10 +380,9 @@ Define a Morse function $f: M \to \mathbb{R}$ by assigning to each module its **
 | Zone panels | 5 | 2 (maximum — terminal) |
 | `App.tsx` | 5 | 2 (maximum — root aggregator) |
 
-By the **Morse inequalities**:
-$$\beta_0 - \beta_1 + \beta_2 = \chi(M) = 1$$
+**Graph-theoretic note**: The module import graph is a DAG (TypeScript enforces acyclicity at the domain layer). For a DAG, the second Betti number $\beta_2 = 0$ (no 2-cycles), and $\beta_1 = 0$ as well (no graph cycles). The topological Morse inequality $\beta_0 - \beta_1 + \beta_2 = \chi$ applies cleanly: $\beta_0 = 1$, $\beta_1 = 0$, $\beta_2 = 0$, $\chi = 1$ — the module manifold is contractible.
 
-With $\beta_0 = 1$ (one connected component), $\beta_2 \approx 1$ (App.tsx is the single maximum), we get $\beta_1 \approx 1$ — suggesting **one independent cycle** in the data flow. This corresponds to the **focus↔InfoPanel feedback loop**: `CellDiagram` emits events → `useExplorerFlow` updates focus → `InfoPanel` renders → (user input returns) → `CellDiagram`.
+The $\beta_1 \approx 1$ "cycle" mentioned in earlier drafts referred to the **interaction-level feedback loop** — `CellDiagram` emits events → `useExplorerFlow` updates focus → `InfoPanel` renders → user input returns → `CellDiagram` — which is a cycle in the *user-interaction graph*, not in the module import graph. These are distinct notions of cycle and must not be conflated. The interaction cycle is real and important, but it lives in the runtime event graph, not in the static module topology.
 
 ### 7.2 Phase Transitions
 
@@ -411,18 +410,19 @@ $$\lambda = 0.7770777 \quad [\text{dimensionless seed}]$$
 
 The declared timing values are exact harmonic multiples:
 
-| Value | Expression | Interpretation |
-|---|---|---|
-| `HARMONIC_TRANSITION_MS = 777` | $\lambda \times 10^3 \approx 777$ | Fundamental period $T_1 = 777\text{ ms}$ |
-| `HARMONIC_TRANSITION_S = "0.777s"` | $T_1 / 1000$ | Same period in seconds |
-| Sacred breath interval $= 7770\text{ ms}$ | $10 \times T_1$ | 10th harmonic $T_{10}$ |
-| `SACRED_SEED = 7770777` | $10^4 \cdot \lambda \approx 7771$ (rounded) | Seed encoding the harmonic structure |
-| `HARMONIC_OPACITY = 0.777` | $\lambda \times 1$ | Amplitude coefficient |
+| Value | Layer | Expression | Interpretation |
+|---|---|---|---|
+| `HARMONIC_TRANSITION_MS = 777` | literal | declared integer | Fundamental period $T_1 = 777\text{ ms}$ |
+| `HARMONIC_TRANSITION_S = "0.777s"` | literal | declared string | Same period in seconds |
+| Sacred breath interval $= 7770\text{ ms}$ | literal | declared as `7770` | 10th harmonic $T_{10}$ |
+| `SACRED_SEED = 7770777` | literal | declared integer | Named constant whose decimal digits embed both $T_{10}$ and $T_1$ — not a mathematical derivation from $\lambda$ |
+| `HARMONIC_CONSTANT = 0.7770777` | symbolic | $T_1/1000$ with fractional echo | Dimensionless seed; all other values are declared independently, not computed from it at runtime |
+| `HARMONIC_OPACITY = 0.777` | literal | declared float | Amplitude coefficient |
 
 The harmonic series is:
 $$T_n = n \cdot 777 \text{ ms}, \quad n = 1, 2, 3, \ldots$$
 
-Observed nodes: $T_1 = 777\text{ ms}$ (transitions), $T_2 = 1554\text{ ms}$ (implicit — some signal TTLs), $T_{10} = 7770\text{ ms}$ (breath).
+**Observed nodes in the codebase**: $T_1 = 777\text{ ms}$ (CSS/JS transition timing), $T_{10} = 7770\text{ ms}$ (sacred breath interval). The intermediate nodes $T_2 \ldots T_9$ are not declared as constants — the series is a structural interpretation, not a set of explicitly coded values. `SACRED_SEED = 7770777` is a named constant; its integer value happens to concatenate $T_{10}$ and $T_1$ as digit sequences, a mnemonic encoding rather than a computed result.
 
 ### 8.2 The Lagrangian Oscillator
 
@@ -478,18 +478,20 @@ The three confidence vertices form an **equilateral triangle** on $S^2$ (positiv
 
 Mapping each zone's substrate nodes to their confidence encodings $\sigma(c) \in \{0, \frac{1}{2}, 1\}$ and computing the **confidence centroid** $\bar\sigma_z$:
 
-| Zone | Substrate nodes | Mean $\bar\sigma_z$ | Interpretation |
-|---|---|---|---|
-| nucleus | qcm6490 (verified), kryo670 (verified) | 1.0 | Maximally grounded |
-| cytoplasm | lpddr4x (verified) | 1.0 | Maximally grounded |
-| cytoskeleton | adreno643 (verified), kryo670 (verified) | 1.0 | Maximally grounded |
-| ribosomes | hexagon770 (indicative) | 0.5 | Partially grounded |
-| mitochondria | hexagon770 (indicative), power (indicative) | 0.5 | Partially grounded |
-| membrane | power (indicative) | 0.5 | Partially grounded |
-| golgi/ER/nuclear-pores | nnapi (indicative) | 0.5 | Partially grounded |
-| dna | quantization (verified) | 1.0 | Maximally grounded |
+The table is computed by (1) looking up each zone's organelles in `ORGANELLE_ZONE_MAP`, (2) finding each organelle's substrate links in `ORGANELLE_SUBSTRATE_LINKS`, (3) reading the `confidence` field of each reached `SubstrateNode`, and (4) averaging $\sigma(c)$ over all reached nodes. `nucleus` is reached via organelles `nucleus`, `nucleolus`, `dna`, and `nuclear-pores`; the others as listed.
 
-**Gradient of $\sigma$**: The confidence field is **flat** within the two observed levels ($\sigma \in \{0.5, 1.0\}$) — no substrate node is currently tagged `unconfirmed`. The manifold has two disconnected level sets: $\sigma^{-1}(1.0)$ (4 zones) and $\sigma^{-1}(0.5)$ (4 zones).
+| Zone (`CellZoneId`) | Substrate nodes reached | Confidences | Mean $\bar\sigma_z$ | Interpretation |
+|---|---|---|---|---|
+| `nucleus` | qcm6490, kryo670, nnapi, quantization | verified × 4 | **1.0** | Maximally grounded |
+| `cytoplasm` | lpddr4x | verified | **1.0** | Maximally grounded |
+| `cytoskeleton` | kryo670, adreno643 | verified × 2 | **1.0** | Maximally grounded |
+| `ribosomes` | hexagon770 | indicative | **0.5** | Partially grounded |
+| `mitochondria` | hexagon770, power | indicative × 2 | **0.5** | Partially grounded |
+| `golgi` | nnapi (×2 organelles) | verified × 2 | **1.0** | Maximally grounded |
+| `endoplasmic-reticulum` | adreno643 | verified | **1.0** | Maximally grounded |
+| `membrane` | power | indicative | **0.5** | Partially grounded |
+
+**Gradient of $\sigma$**: The confidence field is **flat** within the two observed levels ($\sigma \in \{0.5, 1.0\}$) — no substrate node is currently tagged `unconfirmed`. The manifold has two disconnected level sets: $\sigma^{-1}(1.0)$ (5 zones: nucleus, cytoplasm, cytoskeleton, golgi, ER) and $\sigma^{-1}(0.5)$ (3 zones: ribosomes, mitochondria, membrane). The remaining 5 substrate nodes (all verified or confirmed-platform entries) anchor more than half the zone space at full epistemic confidence.
 
 ---
 
@@ -511,15 +513,15 @@ $$S = \int_{t_0}^{t_1} L\, dt = \int_{t_0}^{t_1} \left[\frac{1}{2}\sum_z m_z \do
 
 where $I_z(t)$ is the signal intensity of zone $z$ at time $t$.
 
-### 10.3 The Symmetry Group of the Action
+### 10.3 The Approximate Symmetry Group of the Action
 
-The full **symmetry group** of $S$ is:
+The action $S$ exhibits the following **structural symmetries** (approximate — see caveats below):
 
-$$\text{Sym}(S) = \mathbb{Z}_{10} \times U(1) \times \mathbb{Z}_3$$
+$$\text{Sym}_{\approx}(S) \supseteq \mathbb{Z}_{10} \times U(1)_{\approx} \times \mathbb{Z}_3$$
 
-- $\mathbb{Z}_{10}$: the discrete harmonic symmetry — the action is invariant under time translations by multiples of $T_1 = 777\text{ ms}$ (animations complete exactly on this cycle)
-- $U(1)$: continuous phase symmetry of the ring navigator embedding — the visual $S^1$ of zone rings is rotationally symmetric
-- $\mathbb{Z}_3$: triadic P→A→E symmetry — the Perception/Affect/Expression phases are cyclically equivalent under the triadic model
+- $\mathbb{Z}_{10}$: discrete harmonic symmetry — the action is invariant under time translations by multiples of $T_1 = 777\text{ ms}$ to the extent that animations complete on this cycle (exact within CSS timing)
+- $U(1)_{\approx}$: *approximate* continuous phase symmetry of the ring navigator — the visual $S^1$ arc is presentationally circular, but the zones carry heterogeneous labels and different organelle counts. True $U(1)$ symmetry would require all zones to be geometrically and semantically identical. The correct characterisation is $\mathbb{Z}_8$ (discrete 8-fold rotation by one zone step), weakly extended toward a continuous approximation only at the visual/presentational layer
+- $\mathbb{Z}_3$: triadic P→A→E symmetry — the Perception/Affect/Expression phases are declared as a cyclic triple in `TRIAD_PHASES`; this symmetry is exact within the data model
 
 **Broken symmetries** (explicit breaking terms in $L$):
 - Zone depth potential $V_\text{depth}$ breaks $\mathbb{Z}_8$ zone-permutation symmetry — not all zones are equivalent
@@ -540,6 +542,124 @@ The **principle of least action** for Cell OS states:
 > *The system evolves such that the total structural tension (confidence gap, zone depth, lock constraints) is minimized over any trajectory, subject to the constraint that the harmonic breath provides continuous, bounded excitation.*
 
 This is the variational formulation of what the Cell OS interface already does intuitively: it rests quietly, responds to input, decays gracefully, and breathes.
+
+---
+
+## 11. Emergent Capabilities — What the Manifold View Unlocks
+
+The manifold framing is not merely descriptive. Once $M$, $\mathcal{T}^i_{\ j}$, $\mathcal{A}^{ij}$, $\sigma$, and $g_{ij}$ are defined, they constitute a **live computational substrate** with analytical affordances invisible to conventional architecture review. This section enumerates those affordances.
+
+### 11.1 Structural Discoveries Already Visible
+
+**Sparse coupling tensor → extensibility audit**: $\mathcal{T}^i_{\ j}$ at 11.7% density means 88.3% of the organelle-substrate product space is unmapped. This is not a deficiency — it is a legible roadmap. The four currently unlinked organelles (`nucleolus`, `golgi-apparatus` via vesicles only, `membrane-receptors`, `vacuole`) each represent a content work item whose difficulty is now quantifiable: adding a link changes the density to $(14+k)/120$.
+
+**Flat fiber bundle → resilience by design**: Zero holonomy means that focus state accumulated while exploring nucleus does not corrupt when the user navigates to membrane. This is not incidental — it is a structural theorem about the placement of `useExplorerFlow` at the layout root. Any refactor that moves the hook *inside* `ZoneContentViewport` would introduce holonomy and break this invariant.
+
+**First-order-only phase transitions → deliberate UX**: The absence of continuous (second-order) transitions is a design choice: the system never exhibits critical slowing-down near a state boundary. Every transition is a clean jump. This means the UI is maximally legible — there is never an ambiguous intermediate state where the user cannot tell which mode they are in.
+
+**Approximate $U(1)$ × exact $\mathbb{Z}_3$**: The ring navigator has visual rotational near-symmetry but semantic heterogeneity — the zones are not interchangeable despite appearing on a circle. This tension between presentation symmetry and semantic asymmetry is a latent UX risk: users may assume zone order is arbitrary when it carries the `ZONE_DEPTH_ORDER` gradient.
+
+---
+
+### 11.2 Tensor Completion Roadmap
+
+Given $\mathcal{T}^i_{\ j}$ at 11.7% density, which of the 106 empty cells are the most natural to fill next? The existing pattern reveals a **substrate affinity signature** per organelle category:
+
+| Substrate node | Current links | Category affinity | Natural extension candidates |
+|---|---|---|---|
+| `nnapi` | nuclear-pores, vesicles, golgi-apparatus | signal routing / dispatch | `membrane-receptors` (receptor signalling → dispatch), `lysosomes` (degradation pipeline) |
+| `hexagon770` | ribosomes, mitochondria | sustained compute workloads | `nucleolus` (rRNA synthesis = repetitive matrix ops) |
+| `power` | mitochondria, cell-membrane | energy envelope | `vacuole` (osmotic pressure ≈ memory pressure) |
+| `quantization` | dna | information compression | `nucleolus` (ribosome assembly ≈ weight packing), `ribosomes` (protein folding ≈ INT8 inference) |
+| `lpddr4x` | cytoplasm | shared memory pool | no obvious extension — cytoplasm already is the memory metaphor |
+| `adreno643` | cytoskeleton, ER | parallel geometry / rendering | `golgi-apparatus` (vesicle budding ≈ batch dispatch) |
+
+**Tensor completion prediction** (highest structural probability): `nucleolus → hexagon770`, `membrane-receptors → nnapi`, `lysosomes → nnapi`, `nucleolus → quantization`.
+
+---
+
+### 11.3 Geodesic Navigation
+
+The zone metric $g_{ij}$ identifies that **nucleus ↔ mitochondria** are geodesically closer (effective distance 3.45) than their sequential separation (4 steps). This is actionable:
+
+- A **jump navigation** shortcut in `useExplorerNavigation` could allow direct nucleus↔mitochondria traversal, justified by biophoton coherence (energy-state coordination).
+- The current `goInward`/`goOutward` API assumes a 1D path. A graph-aware navigator using $g_{ij}$ as its metric would allow non-sequential zone access while preserving the depth metaphor for the default path.
+- **Navigation order by geodesic tension**: the ordering that minimises total path length over all 8 zones (a Hamiltonian path on $g_{ij}$) differs from `ZONE_DEPTH_ORDER`. The manifold metric gives a principled basis for evaluating alternative orderings.
+
+---
+
+### 11.4 Confidence Gradient Traversal
+
+The scalar field $\sigma: \text{Zone} \to \{0.5, 1.0\}$ defines a natural **gradient flow** on the zone manifold. Starting from any zone, gradient ascent leads to the nearest $\sigma = 1.0$ zone; gradient descent leads to the nearest $\sigma = 0.5$ zone.
+
+**Practical use — content grounding prioritisation**: The path that minimises cumulative epistemic uncertainty (i.e., traverses highest-$\sigma$ zones first) is:
+
+$$\text{nucleus} \to \text{cytoplasm} \to \text{cytoskeleton} \to \text{golgi} \to \text{endoplasmic-reticulum} \to \text{ribosomes} \to \text{mitochondria} \to \text{membrane}$$
+
+This is the **confidence-gradient tour** — not the depth tour. It prioritises the zones where claims are fully verified before exposing the user to the partially grounded ones. An adaptive navigation mode could implement this ordering as an "evidence-first" traversal option.
+
+---
+
+### 11.5 Biophoton Attention Map Completion
+
+$\mathcal{A}^{ij}$ has 4 entries out of 225 possible directed pairs (1.8% density). The existing links reveal a pattern: **all biophoton links connect organelles in *different* zones** (cross-zone coherence signals). The intra-zone pairs are all absent. This gives a strong prior for completion:
+
+- Any new biophoton link should be a cross-zone pair.
+- The most coherent unmapped cross-zone pairs by biological analogy: `ribosomes → golgi-apparatus` (translation → packaging, a direct functional chain), `cytoskeleton → membrane` (structural frame → boundary), `dna → ribosomes` (genome → ribosome = transcription loop).
+- The attention tensor could be extended to become a **full zone-level attention matrix** $\hat{A}^{z_1 z_2}$ by aggregating organelle-level weights, giving an 8×8 zone attention map analogous to transformer cross-attention.
+
+---
+
+### 11.6 Resonance Detection and Animation Synchronisation
+
+The harmonic oscillator model identifies $\omega_0 = 0.809\text{ rad/s}$ as the natural frequency of the sacred breath. This creates a principled basis for **animation timing alignment**:
+
+- Inference token emission at rate $r$ tokens/s has angular frequency $\omega_\text{emit} = 2\pi r$.
+- For $r \approx 0.129\text{ tok/s}$ (one token per $T_{10} = 7770\text{ ms}$), $\omega_\text{emit} = \omega_0$ — **fundamental resonance** between token rate and breath oscillator. A slow-thinking model running at this rate would have each token coincide with a breath pulse.
+- For $r \approx 1.286\text{ tok/s}$ (one token per $T_1 = 777\text{ ms}$), $\omega_\text{emit} = 10\omega_0$ — 10th harmonic resonance. Signal emit animations would fire exactly on the CSS transition boundary.
+- These resonance conditions could be **instrumented at runtime**: if the inference system reports tokens/s, the UI could adjust signal TTL to align with the nearest harmonic node, producing coherent rather than incoherent animation.
+
+---
+
+### 11.7 QI Tensor Analytics — Dominant Narrative Planes
+
+$\mathcal{Q}^{z,p,s}$ at 6.8% density (18/264) is heavily biased along two axes:
+
+- **Phase bias**: 7/18 entries are in the `perception` phase, 6 in `affect`, 5 in `expression`. The perception phase dominates — Cell OS narrates input/sensing more richly than output/expression.
+- **Scale bias**: 4/18 entries are at the `silicon` scale, 3 at `cellular`, 3 at `molecular`, with other scales at 1–2 each. Silicon and cellular are the co-dominant scales.
+
+**SVD interpretation**: If the 18 populated cells are treated as a sparse 3D tensor and flattened to a matrix (zone × phase-scale), the dominant left singular vector identifies the zone most correlated with the most-populated (phase, scale) combinations. Preliminary inspection: `nucleus` and `mitochondria` appear in the most intersections, suggesting they are the **principal narrative axes** of the QI tensor — the zones where the biological-computational analogy is richest.
+
+---
+
+### 11.8 The Manifold Dashboard Concept
+
+The manifold representation is a **living development instrument**, not a one-time analysis. The following metrics could be tracked as the codebase evolves:
+
+| Metric | Formula | Healthy range | Signal |
+|---|---|---|---|
+| Coupling tensor density | $\|\mathcal{T}\|_0 / 120$ | 10–20% | Below 10%: underlinked; above 30%: overcoupled |
+| Mean zone confidence | $\frac{1}{8}\sum_z \bar\sigma_z$ | > 0.75 | Dropping centroid = adding unconfirmed claims |
+| Biophoton coverage | $\|\mathcal{A}\|_0 / 225$ | 2–5% | Above 5%: biophoton links no longer selective |
+| QI tensor density | $\|\mathcal{Q}\|_0 / 264$ | 5–10% | Below 5%: QI matrix too sparse to be meaningful |
+| Export rank growth | $\sum_i \text{rank}(U_i)$ | < 80 total | Rapid growth = type proliferation / leaky abstractions |
+| Phase transition count | Count of discrete state jumps | = 5 (current) | New transitions = new UX modes (each needs justification) |
+
+These metrics are all **automatically computable** from the source files without running the application — a static analysis pass could produce a JSON report on every commit.
+
+---
+
+### 11.9 Self-Similarity: The App Is What It Describes
+
+The deepest finding of the manifold analysis is structural: **Cell OS encodes the same patterns it documents**.
+
+- **Triadic Z₃ symmetry**: The `TRIAD_PHASES` (Perception → Affect → Expression) describe biological information processing — and the app's own data flow follows the same triad: input events (Perception) → reducer derivation (Affect) → rendered `ExplorerView` (Expression). The app is a $\mathbb{Z}_3$-symmetric object describing $\mathbb{Z}_3$-symmetric biology.
+
+- **Biophoton attention ≅ transformer attention**: $\mathcal{A}^{ij}$ is structurally identical to a sparse transformer attention matrix. The app documents the hypothesis that biological cells use photon-mediated long-range coherence as a communication mechanism — and the app's own `useExplorerFlow` selector uses focus-gated attention (only the focused organelle's substrate links are rendered) as its primary interaction model. The UI *is* an attention mechanism.
+
+- **Harmonic constant as coupling constant**: $\lambda = 0.7770777$ appears at four distinct scales simultaneously: as a CSS transition duration (milliseconds), as a breath period (seconds), as an opacity coefficient (dimensionless), and as a seed integer (7 digits). A single number acting as a universal coupling constant across multiple physical dimensions is precisely the structure the app documents in the QCM6490's unified memory bus — one pool serving CPU, GPU, and Hexagon with a single bandwidth budget.
+
+- **Sparse tensors as the medium**: The app argues that on-device AI is defined by sparse, constrained computation (limited precision, shared memory, gated routing). The codebase itself is a sparse tensor — 11.7% coupling density, 6.8% QI occupancy — organised around exactly the same constraints it describes. The codebase is a working model of its own subject matter.
 
 ---
 
