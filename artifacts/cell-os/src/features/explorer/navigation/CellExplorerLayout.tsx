@@ -29,16 +29,20 @@ export function CellExplorerLayout() {
   const { view, perceive } = useExplorerFlow();
   const setActiveZone = useCellVitalStore((s) => s.setActiveZone);
   const emitSignal    = useCellVitalStore((s) => s.emitSignal);
+  const [ringExpanded, setRingExpanded] = useState(true);
 
   // Sync active zone to the vital store so the living cell diagram reacts.
   // Also emit a brief zone-pulse signal so the navigated-to ring brightens.
+  // Re-expand the mobile ring navigator on every zone change — navigation
+  // resets scroll to top (via key={activeZone} remount), so the ring should
+  // be visible again to orient the user in the new zone.
   useEffect(() => {
     setActiveZone(activeZone);
     emitSignal(activeZone, "pulse", 0.7, 1800);
+    setRingExpanded(true);
   }, [activeZone, setActiveZone, emitSignal]);
 
   const zone = CELL_ZONES[activeZone];
-  const [ringExpanded, setRingExpanded] = useState(true);
 
   return (
     <div className="flex flex-col bg-background text-foreground" style={{ height: "100dvh", overflow: "hidden" }}>
@@ -211,6 +215,7 @@ export function CellExplorerLayout() {
           activeZone={activeZone}
           view={view}
           perceive={perceive}
+          onScrollDown={() => setRingExpanded(false)}
         />
       </div>
     </div>

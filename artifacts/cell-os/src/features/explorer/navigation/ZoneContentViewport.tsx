@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import type { CellZoneId } from "@/domain/types";
 import type { ExplorerView, ExplorerPerception } from "../useExplorerFlow";
 import { NucleusPanel } from "../zones/NucleusPanel";
@@ -13,6 +14,8 @@ type Props = {
   activeZone: CellZoneId;
   view: ExplorerView;
   perceive: ExplorerPerception;
+  /** Called once when the user scrolls down past 50px — used to auto-collapse the mobile ring navigator. */
+  onScrollDown?: () => void;
 };
 
 /**
@@ -23,36 +26,41 @@ type Props = {
  * - Resets any local UI state (open accordions, hover state, etc.)
  * - Creates a clean visual transition for each zone
  */
-export function ZoneContentViewport({ activeZone, view, perceive }: Props) {
+export function ZoneContentViewport({ activeZone, view, perceive, onScrollDown }: Props) {
+  const mainRef = useRef<HTMLElement>(null);
+  const firedRef = useRef(false);
+
+  useEffect(() => {
+    const el = mainRef.current;
+    if (!el || !onScrollDown) return;
+
+    firedRef.current = false;
+
+    function handleScroll() {
+      if (!firedRef.current && el!.scrollTop > 50) {
+        firedRef.current = true;
+        onScrollDown!();
+      }
+    }
+
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [onScrollDown]);
+
   return (
     <main
+      ref={mainRef}
       key={activeZone}
       className="flex-1 overflow-y-auto animate-in fade-in duration-[777ms]"
     >
-      {activeZone === "nucleus" && (
-        <NucleusPanel />
-      )}
-      {activeZone === "cytoplasm" && (
-        <CytoplasmPanel view={view} perceive={perceive} />
-      )}
-      {activeZone === "cytoskeleton" && (
-        <CytoskeletonPanel view={view} perceive={perceive} />
-      )}
-      {activeZone === "ribosomes" && (
-        <RibosomesPanel />
-      )}
-      {activeZone === "mitochondria" && (
-        <MitochondriaPanel />
-      )}
-      {activeZone === "golgi" && (
-        <GolgiPanel view={view} perceive={perceive} />
-      )}
-      {activeZone === "endoplasmic-reticulum" && (
-        <EndoplasmicReticulumPanel />
-      )}
-      {activeZone === "membrane" && (
-        <MembranePanel />
-      )}
+      {activeZone === "nucleus" && <NucleusPanel />}
+      {activeZone === "cytoplasm" && <CytoplasmPanel view={view} perceive={perceive} />}
+      {activeZone === "cytoskeleton" && <CytoskeletonPanel view={view} perceive={perceive} />}
+      {activeZone === "ribosomes" && <RibosomesPanel />}
+      {activeZone === "mitochondria" && <MitochondriaPanel />}
+      {activeZone === "golgi" && <GolgiPanel view={view} perceive={perceive} />}
+      {activeZone === "endoplasmic-reticulum" && <EndoplasmicReticulumPanel />}
+      {activeZone === "membrane" && <MembranePanel />}
     </main>
   );
 }
