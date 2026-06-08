@@ -119,6 +119,18 @@ export function CellExplorerLayout() {
           >
             Substrate
           </Link>
+          <Link
+            href="/fractal"
+            className="hidden md:block px-2 py-1 rounded text-[10px] font-mono text-muted-foreground/30 hover:text-muted-foreground/65 transition-colors"
+          >
+            Fractal
+          </Link>
+          <Link
+            href="/metrics"
+            className="hidden md:block px-2 py-1 rounded text-[10px] font-mono text-muted-foreground/30 hover:text-muted-foreground/65 transition-colors"
+          >
+            Metrics
+          </Link>
         </div>
       </header>
 
@@ -144,6 +156,27 @@ export function CellExplorerLayout() {
               </button>
             );
           })}
+        </div>
+      </div>
+
+      {/* ── MOBILE PAGE LINKS ───────────────────────────────────────────────── */}
+      <div className="md:hidden flex-shrink-0 border-b border-white/5 bg-background/60 backdrop-blur-xl z-30">
+        <div className="flex gap-1 px-3 py-1.5">
+          {[
+            { href: "/philosophy", glyph: "核", label: "Philosophy", color: "rgba(34,211,238,0.6)" },
+            { href: "/substrate",  glyph: "硅", label: "Substrate",  color: "rgba(251,191,36,0.6)" },
+            { href: "/fractal",    glyph: "形", label: "Fractal",    color: "rgba(196,181,253,0.6)" },
+            { href: "/metrics",    glyph: "量", label: "Metrics",    color: "rgba(74,222,128,0.6)"  },
+          ].map(({ href, glyph, label, color }) => (
+            <Link
+              key={href}
+              href={href}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-white/8 text-[9px] font-mono tracking-widest uppercase text-muted-foreground/40 hover:text-muted-foreground/75 transition-colors"
+            >
+              <span style={{ color }}>{glyph}</span>
+              {label}
+            </Link>
+          ))}
         </div>
       </div>
 
