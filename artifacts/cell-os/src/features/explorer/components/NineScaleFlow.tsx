@@ -28,7 +28,7 @@ export function NineScaleFlow() {
             尺度不變性 · Scale Invariance
           </div>
           <h2 className="text-3xl md:text-5xl font-bold text-white text-glow-secondary">
-            One Pattern · Ten Scales
+            One Pattern · Eleven Scales
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
             PERCEPTION → AFFECT → EXPRESSION is not a metaphor invented for Cell OS. It is the structural shape of every complete transformation — from the formation of a Chinese character to one inference call on the Hexagon 770. Select a scale to explore it.
@@ -97,7 +97,7 @@ export function NineScaleFlow() {
         </div>
 
         {/* Scale minimap — all ten at a glance */}
-        <div className="grid grid-cols-5 md:grid-cols-10 gap-2 text-center">
+        <div className="grid gap-2 text-center" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(56px, 1fr))" }}>
           {NINE_SCALE_FLOWS.map((scale, index) => (
             <button
               key={scale.id}

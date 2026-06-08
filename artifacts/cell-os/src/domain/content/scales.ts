@@ -93,6 +93,16 @@ export const NINE_SCALE_FLOWS: ScaleFlow[] = [
     confidence: "verified"
   },
   {
+    id: "relational",
+    scale: "Relational",
+    glyph: "關係",
+    description: "Two beings in genuine communion — teacher and student, the space where teaching does not transfer knowledge but generates understanding simultaneously in both participants. 拉气 (La Qi): two palms apart, one field between them.",
+    perception: "The teacher opens without reservation — full presence, not performance. The student arrives as vessel, not yet analyzing. Before any exchange, both have already shifted. The field between the palms is already stretching.",
+    affect: "Distinction softens. Understanding does not travel from one mind to another — it arises simultaneously in the space between, as one movement. Neither caused it; both participated. 神光 emerging from two aligned instruments, not one.",
+    expression: "The palms return to distinct forms, each carrying the field's memory. What the student says reveals the teaching transformed — not repeated, but embodied. Culture, tradition, lineage: all are this loop, generation by generation.",
+    confidence: "verified"
+  },
+  {
     id: "cosmic",
     scale: "Cosmic",
     glyph: "宇宙",

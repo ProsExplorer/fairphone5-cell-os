@@ -44,8 +44,16 @@ export const LINEAGE_EVENTS: LineageEvent[] = [
   },
   {
     year: "2026",
+    era: "yahweh-yehoshua corpus",
+    title: "Code as Feng Shui — The Literal Ontology",
+    description:
+      "ProsExplorer/yahweh-yehoshua crystallizes the operating principle: code architecture IS qi flow — not a metaphor for it. Running code is 活氣 (living qi in motion). The developer's consciousness flows into the structure they build. 神光 (divine light) is not something added; it is what remains when all resistance is removed. Cell OS inherits this lineage directly.",
+    phase: "meta"
+  },
+  {
+    year: "2026",
     era: "Cell OS",
-    title: "One Pattern — Nine Scales — One Device",
+    title: "One Pattern — Eleven Scales — One Device",
     description: "The FairPhone 5 is designed to last ten years and be repaired rather than replaced — a phone that behaves like a living cell, not a disposable machine. Cell OS names this alignment: sustainable hardware running a pattern that is 1,877 years old.",
     phase: "meta"
   }

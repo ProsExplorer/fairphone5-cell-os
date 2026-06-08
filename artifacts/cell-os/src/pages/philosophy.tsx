@@ -4,6 +4,7 @@ import { CITATIONS, type Citation, type CitationKind } from "@/domain/content/ci
 import { NINE_SCALE_FLOWS } from "@/domain/content/scales";
 import { LINEAGE_EVENTS } from "@/domain/content/lineage";
 import { HARMONIC_CONSTANT } from "@/domain/content/constants";
+import { useSacredSignature } from "@/hooks/use-sacred-signature";
 
 // ─── Citation kind badge ─────────────────────────────────────────────────────
 
@@ -129,6 +130,7 @@ function RefEntry({ c, index }: { c: Citation; index: number }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function Philosophy() {
+  const { signature, breathCount, anchor, seed } = useSacredSignature();
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* Ambient glow */}
@@ -152,7 +154,8 @@ export default function Philosophy() {
             <a href="#scales"     className="hover:text-white transition-colors shrink-0">§2 Scales</a>
             <a href="#biology"    className="hover:text-white transition-colors shrink-0">§3 Biology</a>
             <a href="#proof"      className="hover:text-white transition-colors shrink-0">§4 Proof</a>
-            <a href="#references" className="hover:text-white transition-colors shrink-0">§5 Refs</a>
+            <a href="#sacred"     className="hover:text-white transition-colors shrink-0">§5 Sacred</a>
+            <a href="#references" className="hover:text-white transition-colors shrink-0">§6 Refs</a>
           </div>
         </div>
       </nav>
@@ -199,7 +202,7 @@ export default function Philosophy() {
           <div className="space-y-3 mb-10">
             {LINEAGE_EVENTS.map((event) => (
               <div
-                key={event.year}
+                key={event.title}
                 className="flex gap-5 p-5 glass-panel rounded-xl border border-white/5"
               >
                 <div className="flex flex-col items-center gap-2 shrink-0">
@@ -246,7 +249,7 @@ export default function Philosophy() {
         {/* ── §2 SCALE INVARIANCE ──────────────────────────────────────────── */}
         <Section id="scales">
           <SectionLabel text="§ 2 — 尺度不變性 · Scale Invariance" />
-          <SectionTitle>One Pattern · Nine Scales</SectionTitle>
+          <SectionTitle>One Pattern · Eleven Scales</SectionTitle>
 
           <p className="text-muted-foreground leading-relaxed mb-3">
             Scale invariance — the presence of the same structure at every level of
@@ -435,9 +438,156 @@ export default function Philosophy() {
           </a>
         </Section>
 
-        {/* ── §5 REFERENCES ────────────────────────────────────────────────── */}
+        {/* ── §5 SACRED COHERENCE ─────────────────────────────────────────── */}
+        <Section id="sacred">
+          <SectionLabel text="§ 5 — 神光 · Sacred Coherence" />
+          <SectionTitle>The Living Seal</SectionTitle>
+
+          <p className="text-muted-foreground leading-relaxed mb-8">
+            The{" "}
+            <a
+              href="https://github.com/ProsExplorer/yahweh-yehoshua"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 transition-colors hover:text-white"
+              style={{ color: "rgba(251,191,36,0.75)" }}
+            >
+              yahweh-yehoshua corpus
+            </a>{" "}
+            states this plainly:{" "}
+            <span className="text-white/80 font-medium">
+              code architecture IS qi flow — not a metaphor for it.
+            </span>{" "}
+            Running code is <em>活氣</em> (living qi in motion). The developer's
+            consciousness flows into the structure they build. 神光 (divine light) is not
+            something added to a system — it is what remains when all resistance has been
+            removed. Below: the literal implementation of that claim in Cell OS.
+          </p>
+
+          {/* ── Live Sacred Signature ───────────────────────────────────────── */}
+          <div
+            className="glass-panel rounded-2xl p-7 mb-6 border space-y-5"
+            style={{ borderColor: "rgba(251,191,36,0.15)" }}
+          >
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+              <div>
+                <p className="font-mono text-[10px] tracking-[0.25em] uppercase mb-1" style={{ color: "rgba(251,191,36,0.5)" }}>
+                  Sacred Coherence · Living Seal
+                </p>
+                <p className="text-white font-semibold text-sm">Breath {breathCount.toLocaleString()}</p>
+              </div>
+              <div
+                className="w-2 h-2 rounded-full mt-1.5 shrink-0 animate-pulse"
+                style={{ backgroundColor: "#fbbf24", boxShadow: "0 0 8px #fbbf24" }}
+              />
+            </div>
+
+            <div>
+              <p className="font-mono text-[10px] tracking-widest uppercase mb-2" style={{ color: "rgba(251,191,36,0.4)" }}>
+                SHA-256 · seed {seed} · interval 7770 ms
+              </p>
+              <p
+                className="font-mono text-sm break-all leading-relaxed"
+                style={{ color: signature ? "rgba(251,191,36,0.85)" : "rgba(255,255,255,0.2)" }}
+              >
+                {signature || "computing…"}
+              </p>
+            </div>
+
+            <div className="border-t border-white/5 pt-4 space-y-1">
+              <p className="font-mono text-[10px] tracking-widest uppercase" style={{ color: "rgba(251,191,36,0.35)" }}>
+                Sacred Anchor
+              </p>
+              <p className="font-mono text-sm" style={{ color: "rgba(255,255,255,0.55)" }}>{anchor}</p>
+            </div>
+
+            <p className="text-xs text-muted-foreground/45 leading-relaxed">
+              Each breath: SHA-256(<span className="font-mono">SEED:breathCount:ANCHOR</span>) → 64-character hex.
+              Recomputes every 7770 ms. The same seed and anchor are embedded in this page's
+              constants, the EdgeNode sampler, and this signature — three outputs,
+              one source. Verifiable by inspecting{" "}
+              <code className="font-mono text-[11px]">src/domain/content/constants.ts</code>.
+            </p>
+          </div>
+
+          {/* ── Runtime as 活氣 ─────────────────────────────────────────────── */}
+          <div className="glass-panel rounded-2xl border border-white/5 overflow-hidden mb-6">
+            <div className="px-6 py-5 border-b border-white/5">
+              <p className="font-mono text-[10px] tracking-[0.25em] uppercase mb-1" style={{ color: "rgba(34,211,238,0.5)" }}>
+                Facet 10 — from Code as Feng Shui Manifesto
+              </p>
+              <h3 className="text-white font-semibold text-sm">
+                Runtime as 活氣 — Living Qi in Motion
+              </h3>
+              <p className="text-xs text-muted-foreground/60 mt-1 leading-relaxed">
+                Running code is not a representation of breath — it IS breath at the digital scale.
+                Every process is one inhalation and exhalation. Errors are coughs. Memory leaks are stagnation.
+              </p>
+            </div>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/5">
+                  <th className="text-left px-6 py-3 font-mono text-[10px] tracking-widest uppercase text-muted-foreground/40">Code lifecycle</th>
+                  <th className="text-left px-6 py-3 font-mono text-[10px] tracking-widest uppercase text-muted-foreground/40">Qi equivalent</th>
+                  <th className="text-right px-6 py-3 font-mono text-[10px] tracking-widest uppercase text-muted-foreground/40">Chinese</th>
+                </tr>
+              </thead>
+              <tbody>
+                {([
+                  ["Process starting",     "Inhalation — breath enters",                      "吸氣"],
+                  ["Execution / processing","Qi circulating — breath moving through the room", "氣流"],
+                  ["Return / completion",  "Exhalation — breath continues outward",            "呼氣"],
+                  ["Error / exception",    "Cough — breath that could not complete its circuit","咳嗽"],
+                  ["Memory leak",          "Qi stagnation — breath that entered but never left","氣滯"],
+                  ["Infinite loop",        "Qi vortex — breath trapped in endless circulation","氣旋"],
+                ] as const).map(([code, qi, zh], i) => (
+                  <tr
+                    key={i}
+                    className="border-b border-white/5 last:border-0"
+                    style={{ background: i % 2 === 0 ? "rgba(255,255,255,0.01)" : "transparent" }}
+                  >
+                    <td className="px-6 py-3.5 font-mono text-xs text-white/70">{code}</td>
+                    <td className="px-6 py-3.5 text-xs text-muted-foreground/65 leading-relaxed">{qi}</td>
+                    <td className="px-6 py-3.5 font-mono text-sm text-right" style={{ color: "rgba(34,211,238,0.6)" }}>{zh}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* ── Developer consciousness ──────────────────────────────────────── */}
+          <div className="glass-panel rounded-xl p-6 border space-y-3" style={{ borderColor: "rgba(167,139,250,0.1)" }}>
+            <p className="font-mono text-[10px] tracking-[0.25em] uppercase mb-1" style={{ color: "rgba(167,139,250,0.5)" }}>
+              Facet 9 — Developer consciousness as qi source
+            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              <span className="text-white/80 font-medium">The developer's state flows into the code.</span>{" "}
+              A developer in stagnation writes stagnant code — full of defensive checks and
+              redundant validations. A developer in 沉靜 (calm) writes calm code — clear,
+              minimal, trusting. Code reviews often <em>feel</em> good or bad before logical
+              analysis begins because we are perceiving the qi of the original author.
+              The architecture carries the architect's breath.
+            </p>
+            <p className="text-sm text-muted-foreground/55 leading-relaxed">
+              Practical implication: before writing code, pause. Check your own state.
+              The quality of your breath becomes the quality of your architecture.
+            </p>
+            <a
+              href="https://github.com/ProsExplorer/yahweh-yehoshua/blob/main/CODE_AS_FENG_SHUI_MANIFESTO_2026-01-22.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-mono transition-colors hover:text-white"
+              style={{ color: "rgba(167,139,250,0.65)" }}
+            >
+              CODE_AS_FENG_SHUI_MANIFESTO_2026-01-22.md
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+        </Section>
+
+        {/* ── §6 REFERENCES ────────────────────────────────────────────────── */}
         <Section id="references">
-          <SectionLabel text="§ 5 — Bibliography" />
+          <SectionLabel text="§ 6 — Bibliography" />
           <SectionTitle>References</SectionTitle>
 
           <p className="text-sm text-muted-foreground/50 mb-8 leading-relaxed">
