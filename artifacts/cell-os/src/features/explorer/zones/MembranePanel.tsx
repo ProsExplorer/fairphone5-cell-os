@@ -1,29 +1,27 @@
 import { Cpu, Fingerprint, Shield } from "lucide-react";
 import { CodeSnippet } from "../components/CodeSnippet";
 
-const HAL_NATIVE_SNIPPET = `// platform/hardware/interfaces/neuralnetworks/1.3/IDevice.hal
-// The HAL is the cell membrane — a precisely specified interface
-// between the generic Android framework and the proprietary silicon.
-// What may pass. In what form. Nothing else enters.
+const HAL_NATIVE_SNIPPET = `interface IDevice extends @1.2::IDevice {
 
-interface IDevice extends @1.2::IDevice {
+    prepareModel_1_3(
+            Model model,
+            ExecutionPreference preference,
+            Priority priority,
+            OptionalTimePoint deadline,
+            vec<hidl_handle> modelCache,
+            vec<hidl_handle> dataCache,
+            HidlToken token)
+        generates (ErrorStatus status,
+                   IPreparedModel preparedModel);
 
-  // The framework hands a neural network model to the hardware.
-  // The HAL decides: can I run this? At what precision?
-  // The membrane is not a wall — it is an intelligent gatekeeper.
-  prepareModel_1_3(
-      Model model,
-      ExecutionPreference preference,  // FAST_SINGLE_ANSWER | SUSTAINED_SPEED
-      Priority priority,               // LOW | MEDIUM | HIGH
-      OptionalTimePoint deadline,
-      vec<hidl_handle> modelCache,
-      vec<hidl_handle> dataCache,
-      HidlToken token)
-  generates (ErrorStatus status, IPreparedModel preparedModel);
-
-  // Nothing reaches the Hexagon HTA or Adreno GPU directly.
-  // All traffic crosses this interface — like a membrane receptor,
-  // it decides what enters and how, protecting the cell's interior.
+    executeSynchronously_1_3(
+            Request request,
+            MeasureTiming measure,
+            OptionalTimePoint deadline,
+            OptionalTimePointRange loopTimeoutDuration)
+        generates (ErrorStatus status,
+                   vec<OutputShape> outputShapes,
+                   Timing timing);
 };`;
 
 /**

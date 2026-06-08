@@ -7,40 +7,21 @@ type Props = {
   perceive: ExplorerPerception;
 };
 
-const SCHED_NATIVE_SNIPPET = `// kernel/sched/core.c — Energy Aware Scheduling (EAS)
-// The cytoskeleton positions organelles. The scheduler positions processes.
-// find_energy_efficient_cpu() is the cytoskeletal wire:
-// it decides which Kryo 670 core handles which computation
-// by minimising the energy added to the system.
-
-static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu)
+const SCHED_NATIVE_SNIPPET = `int select_task_rq(struct task_struct *p, int cpu, int flags)
 {
-  unsigned long prev_delta = ULONG_MAX, best_delta = ULONG_MAX;
-  int best_energy_cpu = prev_cpu;
+    lockdep_assert_held(&p->pi_lock);
 
-  // Iterate performance domains: P-cores (big) and E-cores (little)
-  // on the Fairphone 5's Kryo 670 cluster.
-  rcu_read_lock();
-  for_each_perf_domain(pd) {
-    // Which core adds the least energy for this task's workload?
-    // The lattice selects the wire that costs least.
-    if (delta < best_delta) {
-      best_delta = delta;
-      best_energy_cpu = max_spare_cpu;
-    }
-  }
-  rcu_read_unlock();
-  return best_energy_cpu >= 0 ? best_energy_cpu : prev_cpu;
+    if (p->nr_cpus_allowed > 1 && !is_migration_disabled(p))
+        cpu = p->sched_class->select_task_rq(p, cpu, flags);
+    else
+        cpu = cpumask_any(p->cpus_ptr);
+
+    if (unlikely(!is_cpu_allowed(p, cpu)))
+        cpu = select_fallback_rq(task_cpu(p), p);
+
+    return cpu;
 }`;
 
-/**
- * CytoskeletonPanel — the AI substrate structural lattice.
- *
- * The cytoskeleton provides the structural framework that holds the cell's shape
- * and positions its organelles. Here it maps to the Fairphone 5's hardware
- * substrate: Hexagon 770 DSP, Adreno 643 GPU, Kryo 670 CPU — the silicon
- * scaffolding on which everything else runs.
- */
 export function CytoskeletonPanel({ view, perceive }: Props) {
   return (
     <div>
@@ -60,12 +41,12 @@ export function CytoskeletonPanel({ view, perceive }: Props) {
             The scheduler is the cytoskeleton
           </h3>
           <p className="text-sm text-muted-foreground/65 leading-relaxed max-w-2xl">
-            The hardware nodes above are the substrate. The code below is what
-            positions workloads across them —{" "}
-            <code className="font-mono text-xs" style={{ color: "rgba(129,140,248,0.65)" }}>find_energy_efficient_cpu()</code>{" "}
-            from the Android mainline kernel. Energy Aware Scheduling chooses which
-            Kryo 670 core handles each task by measuring the energy cost of each option.
-            The cytoskeleton doesn't move organelles randomly — it minimises the energy
+            The hardware nodes above are the substrate. The code below positions workloads
+            across them —{" "}
+            <code className="font-mono text-xs" style={{ color: "rgba(129,140,248,0.65)" }}>select_task_rq()</code>{" "}
+            from the Android mainline kernel. It delegates to the Energy Aware Scheduler,
+            which picks the Kryo 670 core that adds the least energy for each task.
+            The cytoskeleton does not place organelles randomly — it minimises the cost
             of every placement.
           </p>
           <CodeSnippet

@@ -25,25 +25,18 @@ export type QiIntersection = {
 // Full tensor: 8 zones × 3 phases × 10 scales = 240 intersections.
 // 18 are curated — the ones where the three axes illuminate each other.`;
 
-const INIT_NATIVE_SNIPPET = `// PID 1 — the first userspace process on every Android device.
-// Reads .rc files (the device's "genome") and spawns every service.
-// This is the nucleus: not metaphor, not analogy — the actual boot DNA.
-
-static Result<void> HandleBuiltinCommand(
+const INIT_NATIVE_SNIPPET = `static Result<void> HandleBuiltinCommand(
     const BuiltinFunctionMap& function_map,
     const Action& current_action,
     const Command& command) {
 
   auto builtin_handler = function_map.FindFunction(command);
-  if (!builtin_handler.ok()) return builtin_handler.error();
+  if (!builtin_handler.ok()) {
+    return builtin_handler.error();
+  }
 
-  // Execute service declared in .rc genome — this is DNA expression.
-  // The command args are codon sequences. The handler is the ribosome.
   return (*builtin_handler)(command.args());
-}
-
-// On the Fairphone 5, init reads /vendor/etc/init/fp5.rc —
-// a file in the Fairphone Gerrit that you can read right now.`;
+}`;
 
 const QI_ENTRY_SNIPPET = `// src/domain/content/qiMatrix.ts — one curated entry
 {

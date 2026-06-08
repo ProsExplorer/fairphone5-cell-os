@@ -4,29 +4,19 @@ import { FractalNavigator } from "../components/FractalNavigator";
 import { CodeSnippet } from "../components/CodeSnippet";
 import type { ExplorerView, ExplorerPerception } from "../useExplorerFlow";
 
-const ZYGOTE_NATIVE_SNIPPET = `// platform/frameworks/base/.../ZygoteInit.java
-// The Golgi sorts and packages — Zygote does the same.
-// preloadClasses() loads the entire Android framework into a single
-// process, then fork() sends a pre-sorted copy to every new app.
-// Sort once. Distribute cheaply. Nothing is reprocessed.
+const ZYGOTE_NATIVE_SNIPPET = `private static void preloadClasses() {
+    final VMRuntime runtime = VMRuntime.getRuntime();
+    InputStream is = ClassLoader.getSystemResourceAsStream(PRELOADED_CLASSES);
 
-private static void preloadClasses() {
-  final VMRuntime runtime = VMRuntime.getRuntime();
-
-  // Read the genome: a manifest of all pre-loadable framework classes.
-  // This is the Golgi's package list — the complete sorted proteome.
-  InputStream is = ClassLoader.getSystemResourceAsStream(PRELOADED_CLASSES);
-
-  try (BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
-    String line;
-    while ((line = br.readLine()) != null) {
-      if (line.startsWith("#") || line.isEmpty()) continue;
-      // Sort and package each class into the Zygote's address space.
-      // When an app starts, fork() ships a pre-sorted copy instantly.
-      Class.forName(line, true, null);
+    try (BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
+        String line;
+        while ((line = br.readLine()) != null) {
+            if (line.startsWith("#") || line.isEmpty()) continue;
+            Class.forName(line, true, null);
+        }
+    } catch (IOException | ClassNotFoundException e) {
+        Log.e(TAG, "Error preloading " + e);
     }
-  }
-  // The Golgi has packaged the proteome. All forks inherit it for free.
 }`;
 
 type Tab = "genome" | "fractal";

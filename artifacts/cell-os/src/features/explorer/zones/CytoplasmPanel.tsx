@@ -31,24 +31,23 @@ const ORGANELLE_ZONE_MAP: Record<string, CellZoneId> = {
   "vacuole":               "membrane",
 };`;
 
-const BINDER_NATIVE_SNIPPET = `// Every Android IPC call — camera, clipboard, sensor, AI model —
-// crosses this exact function. The cytoplasm is not a metaphor:
-// every process swims through BBinder::transact() to reach another.
-
-status_t BBinder::transact(
+const BINDER_NATIVE_SNIPPET = `status_t BBinder::transact(
     uint32_t code, const Parcel& data, Parcel* reply, uint32_t flags)
 {
   data.setDataPosition(0);
   if (reply != nullptr && (flags & FLAG_CLEAR_BUF)) {
     reply->markSensitive();
   }
+  status_t err = NO_ERROR;
   switch (code) {
     case PING_TRANSACTION:
-      return pingBinder();
+      err = pingBinder();
+      break;
     default:
-      return onTransact(code, data, reply, flags);
-      // ↑ every IPC dispatch lands here: one cytoplasm, all organelles
+      err = onTransact(code, data, reply, flags);
+      break;
   }
+  return err;
 }`;
 
 const BIOPHOTON_SNIPPET = `// src/features/explorer/selectors.ts

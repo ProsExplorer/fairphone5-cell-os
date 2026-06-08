@@ -1,27 +1,19 @@
 import { NineScaleFlow } from "../components/NineScaleFlow";
 import { CodeSnippet } from "../components/CodeSnippet";
 
-const NNAPI_NATIVE_SNIPPET = `// platform/frameworks/ml/nn/runtime/NeuralNetworks.cpp
-// Ribosomes translate RNA → protein.
-// ANeuralNetworksModel_addOperation() translates model ops → hardware tokens.
-// One function. One codon. One amino acid per call.
-
-int ANeuralNetworksModel_addOperation(
+const NNAPI_NATIVE_SNIPPET = `int ANeuralNetworksModel_addOperation(
     ANeuralNetworksModel* model,
-    ANeuralNetworksOperationType type,  // e.g. FULLY_CONNECTED, SOFTMAX
+    ANeuralNetworksOperationType type,
     uint32_t inputCount,  const uint32_t* inputs,
     uint32_t outputCount, const uint32_t* outputs)
 {
-  if (!model || !model->isCompletable()) {
-    return ANEURALNETWORKS_UNEXPECTED_NULL;
-  }
-  // Dispatch: the framework hands this operation to the hardware driver.
-  // On the Fairphone 5, the driver routes to Hexagon HVX or Adreno GPU.
-  // The ribosome does not choose the destination — it translates the codon
-  // and hands it to the cellular infrastructure.
-  return model->addOperation(
-      static_cast<OperationType>(type),
-      inputCount, inputs, outputCount, outputs);
+    if (!model || !model->isCompletable()) {
+        return ANEURALNETWORKS_UNEXPECTED_NULL;
+    }
+    return model->addOperation(
+        static_cast<OperationType>(type),
+        inputCount, inputs,
+        outputCount, outputs);
 }`;
 
 /**

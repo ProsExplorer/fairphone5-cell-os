@@ -4,23 +4,26 @@ import { CodeSnippet } from "../components/CodeSnippet";
 import { QUANTIZATION_LAYERS } from "@/domain/content/quantizationBiology";
 import { CELL_ZONES } from "@/features/cell-shell/CellShellProvider";
 
-const QNN_NATIVE_SNIPPET = `// llama.cpp — ggml/src/ggml-qnn/backend.h
-// The precision cascade exists in native C++ — not as metaphor,
-// but as the actual enum that selects the compute unit per layer.
-
-enum QNNBackend {
-  QNN_BACKEND_CPU = 0,  // FP32 — Kryo 670, full precision
-  QNN_BACKEND_GPU = 1,  // FP16 — Adreno 642L, 2× throughput
-  QNN_BACKEND_NPU = 2,  // INT4 — Hexagon HTA, ~10× perf/watt
+const QNN_NATIVE_SNIPPET = `enum QNNBackend {
+    QNN_BACKEND_CPU = 0,
+    QNN_BACKEND_GPU = 1,
+    QNN_BACKEND_NPU = 2,
 };
 
-// At each transformer layer boundary, llama.cpp selects the backend:
-//   attention heads    → NPU (INT4)   ← minimum viable token
-//   layernorm          → CPU (FP32)   ← full genome precision
-//   feedforward        → GPU (FP16)   ← half-width, double speed
-//
-// FP32 → FP16 → INT4. Same electron transport chain. Less energy.
-// The Fairphone 5's Hexagon HTA runs INT4 natively at ~10× CPU speed.`;
+static ggml_backend_t ggml_backend_qnn_init(size_t dev_num, const char * dev_name) {
+    if (dev_num >= GGML_QNN_MAX_DEVICES) {
+        return nullptr;
+    }
+    qnn_instance * instance = new qnn_instance(dev_num);
+    if (instance->qnn_init(nullptr) != 0) {
+        delete instance;
+        return nullptr;
+    }
+    ggml_backend_qnn_context * ctx = new ggml_backend_qnn_context();
+    ctx->device   = dev_num;
+    ctx->instance = instance;
+    return ggml_backend_init(&ggml_backend_qnn_interface, ctx);
+}`;
 
 const QUANT_SNIPPET = `// src/domain/content/quantizationBiology.ts
 // The precision cascade — four quantization formats mapped to their
@@ -238,9 +241,9 @@ export function MitochondriaPanel() {
               selects which compute unit handles each transformer layer on the Fairphone 5's silicon.
             </p>
             <CodeSnippet
-              filename="ggml/src/ggml-qnn/backend.h"
+              filename="ggml/src/ggml-qnn.cpp"
               language="c++"
-              sourceUrl="https://github.com/ggml-org/llama.cpp/blob/master/docs/backend/snapdragon/README.md"
+              sourceUrl="https://github.com/ggml-org/llama.cpp/blob/master/ggml/src/ggml-qnn.cpp"
             >{QNN_NATIVE_SNIPPET}</CodeSnippet>
           </div>
         </div>
