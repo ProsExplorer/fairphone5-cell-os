@@ -17,9 +17,17 @@ import {
  * EXPRESSION: a read-only `view` model flows out to the presentational layer.
  *
  * The page component holds no business logic; it only wires perception to
- * expression. Focus is a single value that can point at either an organelle or
- * a substrate node, so cross-highlighting reads the same in both directions and
- * a many-to-many link never collapses to a hidden first match.
+ * expression. Focus is a single discriminated union that points at either an
+ * organelle or a substrate node.
+ *
+ * ── Lock semantics ─────────────────────────────────────────────────────────
+ * `locked: false` → hover mode: HOVER_ORGANELLE(null) resets focus (transient).
+ * `locked: true`  → click mode: hover events are ignored; focus persists until
+ *                   the user clicks the same item again (toggle-off) or clicks
+ *                   a different item (replace lock).
+ *
+ * This prevents the common bug where mouseLeave fires immediately after a click,
+ * wiping the click-lock and reverting the info panel to the empty state.
  */
 
 type Focus =
@@ -27,7 +35,11 @@ type Focus =
   | { kind: "organelle"; id: string }
   | { kind: "substrate"; id: string };
 
-type ExplorerState = { focus: Focus };
+type ExplorerState = {
+  focus: Focus;
+  /** True when focus was set by a click — hover events are suppressed. */
+  locked: boolean;
+};
 
 type ExplorerAction =
   | { type: "HOVER_ORGANELLE"; id: string | null }
@@ -35,24 +47,36 @@ type ExplorerAction =
   | { type: "TOGGLE_SUBSTRATE"; id: string }
   | { type: "CLEAR" };
 
-const INITIAL_STATE: ExplorerState = { focus: { kind: "none" } };
+const INITIAL_STATE: ExplorerState = { focus: { kind: "none" }, locked: false };
 
 function reducer(state: ExplorerState, action: ExplorerAction): ExplorerState {
   switch (action.type) {
-    case "HOVER_ORGANELLE":
+    case "HOVER_ORGANELLE": {
+      // When locked by a click, ignore all hover events — the click lock
+      // takes priority over transient hover previews.
+      if (state.locked) return state;
       if (!action.id) return INITIAL_STATE;
-      return { focus: { kind: "organelle", id: action.id } };
+      return { focus: { kind: "organelle", id: action.id }, locked: false };
+    }
 
     case "TOGGLE_ORGANELLE": {
-      const active = state.focus.kind === "organelle" && state.focus.id === action.id;
-      if (active) return INITIAL_STATE;
-      return { focus: { kind: "organelle", id: action.id } };
+      // Toggle-off: clicking the already-locked organelle releases the lock.
+      const alreadyLocked =
+        state.locked &&
+        state.focus.kind === "organelle" &&
+        state.focus.id === action.id;
+      if (alreadyLocked) return INITIAL_STATE;
+      // Toggle-on / replace: lock focus on this organelle.
+      return { focus: { kind: "organelle", id: action.id }, locked: true };
     }
 
     case "TOGGLE_SUBSTRATE": {
-      const active = state.focus.kind === "substrate" && state.focus.id === action.id;
-      if (active) return INITIAL_STATE;
-      return { focus: { kind: "substrate", id: action.id } };
+      const alreadyLocked =
+        state.locked &&
+        state.focus.kind === "substrate" &&
+        state.focus.id === action.id;
+      if (alreadyLocked) return INITIAL_STATE;
+      return { focus: { kind: "substrate", id: action.id }, locked: true };
     }
 
     case "CLEAR":
@@ -79,6 +103,8 @@ export type ExplorerView = {
   isSubstrateHighlighted: (substrateId: string) => boolean;
   isOrganelleHighlighted: (organelleId: string) => boolean;
   hasFocus: boolean;
+  /** True when focus is click-locked — hover events are suppressed. */
+  isLocked: boolean;
 };
 
 export type ExplorerPerception = {
@@ -92,7 +118,7 @@ export function useExplorerFlow(): { view: ExplorerView; perceive: ExplorerPerce
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
 
   const view = useMemo<ExplorerView>(() => {
-    const { focus } = state;
+    const { focus, locked } = state;
 
     if (focus.kind === "organelle") {
       const activeOrganelle = getOrganelle(focus.id);
@@ -108,7 +134,8 @@ export function useExplorerFlow(): { view: ExplorerView; perceive: ExplorerPerce
         relatedBiophotonLinks: getBiophotonLinks(activeOrganelleIds),
         isSubstrateHighlighted: (substrateId) => highlightedSubstrate.has(substrateId),
         isOrganelleHighlighted: (organelleId) => organelleId === focus.id,
-        hasFocus: true
+        hasFocus: true,
+        isLocked: locked,
       };
     }
 
@@ -125,7 +152,8 @@ export function useExplorerFlow(): { view: ExplorerView; perceive: ExplorerPerce
         relatedBiophotonLinks: getBiophotonLinks(highlightedOrganelles),
         isSubstrateHighlighted: (substrateId) => substrateId === focus.id,
         isOrganelleHighlighted: (organelleId) => highlightedOrganelles.has(organelleId),
-        hasFocus: true
+        hasFocus: true,
+        isLocked: locked,
       };
     }
 
@@ -138,7 +166,8 @@ export function useExplorerFlow(): { view: ExplorerView; perceive: ExplorerPerce
       relatedBiophotonLinks: [],
       isSubstrateHighlighted: () => false,
       isOrganelleHighlighted: () => false,
-      hasFocus: false
+      hasFocus: false,
+      isLocked: false,
     };
   }, [state]);
 
