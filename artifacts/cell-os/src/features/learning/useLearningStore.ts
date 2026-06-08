@@ -27,6 +27,13 @@ type PersistedState = {
   organelleVisits: Record<string, number>;
   coActivations: Record<string, number>;
   substrateEngagement: Record<string, number>;
+  /**
+   * Zone × TriadPhase exploration tensor (rank-2, sparse).
+   * Key: "${zoneId}|${phase}" where phase ∈ {"perception","affect","expression"}.
+   * Maps onto the QI rank-3 tensor Q^{z,p,s} (MANIFOLD_ANALYSIS.md §2.5) —
+   * this field accumulates the (zone, phase) marginal from user interaction.
+   */
+  zonePhaseExploration: Record<string, number>;
   totalInteractions: number;
 };
 
@@ -36,6 +43,12 @@ export type LearningState = PersistedState & {
 
   recordOrganelleVisit: (id: string) => void;
   recordSubstrateEngagement: (id: string) => void;
+  /**
+   * Record a zone-phase observation. Does NOT increment totalInteractions —
+   * zone navigation is structural context, not a deliberate engagement event.
+   * Only called through useMembraneObserver.
+   */
+  recordZonePhase: (zoneId: string, phase: "perception" | "affect" | "expression") => void;
   reset: () => void;
 };
 
@@ -43,6 +56,7 @@ const BLANK: PersistedState = {
   organelleVisits: {},
   coActivations: {},
   substrateEngagement: {},
+  zonePhaseExploration: {},
   totalInteractions: 0,
 };
 
@@ -98,6 +112,17 @@ export const useLearningStore = create<LearningState>()(
         });
       },
 
+      recordZonePhase: (zoneId, phase) => {
+        const { zonePhaseExploration } = get();
+        const key = `${zoneId}|${phase}`;
+        set({
+          zonePhaseExploration: {
+            ...zonePhaseExploration,
+            [key]: (zonePhaseExploration[key] ?? 0) + 1,
+          },
+        });
+      },
+
       reset: () =>
         set({ ...BLANK, _lastOrganelleId: null, _lastOrganelleTsMs: 0 }),
     }),
@@ -105,10 +130,11 @@ export const useLearningStore = create<LearningState>()(
       name: "cell-os-epigenome-v1",
       storage: createJSONStorage(() => localStorage),
       partialize: (s) => ({
-        organelleVisits:    s.organelleVisits,
-        coActivations:      s.coActivations,
-        substrateEngagement: s.substrateEngagement,
-        totalInteractions:  s.totalInteractions,
+        organelleVisits:      s.organelleVisits,
+        coActivations:        s.coActivations,
+        substrateEngagement:  s.substrateEngagement,
+        zonePhaseExploration: s.zonePhaseExploration,
+        totalInteractions:    s.totalInteractions,
       }),
     }
   )

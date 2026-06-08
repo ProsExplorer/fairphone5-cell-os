@@ -420,6 +420,43 @@ export default function Metrics() {
           </div>
         )}
 
+        {/* Zone × TriadPhase exploration tensor */}
+        {Object.keys(lm.zonePhaseIntensity).length > 0 && (
+          <div style={{ marginBottom: "1.5rem" }}>
+            <div style={{ fontSize: "0.72rem", color: "#475569", marginBottom: "0.5rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+              Zone × Triad-Phase Exploration (Q<sup>z,p</sup> marginal — P→A→E per zone)
+            </div>
+            <p style={{ fontSize: "0.72rem", color: "#334155", marginBottom: "0.75rem" }}>
+              2D projection of the Q<sup>z,p,s</sup> rank-3 tensor onto (zone, phase). P = zone navigation; A = click-lock within zone.
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "0.5rem" }}>
+              {Object.entries(lm.zonePhaseIntensity)
+                .sort(([, a], [, b]) => (b.perception + b.affect) - (a.perception + a.affect))
+                .map(([zoneId, phases]) => (
+                  <div key={zoneId} style={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: "5px", padding: "0.5rem 0.7rem" }}>
+                    <div style={{ fontSize: "0.7rem", color: "#64748b", marginBottom: "0.4rem", fontWeight: 600 }}>{zoneId}</div>
+                    {(["perception", "affect", "expression"] as const).map((phase) => {
+                      const val = phases[phase];
+                      if (val === 0) return null;
+                      const phaseColor = phase === "perception" ? "#38bdf8" : phase === "affect" ? "#a78bfa" : "#34d399";
+                      return (
+                        <div key={phase} style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.2rem" }}>
+                          <span style={{ fontSize: "0.6rem", fontFamily: "monospace", color: phaseColor, width: "64px", flexShrink: 0 }}>{phase}</span>
+                          <div style={{ flex: 1, height: "3px", background: "#1e293b", borderRadius: "2px" }}>
+                            <div style={{ height: "100%", width: `${Math.round(val * 100)}%`, background: phaseColor, borderRadius: "2px", opacity: 0.8 }} />
+                          </div>
+                          <span style={{ fontSize: "0.6rem", color: phaseColor, fontVariantNumeric: "tabular-nums", width: "28px", textAlign: "right" }}>
+                            {val.toFixed(2)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
         {lm.totalInteractions === 0 && (
           <div style={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: "6px", padding: "1rem 1.25rem", fontSize: "0.8rem", color: "#475569" }}>
             The organism has not yet been observed. Click organelles and substrate nodes in the

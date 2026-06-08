@@ -128,3 +128,77 @@ export function parsePairKey(key: string): [string, string] {
   const [a, b] = key.split("|");
   return [a, b];
 }
+
+/**
+ * Look up the zone for a given organelle ID.
+ * Returns null for unknown IDs (e.g., diagram-only shapes not in the zone map).
+ */
+export function getZoneForOrganelle(organelleId: string): CellZoneId | null {
+  return ORGANELLE_TO_ZONE[organelleId] ?? null;
+}
+
+/**
+ * Derive the attentionWeight proxy from a BiophotonLink's rateRange string.
+ *
+ * MANIFOLD_ANALYSIS.md §2.4 defines the proxy weight as:
+ *   w_ij = (r_min + r_max) / (2 × r_max_global)
+ * where r_max_global = 100 ph/cm²/s (the maximum observed rate).
+ *
+ * This replaces the `attentionWeight ?? 0.5` fallback that was using an
+ * arbitrary default rather than the theoretically-grounded midpoint proxy.
+ *
+ * Example: "10–100 ph/cm²/s" → (10+100)/(2×100) = 0.55
+ */
+const RATE_GLOBAL_MAX = 100;
+
+export function parseRateRangeProxy(rateRange: string): number {
+  const match = rateRange.match(/(\d+)[–\-](\d+)/);
+  if (!match) return 0.5;
+  const lo = parseFloat(match[1]);
+  const hi = parseFloat(match[2]);
+  return (lo + hi) / 2 / RATE_GLOBAL_MAX;
+}
+
+/**
+ * Blend a base attentionWeight with a learned co-activation weight using
+ * bounded interpolation rather than fixed additive blending.
+ *
+ * The formula closes half the remaining gap between base and 1.0, weighted
+ * by the learned strength. This preserves dynamic range: a link already at
+ * w=0.55 can grow toward 0.775 at most (at full learned strength), never
+ * saturating to 1.0 from a single learning pass.
+ *
+ * Compare to the fixed `+0.4` addend which could push links near saturation
+ * and compress selectivity between strongly- and weakly-coupled pairs.
+ */
+export function blendAttentionWeight(base: number, learnedWeight: number): number {
+  return base + (1 - base) * learnedWeight * 0.5;
+}
+
+/**
+ * Derive normalized zone × triad-phase exploration intensities.
+ *
+ * Input key format: "${zoneId}|${phase}" (from useLearningStore.recordZonePhase).
+ * Returns nested { [zoneId]: { perception, affect, expression } } all in [0,1],
+ * normalized so the most-explored (zone, phase) cell = 1.0.
+ *
+ * Maps onto the Q^{z,p,s} rank-3 tensor's zone-phase marginal
+ * (MANIFOLD_ANALYSIS.md §2.5) — this is the 2D projection of that tensor
+ * onto the (zone, triad-phase) axes, collapsing the scale axis.
+ */
+export function getZonePhaseIntensity(
+  zonePhaseExploration: Record<string, number>
+): Record<string, { perception: number; affect: number; expression: number }> {
+  const values = Object.values(zonePhaseExploration);
+  if (values.length === 0) return {};
+  const maxCount = Math.max(1, ...values);
+  const result: Record<string, { perception: number; affect: number; expression: number }> = {};
+  for (const [key, count] of Object.entries(zonePhaseExploration)) {
+    const sep = key.lastIndexOf("|");
+    const zoneId = key.slice(0, sep);
+    const phase  = key.slice(sep + 1) as "perception" | "affect" | "expression";
+    if (!result[zoneId]) result[zoneId] = { perception: 0, affect: 0, expression: 0 };
+    result[zoneId][phase] = count / maxCount;
+  }
+  return result;
+}

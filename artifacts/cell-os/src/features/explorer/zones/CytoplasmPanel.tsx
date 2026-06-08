@@ -6,6 +6,8 @@ import { useLearningStore } from "@/features/learning/useLearningStore";
 import {
   getOrganelleVisitIntensity,
   getLearnedBiophotonWeights,
+  parseRateRangeProxy,
+  blendAttentionWeight,
 } from "@/features/learning/hebbianAdapter";
 import type { ExplorerView, ExplorerPerception } from "../useExplorerFlow";
 
@@ -99,17 +101,22 @@ export function CytoplasmPanel({ view, perceive }: Props) {
   );
 
   // Blend base attentionWeight with learned co-activation strength.
-  // Learned weight adds up to +0.4 on top of the genomic baseline,
-  // clamped at 1.0. Links between frequently co-explored organelles
-  // visibly thicken — expressing what the organism has learned to attend to.
+  //
+  // Base weight: derived from rateRange midpoint proxy (MANIFOLD_ANALYSIS.md §2.4)
+  //   w_ij = (r_min + r_max) / (2 × 100 ph/cm²/s)
+  // rather than the arbitrary 0.5 fallback.
+  //
+  // Blending: bounded interpolation — learned weight closes half the remaining
+  // gap toward 1.0, preserving dynamic range. Links between co-explored
+  // organelles visibly thicken without saturating the selectivity scale.
   const biophotonLinks = view.relatedBiophotonLinks.map((l) => {
     const pairKey = [l.sourceOrganelleId, l.targetOrganelleId].sort().join("|");
     const learned  = learnedWeights[pairKey] ?? 0;
-    const base     = l.attentionWeight ?? 0.5;
+    const base     = l.attentionWeight ?? parseRateRangeProxy(l.rateRange);
     return {
       sourceId: l.sourceOrganelleId,
       targetId: l.targetOrganelleId,
-      attentionWeight: Math.min(1.0, base + learned * 0.4),
+      attentionWeight: blendAttentionWeight(base, learned),
     };
   });
 

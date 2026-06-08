@@ -36,14 +36,19 @@ Learning fires in `CellExplorerLayout` via a `useEffect` watching `view.activeOr
 
 `/metrics` reads `useLearnedManifold()` (live, reactive to store changes). Shows: total interactions, visit intensity heatmap with inline progress bars, emergent co-activation pairs, substrate σ boost amounts. Empty state shown when `totalInteractions === 0`.
 
-## Architect-identified bugs (now fixed)
+## Architect-identified issues (all resolved across two review rounds)
 
-1. **totalInteractions accounting** — `recordSubstrateEngagement` was not incrementing `totalInteractions`. This distorted `getConfidenceBoosts` (wrong denominator) and `isAdapted` threshold. Fixed: both record actions now increment the counter.
+**Round 1 fixes:**
+1. `recordSubstrateEngagement` not incrementing `totalInteractions` → fixed (1-line add).
+2. Open adaptation loops → closed: learnedBiophotonWeights → CytoplasmPanel link blending; confidenceBoosts → InfoPanel +σ display; reset button in /metrics.
 
-2. **Open adaptation loops (now closed)** — Learned outputs were computed but not fed back. Three loops now closed:
-   - `learnedBiophotonWeights` → `CytoplasmPanel` blends into `attentionWeight` (up to +0.4, capped at 1.0). Frequently co-explored links visibly thicken.
-   - `confidenceBoosts` → `InfoPanel.SubstrateView` reads boost for current substrate; shows `+{n}σ` amber text next to ConfidenceBadge when boost > 0.001.
-   - `reset` action → "reset epigenome" button in `/metrics` Organism Memory section, only visible when totalInteractions > 0.
+**Round 2 fixes (full manifold theory alignment):**
+1. **MembraneObserver** — extracted all observation logic into `useMembraneObserver.ts` as the sole named ingestion boundary (UNIVERSAL_MANIFOLD.md §8 / FP5 HAL principle). `CellExplorerLayout` now calls one hook, not inline effects.
+2. **rateRange proxy weights** — replaced `attentionWeight ?? 0.5` fallback with `parseRateRangeProxy(rateRange)` (MANIFOLD_ANALYSIS.md §2.4 formula: w = (r_min+r_max)/(2×100)).
+3. **Bounded interpolation** — replaced `base + learned*0.4` (could saturate) with `blendAttentionWeight(base, learned) = base + (1-base)*learned*0.5` (preserves dynamic range).
+4. **Zone×TriadPhase tensor** — added `zonePhaseExploration: Record<string,number>` to store; key `"${zoneId}|${phase}"`. P = zone navigation, A = click-lock within zone. Maps onto Q^{z,p,s} marginal from MANIFOLD_ANALYSIS.md §2.5. Displayed in /metrics as P/A colored bars per zone.
+5. **`getZoneForOrganelle`** exported from hebbianAdapter for reverse lookup by MembraneObserver.
+6. New adapter functions exported: `parseRateRangeProxy`, `blendAttentionWeight`, `getZonePhaseIntensity`.
 
 ## Key constraint to maintain
 
