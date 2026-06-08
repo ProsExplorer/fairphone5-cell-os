@@ -17,3 +17,9 @@ id = "Kv_ems9u439riFEhtqTl0"
 uri = "file://research/fairphone-cell-os-native-code.md"
 type = "text"
 title = "Cell OS × Fairphone 5: Native Code Research Report"
+
+[[outputs]]
+id = "j3roSv8yv_yvLR7t669-r"
+uri = "file://artifacts/cell-os/README.md"
+type = "text"
+title = "Cell OS — GitHub README"
