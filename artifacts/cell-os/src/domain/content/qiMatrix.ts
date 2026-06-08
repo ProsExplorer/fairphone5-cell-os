@@ -216,6 +216,57 @@ export const QI_INTERSECTIONS: QiIntersection[] = [
     evidence: "verified",
   },
 
+  // ── NUCLEUS (silicon scale additions) ────────────────────────────────────────
+
+  {
+    id: "nucleus-perception-silicon",
+    zoneId: "nucleus",
+    phaseId: "perception",
+    scaleId: "silicon",
+    title: "irqentry_enter() — The Privilege Boundary Opens",
+    narrative:
+      "In arch/arm64/kernel/entry-common.S, the ARM64 svc #0 instruction catches a system call. Register x8 carries the system call number; x0–x5 carry the argument vector. This is the kernel's perception event: a user process's intention crosses the hardware privilege boundary. irqentry_enter() saves register state and prepares the kernel stack — the nucleus is now open. Nothing executes until this crossing is complete. The perception phase here is not conceptual but physical: a CPU privilege level changes, and information becomes visible to the kernel that was invisible a nanosecond before.",
+    hardwareAnalogue: "arch/arm64/kernel/entry-common.S → svc #0 → irqentry_enter() → sys_call_table dispatch",
+    substrateIds: ["qcm6490", "kryo670"],
+    evidence: "verified",
+  },
+  {
+    id: "nucleus-affect-silicon",
+    zoneId: "nucleus",
+    phaseId: "affect",
+    scaleId: "silicon",
+    title: "sys_call_table — The Kernel Executes in Isolation",
+    narrative:
+      "The kernel looks up sys_call_table[x8] and executes the matched function with x0–x5 as arguments. Transformation occurs entirely at EL1 (kernel privilege), invisible to userspace. The Linux documentation explicitly partitions this affect phase into two halves: the 'top half' (ISR) runs immediately, time-critical, non-preemptible; the 'bottom half' defers schedulable work. This top/bottom partitioning is affect's internal structure — the distinction between the irreversible commitment step and its consequences. Neither half is visible to the perceiving process until expression begins.",
+    hardwareAnalogue: "sys_call_table[x8](x0–x5) — Kryo 670 executing at EL1, invisible to EL0 userspace",
+    substrateIds: ["kryo670"],
+    evidence: "verified",
+  },
+
+  // ── MEMBRANE (HAL/Treble additions) ──────────────────────────────────────────
+
+  {
+    id: "membrane-affect-apparatus",
+    zoneId: "membrane",
+    phaseId: "affect",
+    scaleId: "apparatus",
+    title: "Project Treble — The Membrane Made Architectural Policy",
+    narrative:
+      "Before Android 8.0, /system and /vendor could call each other directly — no stable HAL interface. When Google shipped OTA updates to the system partition, hardware drivers in the vendor partition broke. The coupling was pathological; the membrane did not exist. Project Treble imposed HIDL (Hardware Interface Definition Language) as a hard architectural boundary, making each partition independently updatable. The Fairphone 5 launched on Android 13 using AIDL — the mature, next-generation HAL contract. Project Treble is not analogous to the membrane's selective permeability principle; it IS that principle, independently re-derived by Android engineers solving the same fragility problem the theory describes. The same insight reached twice by different paths is evidence of the underlying structure.",
+    hardwareAnalogue: "HIDL (Android 8–12) → AIDL (Android 13+): /system ↔ /vendor partition boundary enforced in build system",
+    evidence: "verified",
+  },
+  {
+    id: "membrane-affect-generational",
+    zoneId: "membrane",
+    phaseId: "affect",
+    scaleId: "generational",
+    title: "8-Year Lifespan — Boundary Integrity as Organism Longevity",
+    narrative:
+      "The Fairphone 5's 8-year software support commitment, backed by the Qualcomm QCM6490's 10+ year industrial lifecycle guarantee, demonstrates the theory's healthy-coupling prediction empirically: an organism with clearly defined, stable zone boundaries lives longer than one with pathological coupling. Pre-Treble Android devices had an effective software lifespan of 2–3 major versions — directly proportional to how entangled their system and vendor partitions were. The FP5's deliberate SoC choice and HAL discipline are not two decisions; they are the same decision: choosing longevity by choosing boundary integrity. The generational scale is where affect becomes legacy — the membrane's health is what determines whether the organism's children can receive the same genome.",
+    evidence: "indicative",
+  },
+
   // ── MEMBRANE ────────────────────────────────────────────────────────────────
 
   {

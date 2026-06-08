@@ -135,6 +135,19 @@ export type ScaleFlow = {
  * attentionWeight (0–1): the relative coherence strength of this link,
  * interpreted as an analogue of the attention mechanism in transformer inference.
  * This framing is interpretive, not empirically measured.
+ *
+ * ipcMechanism: the Android IPC mechanism that most closely mirrors this
+ * biophoton link's coupling strength and dispatch pattern, grounded in the
+ * Fairphone 5 source (FP5_MANIFOLD_COMPARISON.md §3). Each mechanism carries
+ * a documented σ coupling value: Binder=0.9, Messenger=0.7, ordered=0.6, unordered=0.4.
+ *
+ * couplingSigma: the quantitative coupling strength from FP5 §3 (0–1).
+ * Distinct from the rateRange-derived proxy weight — this is the Android-IPC-
+ * grounded value, not the biophysical midpoint proxy.
+ *
+ * hubService: the Android service or kernel node that mediates this link
+ * (e.g., "ServiceManager" — the index-2 maximum through which all Binder
+ * connections are brokered, per MANIFOLD_ANALYSIS.md §1.3).
  */
 export type BiophotonLink = {
   sourceOrganelleId: string;
@@ -143,6 +156,9 @@ export type BiophotonLink = {
   rateRange: string;
   confidence: ClaimConfidence;
   attentionWeight?: number;
+  ipcMechanism?: "binder" | "messenger" | "ordered-broadcast" | "unordered-broadcast";
+  couplingSigma?: number;
+  hubService?: string;
 };
 
 /** One event in the deep lineage timeline of the triadic pattern. */

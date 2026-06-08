@@ -17,7 +17,7 @@ export const FRACTAL_CYCLES: FractalCycle[] = [
     zoneId: "nucleus",
     cycleTitle: "The Genome Expression Cycle",
     cycleDescription:
-      "The nucleus does not simply store DNA — it actively reads, transcribes, and dispatches. Each gene activation is a complete P→A→E cycle within the cell's command center.",
+      "The nucleus does not simply store DNA — it actively reads, transcribes, and dispatches. Each gene activation is a complete P→A→E cycle within the cell's command center. At the silicon scale, the same cycle plays out in the ARM64 system call path — every syscall is a complete kernel perception→affect→expression triple.",
     phases: [
       {
         id: "perception",
@@ -25,7 +25,7 @@ export const FRACTAL_CYCLES: FractalCycle[] = [
         description:
           "Transcription factors, assembled in the cytoplasm, migrate to the nucleus and bind specific DNA sequences upstream of target genes. The nucleus perceives biochemical instructions — not as raw data, but as typed signals with precise binding affinities.",
         scaleLabel: "Molecular",
-        hardwareAnalogue: "Prompt tokenization — typed input arrives at the model boundary",
+        hardwareAnalogue: "ARM64 svc #0 fires: arch/arm64/kernel/entry-common.S catches the instruction, reads syscall number from x8 and argument vector from x0–x5. The user process's intention crosses the hardware privilege boundary. irqentry_enter() saves register state — the kernel is now open.",
       },
       {
         id: "affect",
@@ -33,7 +33,7 @@ export const FRACTAL_CYCLES: FractalCycle[] = [
         description:
           "RNA polymerase II unwinds the DNA double helix and synthesizes mRNA complementary to the template strand. This is affect: the stored pattern (DNA) is being read and transformed into a mobile copy (mRNA). Neither is consumed — both persist.",
         scaleLabel: "Molecular",
-        hardwareAnalogue: "HTA attention computation — stored weights activating in response to input",
+        hardwareAnalogue: "sys_call_table[x8](x0–x5): the kernel looks up and executes the matched function. Transformation occurs entirely at EL1 (kernel privilege), invisible to userspace. Top half (ISR): immediate, time-critical execution. Bottom half: deferred, schedulable work queued by the top half.",
       },
       {
         id: "expression",
@@ -41,7 +41,7 @@ export const FRACTAL_CYCLES: FractalCycle[] = [
         description:
           "Mature mRNA, bearing the 5' cap and poly-A tail, is exported through nuclear pore complexes into the cytoplasm where ribosomes await. The nucleus's expression is the act of releasing a precise, addressed copy of its knowledge into the world.",
         scaleLabel: "Cellular",
-        hardwareAnalogue: "Token streaming — decoded output exits the inference layer to the display",
+        hardwareAnalogue: "syscall_exit_to_user_mode(): result marshalled into x0, user register state restored, privilege boundary lowered. The computation's output crosses back into userspace — the same boundary that was raised at perception is lowered at expression.",
       },
     ],
   },
@@ -248,7 +248,7 @@ export const FRACTAL_CYCLES: FractalCycle[] = [
     zoneId: "membrane",
     cycleTitle: "The Selective Permeability Cycle",
     cycleDescription:
-      "The cell membrane is the most philosophically sophisticated organelle: it decides what enters and what exits. Selective permeability is not passivity — it is active discrimination at the molecular scale, moment to moment.",
+      "The cell membrane is the most philosophically sophisticated organelle: it decides what enters and what exits. Selective permeability is not passivity — it is active discrimination at the molecular scale, moment to moment. Android's Project Treble made this same principle architectural policy: the /system↔/vendor HAL partition is selective permeability enforced in law.",
     phases: [
       {
         id: "perception",
@@ -256,7 +256,7 @@ export const FRACTAL_CYCLES: FractalCycle[] = [
         description:
           "A ligand molecule — hormone, neurotransmitter, or growth factor — binds to its specific receptor embedded in the lipid bilayer. The binding event is perception: a signal from outside the cell is received and converted into a conformational change inside the membrane protein. The cell's boundary has become a sensor.",
         scaleLabel: "Cellular",
-        hardwareAnalogue: "NNAPI graph partitioning — external operator matches hardware capability at the API boundary",
+        hardwareAnalogue: "Camera HAL3 CaptureRequest: the desired capture configuration (exposure, focus, sensor parameters) crosses the AIDL boundary inward — framework to vendor partition. Only operators that match the AIDL interface contract are admitted; malformed requests are rejected at the boundary.",
       },
       {
         id: "affect",
@@ -264,7 +264,7 @@ export const FRACTAL_CYCLES: FractalCycle[] = [
         description:
           "Receptor binding triggers allosteric conformational change: the intracellular domain adopts a new shape that enables it to recruit and activate downstream proteins (G-proteins, kinases). Incorrect ligands that bind with low affinity dissociate before triggering this change. The membrane's affect is discrimination in both directions: confirming the genuine signal, rejecting noise.",
         scaleLabel: "Molecular",
-        hardwareAnalogue: "Attention score thresholding — low-affinity keys masked before softmax normalization",
+        hardwareAnalogue: "ISP pipeline processes the CaptureRequest: HAL configures the Image Signal Processor, sets exposure curves, focus distances, and noise-reduction parameters — all transformation occurring inside the vendor partition, invisible to the framework above. Pre-Treble, this boundary did not exist; OTA updates broke these drivers because there was no membrane to contain the affect.",
       },
       {
         id: "expression",
@@ -272,7 +272,7 @@ export const FRACTAL_CYCLES: FractalCycle[] = [
         description:
           "The initiated cascade crosses the membrane boundary in both directions: second messengers are released inward; if the receptor is a channel, ions flow. Expression is the validated crossing — not a leak, not a forced entry, but a permitted passage that carries meaning precisely because it was discriminated. The membrane's 窗 (window) is a philosophical act as much as a physical one.",
         scaleLabel: "Symbolic",
-        hardwareAnalogue: "Model output crossing the API boundary — validated token written to the application layer",
+        hardwareAnalogue: "CaptureResult: the captured image buffer and its metadata cross the AIDL boundary outward — vendor partition to framework. The result is typed, addressed, and validated by the AIDL interface contract. Expression through the membrane is not leakage; it is release. The camera's 窗 is the HAL boundary opened precisely when the result is ready.",
       },
     ],
   },

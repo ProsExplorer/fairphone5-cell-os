@@ -133,6 +133,60 @@ export const SUBSTRATE_NODES: SubstrateNode[] = [
     ],
     confidence: "indicative",
     color: "hsl(35, 100%, 55%)"
+  },
+
+  // ── FP5 Source-Grounded Substrate Nodes ──────────────────────────────────────
+  // Added from FP5_MANIFOLD_COMPARISON.md findings. These represent real
+  // software-layer substrates that the manifold analysis identified as
+  // underrepresented in the original substrate node set.
+
+  {
+    id: "binder-ipc",
+    name: "Binder IPC / /dev/binder",
+    category: "stack",
+    role: "Inter-process communication fabric",
+    detail:
+      "The Linux kernel driver at /dev/binder mediates all inter-process communication in Android. It uses a single-copy mechanism (mmap) rather than full double-copy, transferring Parcels from client Proxy to server Stub without a kernel buffer copy. The ServiceManager is the phonebook — all Binder services register here by name, and all clients resolve services here. Four coupling tiers: Binder direct (σ=0.9), Messenger (σ=0.7), ordered broadcast (σ=0.6), unordered broadcast (σ=0.4).",
+    specs: [
+      { label: "Kernel node", value: "/dev/binder", confidence: "verified" },
+      { label: "Transfer mechanism", value: "Single-copy via mmap (not double-copy)", confidence: "verified" },
+      { label: "Service registry", value: "ServiceManager — index-2 maximum, all links route through it", confidence: "verified" },
+      { label: "Coupling tiers", value: "Binder σ=0.9 / Messenger σ=0.7 / Ordered σ=0.6 / Unordered σ=0.4", confidence: "verified" }
+    ],
+    confidence: "verified",
+    color: "hsl(50, 100%, 60%)"
+  },
+  {
+    id: "art-runtime",
+    name: "Android Runtime (ART)",
+    category: "stack",
+    role: "Managed execution environment — verify, compile, execute",
+    detail:
+      "ART is the cell's ribosome + Golgi combined: it verifies every DEX bytecode class against its type descriptors before generating native code (verification = codon-anticodon check), then dex2oat compiles the verified bytecode into native binaries with hardware-destination addresses written in (the Golgi's glycan address code). Includes a baseline JIT for cold starts and an optimizing JIT (profile-guided) for hot paths. Nothing executes in ART that has not passed type verification.",
+    specs: [
+      { label: "Verification", value: "Type-check DEX bytecode before native codegen", confidence: "verified" },
+      { label: "AOT compiler", value: "dex2oat — compile on install; writes native .oat/.odex files", confidence: "verified" },
+      { label: "JIT tiers", value: "Baseline JIT (fast) + Optimizing JIT (profile-guided)", confidence: "verified" },
+      { label: "GC model", value: "Concurrent, generational GC (maps to Mitochondria/Lysosomes)", confidence: "verified" }
+    ],
+    confidence: "verified",
+    color: "hsl(300, 70%, 65%)"
+  },
+  {
+    id: "bionic-libc",
+    name: "Bionic libc",
+    category: "stack",
+    role: "C runtime — heap, threads, and system call interface",
+    detail:
+      "Android's custom C library, replacing glibc. Bionic manages the process heap (jemalloc allocator), the thread pool (pthreads), and the thin wrapper layer over ARM64 system calls. It is the cytoplasm of the ART process: the fluid medium in which every app's objects are allocated and in which every thread swims. Its heap is the immediate environment for all runtime transformations.",
+    specs: [
+      { label: "Allocator", value: "jemalloc (thread-local cache, slab allocation)", confidence: "verified" },
+      { label: "Thread model", value: "POSIX pthreads — each thread gets its own stack frame", confidence: "verified" },
+      { label: "Syscall wrapper", value: "Thin ARM64 syscall shims — reads x8 (number), x0–x5 (args)", confidence: "verified" },
+      { label: "Link", value: "Bionic is statically linked into every ART process", confidence: "verified" }
+    ],
+    confidence: "verified",
+    color: "hsl(260, 60%, 50%)"
   }
 ];
 

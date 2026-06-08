@@ -58,6 +58,46 @@ export const ORGANELLE_SUBSTRATE_LINKS: OrganelleSubstrateLink[] = [
     description: "Vacuolar pressure regulates the cell's osmotic balance and storage; sustained file-system I/O and memory pressure directly reshape the SoC's thermal and power envelope.",
     rateRange: "~3–5W sustained I/O envelope (indicative)",
     relevance: 0.78
+  },
+
+  // ── FP5 Source-Grounded Link Additions ───────────────────────────────────────
+  // These three links wire the newly added substrate nodes (binder-ipc,
+  // art-runtime, bionic-libc) to the organelles the FP5 source most directly
+  // maps to them (FP5_MANIFOLD_COMPARISON.md §3–4).
+  {
+    organelleId: "vesicles",
+    substrateId: "binder-ipc",
+    description: "Vesicles carry cargo between cell compartments as discrete, addressed packets; Binder Parcels carry data between Android processes as discrete, typed IPC messages via /dev/binder's single-copy mmap mechanism. The cargo packet IS the vesicle.",
+    rateRange: "< 1ms per Binder transaction (synchronous, verified)",
+    relevance: 0.97
+  },
+  {
+    organelleId: "nuclear-pores",
+    substrateId: "binder-ipc",
+    description: "Nuclear pores are gated channels through which mRNA exits and transcription factors enter — nothing crosses without the correct signal. The ServiceManager is Android's nuclear pore: every Binder service registers its name here, and every client queries here first. All inter-process links are brokered through this one node.",
+    rateRange: "O(1) ServiceManager lookup per connection setup",
+    relevance: 0.91
+  },
+  {
+    organelleId: "ribosomes",
+    substrateId: "art-runtime",
+    description: "Ribosomes decode mRNA codons into amino acids through a verify-then-execute cycle; ART's dex2oat verifies DEX bytecode type descriptors before generating native code, then a baseline JIT and optimizing JIT compile hot paths. Both are dedicated machinery for one repeated decoding operation.",
+    rateRange: "JIT: 0.2–2ms per method compilation (hot path)",
+    relevance: 0.99
+  },
+  {
+    organelleId: "golgi-apparatus",
+    substrateId: "art-runtime",
+    description: "The Golgi writes destination addresses into cargo as it passes through the cisternae stack; dex2oat writes hardware destination annotations into native .oat/.odex binaries during app installation, routing code to the correct execution unit. Both are sequential refinement in dedicated chambers with addressed dispatch.",
+    rateRange: "dex2oat: seconds per app install (AOT compilation)",
+    relevance: 0.88
+  },
+  {
+    organelleId: "cytoplasm",
+    substrateId: "bionic-libc",
+    description: "The cytoplasm is the fluid medium in which all organelles and reactions are suspended — not passive, but the active environment of transformation. Bionic libc is ART's cytoplasm: jemalloc manages every object's heap allocation, pthreads manages every thread, and Bionic's syscall shims are the interface to the kernel nucleus below.",
+    rateRange: "jemalloc: ~50–100ns per allocation (thread-local cache path)",
+    relevance: 0.95
   }
 ];
 
@@ -76,30 +116,39 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
   {
     sourceOrganelleId: "nucleus",
     targetOrganelleId: "mitochondria",
-    description: "Ultra-weak photon emission may coordinate energy-state signaling between nucleus and mitochondria — the cell's two most information-dense structures.",
+    description: "Ultra-weak photon emission may coordinate energy-state signaling between nucleus and mitochondria — the cell's two most information-dense structures. Android analogue: Binder direct method calls, the tightest IPC coupling (synchronous, σ=0.9), brokered through ServiceManager.",
     rateRange: "10–100 photons/cm²/s",
-    confidence: "indicative"
+    confidence: "indicative",
+    ipcMechanism: "binder",
+    couplingSigma: 0.9,
+    hubService: "ServiceManager"
   },
   {
     sourceOrganelleId: "nucleus",
     targetOrganelleId: "ribosomes",
-    description: "Biophoton coherence has been proposed as a coordination signal across active transcription sites and ribosomal translation clusters.",
+    description: "Biophoton coherence has been proposed as a coordination signal across active transcription sites and ribosomal translation clusters. Android analogue: Messenger queues — async but point-to-point (σ=0.7), preserving the directional instruction-to-execution flow.",
     rateRange: "1–50 photons/cm²/s",
-    confidence: "indicative"
+    confidence: "indicative",
+    ipcMechanism: "messenger",
+    couplingSigma: 0.7
   },
   {
     sourceOrganelleId: "endoplasmic-reticulum",
     targetOrganelleId: "golgi-apparatus",
-    description: "The protein-trafficking pathway from ER to Golgi may involve biophoton bursts during vesicle budding events.",
+    description: "The protein-trafficking pathway from ER to Golgi may involve biophoton bursts during vesicle budding events. Android analogue: ordered broadcasts — sequential, priority-chained delivery (σ=0.6), matching the cisternae-to-cisternae procession.",
     rateRange: "1–30 photons/cm²/s",
-    confidence: "unconfirmed"
+    confidence: "unconfirmed",
+    ipcMechanism: "ordered-broadcast",
+    couplingSigma: 0.6
   },
   {
     sourceOrganelleId: "mitochondria",
     targetOrganelleId: "nuclear-pores",
-    description: "Mitochondrial membrane potential changes produce detectable biophoton bursts; nuclear pores may respond to the optical gradient.",
+    description: "Mitochondrial membrane potential changes produce detectable biophoton bursts; nuclear pores may respond to the optical gradient. Android analogue: unordered broadcasts — fully decoupled, fire-and-forget (σ=0.4), the energy signal broadcast to all waiting receivers.",
     rateRange: "5–80 photons/cm²/s",
-    confidence: "indicative"
+    confidence: "indicative",
+    ipcMechanism: "unordered-broadcast",
+    couplingSigma: 0.4
   },
 
   // ── Attention-map completion additions (MANIFOLD_ANALYSIS.md §11.5) ──────────
@@ -107,18 +156,22 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
   {
     sourceOrganelleId: "ribosomes",
     targetOrganelleId: "golgi-apparatus",
-    description: "Translation pulses in ribosomes may entrain Golgi packaging cadence — the mRNA-to-vesicle coherence pathway mirrored by the runtime-to-dispatch flow in on-device inference.",
+    description: "Translation pulses in ribosomes may entrain Golgi packaging cadence — the mRNA-to-vesicle coherence pathway mirrored by the ART JIT-to-dex2oat dispatch flow: hot paths JIT-compiled, then written into .oat files for the next install.",
     rateRange: "2–40 photons/cm²/s",
     confidence: "unconfirmed",
-    attentionWeight: 0.62
+    attentionWeight: 0.62,
+    ipcMechanism: "messenger",
+    couplingSigma: 0.7
   },
   {
     sourceOrganelleId: "dna",
     targetOrganelleId: "ribosomes",
-    description: "Genome-origin coherence guiding ribosomal translation forms the transcription loop — the instruction stream to execution engine, closing the expression cycle.",
+    description: "Genome-origin coherence guiding ribosomal translation forms the transcription loop — the instruction stream to execution engine, closing the expression cycle. Android analogue: verified-boot chain to ART — the code-signing root anchors every execution, Binder-mediated with tight coupling.",
     rateRange: "1–45 photons/cm²/s",
     confidence: "unconfirmed",
-    attentionWeight: 0.58
+    attentionWeight: 0.58,
+    ipcMechanism: "binder",
+    couplingSigma: 0.9
   }
 ];
 

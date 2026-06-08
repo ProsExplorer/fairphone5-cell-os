@@ -40,9 +40,9 @@ export const CELL_MAPPINGS: Organelle[] = [
   {
     id: "cell-membrane",
     name: "Cell Membrane",
-    osFeature: "Security & Permissions Layer",
-    explanation: "A protective barrier enforcing strict privacy, deciding which apps can access your camera, microphone, or data.",
-    analogy: "The membrane is the cell's gatekeeper protecting its contents; the OS permissions layer controls exactly what data leaves or enters your device.",
+    osFeature: "HAL Boundary / Security Layer",
+    explanation: "The double boundary of the Android OS: the HAL partition enforced by HIDL and AIDL (the /system↔/vendor wall that Project Treble made mandatory from Android 8 onward), and the app permissions layer controlling what data leaves or enters each sandboxed process. The Fairphone 5 launched on Android 13 — AIDL-native — making this boundary the most formally enforced in the device's history.",
+    analogy: "The membrane is the cell's only legal channel for crossing the boundary in either direction; Android's HAL partition is the same principle enforced in silicon — before Project Treble, /system and /vendor leaked into each other freely, and OTA updates broke hardware drivers. Treble fixed it by making the membrane real.",
     color: "hsl(140, 100%, 60%)" // Lime Green
   },
   {
@@ -64,9 +64,9 @@ export const CELL_MAPPINGS: Organelle[] = [
   {
     id: "ribosomes",
     name: "Ribosomes",
-    osFeature: "App Runtime / Process Execution",
-    explanation: "The engines that execute code, turning compiled software instructions into running, usable applications on your screen.",
-    analogy: "Ribosomes synthesize proteins from instructions; the app runtime executes binary instructions to spin up active processes.",
+    osFeature: "ART / JIT Compiler",
+    explanation: "Android Runtime (ART) is the cell's translation machinery: it verifies DEX bytecode type descriptors before any code executes (just as the ribosome checks codon-anticodon match before forming a peptide bond), then JIT-compiles hot paths with a baseline compiler followed by an optimizing compiler. Nothing runs in ART that hasn't passed verification — the genome's integrity is enforced before expression.",
+    analogy: "Ribosomes decode mRNA codons into amino acids, one codon at a time, with verification before commitment; ART decodes DEX bytecode into native instructions, verifying types before executing — both are dedicated machinery for one repeated decoding operation.",
     color: "hsl(300, 70%, 65%)" // Magenta
   },
   {
@@ -80,9 +80,9 @@ export const CELL_MAPPINGS: Organelle[] = [
   {
     id: "golgi-apparatus",
     name: "Golgi Apparatus",
-    osFeature: "Notifications + OTA Updates",
-    explanation: "The delivery center that packages information (like messages or software updates) and routes them exactly where they need to go.",
-    analogy: "The Golgi packages and ships proteins out; your OS notification system and updater packages and delivers critical information.",
+    osFeature: "App Compilation + Update Dispatch",
+    explanation: "The sequential refinement and dispatch center: dex2oat compiles DEX bytecode into native machine code during installation, writing the hardware destination into the app's binary (just as the Golgi writes glycan address codes into proteins). The same apparatus routes OTA update packages — addressed, staged, and delivered to the correct partition without touching the other.",
+    analogy: "The Golgi sorts proteins through stacked cisternae, writing a molecular zip code into each cargo before shipping; dex2oat compiles and optimizes Android apps into native binaries, and the update system packages OTA patches for precisely routed partition delivery.",
     color: "hsl(25, 90%, 60%)" // Peach
   },
   {

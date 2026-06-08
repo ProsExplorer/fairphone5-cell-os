@@ -50,6 +50,31 @@ Learning fires in `CellExplorerLayout` via a `useEffect` watching `view.activeOr
 5. **`getZoneForOrganelle`** exported from hebbianAdapter for reverse lookup by MembraneObserver.
 6. New adapter functions exported: `parseRateRangeProxy`, `blendAttentionWeight`, `getZonePhaseIntensity`.
 
+## Domain content — FP5 source-code-grounded evolutions (round 3)
+
+Three architect-prioritized evolutions implemented against FP5_MANIFOLD_COMPARISON.md:
+
+**Membrane/HAL remap:**
+- cell-membrane: now "HAL Boundary / Security Layer" — references /system↔/vendor AIDL partition + Project Treble
+- golgi-apparatus: now "App Compilation + Update Dispatch" — dex2oat (cisternae addressing) + OTA dispatch
+- ribosomes: now "ART / JIT Compiler" — verify-before-execute = codon-anticodon match
+- membrane fractalCycle: Camera HAL3 CaptureRequest→ISP→CaptureResult replaces NNAPI language
+- QI: membrane-affect-apparatus (Project Treble) + membrane-affect-generational (8-year longevity)
+
+**Binder IPC tensorization:**
+- BiophotonLink type: new optional `ipcMechanism`, `couplingSigma`, `hubService` fields
+- All 6 biophoton links: ipcMechanism + couplingSigma assigned (σ: binder=0.9, messenger=0.7, ordered=0.6, unordered=0.4)
+- Three new substrate nodes: binder-ipc, art-runtime, bionic-libc
+- Five new ORGANELLE_SUBSTRATE_LINKS: vesicles/nuclear-pores→binder-ipc; ribosomes/golgi→art-runtime; cytoplasm→bionic-libc
+
+**Kernel nucleus grounding:**
+- nucleus fractalCycle: hardwareAnalogues now cite arch/arm64/kernel/entry-common.S, svc#0, irqentry_enter(), sys_call_table, syscall_exit_to_user_mode()
+- QI: nucleus-perception-silicon (irqentry_enter) + nucleus-affect-silicon (sys_call_table EL1)
+
+**Current tensor densities:**
+- QI tensor: 22/264 = 8.3% (was 18)
+- Coupling tensor: 24/120 = 20.0% (was 19)
+
 ## Key constraint to maintain
 
 The confidence boost cap (+0.15 max) must never be raised high enough to reach σ=1.0 ("verified") from σ=0.5 ("indicative") or σ=0.0 ("unconfirmed") via user interaction alone. The static genome's confidence values are editorially calibrated; the epigenome adds evidence weight, not authority.
