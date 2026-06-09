@@ -206,7 +206,7 @@ export const SUBSTRATE_NODES: SubstrateNode[] = [
       { label: "Cold start saving", value: "~100ms class loading avoided per fork" }
     ],
     confidence: "verified",
-    color: "#7c3aed"
+    color: "#a78bfa"
   },
   {
     id: "lmkd",
