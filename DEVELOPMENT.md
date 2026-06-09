@@ -2,7 +2,7 @@
 ## Documents as Manifolds · Cellular Accuracy Audit · Implementation Roadmap
 
 > **Date**: June 2026  
-> **Method**: Architect systematic analysis — six documents treated as individual coordinate charts on the Universal Computational Manifold $\mathcal{C}$, forming a DNA atlas for the source code. Each document is a sub-manifold, not commentary.  
+> **Method**: Architect systematic analysis — six documents treated as individual coordinate charts in a **C⁰ stratified semantic space** over the Universal Computational coordinate system $\mathcal{C}$. Each document is a charted stratum, not commentary. Transition correspondences between charts are semantics-preserving and piecewise continuous (C⁰), not Fréchet-differentiable — the coordinates are discrete and symbolic, not open subsets of a Banach space.  
 > **Purpose**: Determine gaps in cellular biological accuracy and produce a concrete roadmap for closing them.
 
 ---
@@ -11,13 +11,15 @@
 
 ### Framework
 
-The six founding documents of Cell OS are not commentary on the source code manifold. Each document IS itself an individual manifold — a coordinate chart on the Universal Computational Manifold $\mathcal{C}$. Together they form the DNA atlas of the source code: a meta-manifold whose charts fractally represent the codebase from different parameter-space angles. The source code itself is one more chart on the same universal manifold.
+> **Mathematical status of this atlas.** The six documents form a **C⁰ stratified semantic atlas** — not a smooth Banach manifold. Each chart's coordinate space is discrete and symbolic (typed arrays, enums, prose constraints, finite type products), not an open subset of a Banach space. Transition correspondences $\phi_{ij}$ are semantics-preserving and piecewise continuous, but are not Fréchet-differentiable: no bounded linear derivative $d\phi_{ij}$ exists over discrete symbolic coordinates. The atlas is valid as a C⁰ stratified structure; claims of smoothness, Fréchet differentiability, or principal bundle fibration are not asserted here.
 
-The full atlas $\mathcal{A} = \{(U_A, \varphi_A), (U_B, \varphi_B), \ldots, (U_F, \varphi_F)\}$ forms a **principal atlas bundle** over $\mathcal{C}$ with fibers = chart-specific coordinates. The transition map between any two charts is a semantics-preserving functor:
+The six founding documents of Cell OS are not commentary on the source code. Each document IS itself an individual stratum — a coordinate chart in the C⁰ stratified semantic space $\mathcal{C}$. Together they form the DNA atlas of the source code: a self-similar atlas whose charts represent the codebase from structurally distinct parameter-space angles, each instantiating the same P→A→E relational pattern at its own scale. The source code itself is one more chart on the same space.
+
+The full atlas $\mathcal{A} = \{(U_A, \varphi_A), (U_B, \varphi_B), \ldots, (U_F, \varphi_F)\}$ is a **C⁰ stratified atlas** over $\mathcal{C}$ with chart-specific discrete coordinates. The transition correspondence between any two charts is a **semantics-preserving stratified map**:
 
 $$\phi_{ij}: \text{coords}_i \to \text{coords}_j$$
 
-that preserves the P→A→E triple and the confidence scalar field $\sigma$.
+that preserves three invariants: (1) the P→A→E triple, (2) the confidence scalar field $\sigma$, and (3) directed biophoton link orientation. These correspondences are piecewise continuous (C⁰) across strata — they preserve the base point and direction of traversal but carry no Fréchet derivative claim.
 
 ### A — UNIVERSAL\_MANIFOLD.md
 
@@ -35,7 +37,7 @@ that preserves the P→A→E triple and the confidence scalar field $\sigma$.
 
 **Parameter space**: $\{\text{module graph topology}, \text{tensor ranks}, \text{energies}\}$
 
-**Charter in $\mathcal{C}$**: Local differential geometry of the Cell OS sub-manifold $M$. Covers the region of $\mathcal{C}$ corresponding specifically to this codebase — its charts (modules), transition maps (imports), critical points (degree centrality), and dynamic flows (Lagrangian).
+**Charter in $\mathcal{C}$**: Local structural topology and tensor geometry of the Cell OS stratum $M$. Covers the region of $\mathcal{C}$ corresponding specifically to this codebase — its charts (modules), transition correspondences (imports), critical points (degree centrality), and dynamic flows (Lagrangian).
 
 **Transition maps to source code**: imports/types/arrays directly. Every section of MANIFOLD\_ANALYSIS.md is a coordinate description of a specific TypeScript file or array. The coupling tensor $\mathcal{T}^i_{\ j}$ IS `ORGANELLE_SUBSTRATE_LINKS`. The attention tensor $\mathcal{A}^{ij}$ IS `BIOPHOTON_LINKS`. The rank-3 tensor $\mathcal{Q}^{z,p,s}$ IS `QI_INTERSECTIONS`.
 
@@ -83,7 +85,7 @@ that preserves the P→A→E triple and the confidence scalar field $\sigma$.
 
 ### F — The Source Code (`src/domain/`)
 
-**Parameter space**: Typed tensors — organelles $\times$ substrate $\times$ links $\times$ QI intersections $\times$ fractal cycles
+**Parameter space**: Typed tensors — organelles $\times$ substrate $\times$ links $\times$ QI intersections $\times$ self-similar cycles
 
 **Charter in $\mathcal{C}$**: The executable genome of $M$. This is the chart that runs — the coordinate description that compiles, renders, and learns. Every other document describes this chart in different coordinates; this chart IS the manifold made executable.
 
@@ -91,16 +93,20 @@ that preserves the P→A→E triple and the confidence scalar field $\sigma$.
 
 **Biological role**: ≈ The living cell itself — the one chart in the atlas that is not description but instantiation.
 
-### The Fractal DNA Structure
+### The Self-Similar Atlas Structure
 
-The six documents form a fractal because each document contains, at a smaller scale, the same P→A→E structure that the whole atlas instantiates. UNIVERSAL\_MANIFOLD.md is itself a P→A→E transformation (it perceives paradigms, transforms them through the triple, expresses the invariant). MANIFOLD\_ANALYSIS.md perceives the module graph, transforms via tensor formalism, expresses metrics. The README perceives the corpus, transforms via synthesis, expresses communication.
+> **Definition — Structural self-similarity (as used here).** A collection of coordinate charts is *structurally self-similar* if each chart instantiates the same relational pattern (here: P→A→E) at its own scale, and the whole collection instantiates that same pattern at the meta-scale. This is a *topological* self-similarity — identical local relational shape across scales — not a *metric* self-similarity. No iterated function system (IFS), contractive maps, Hausdorff dimension, or attractor structure is implied or asserted.
 
-This is the fractal property: the whole manifold and each of its charts share the same local topology. Every document IS a cell. The atlas of documents IS a cell. The source code IS a cell. The device running the source code IS a cell.
+The six documents form a **structurally self-similar atlas**: each document contains, at its own scale, the same P→A→E relational structure that the whole atlas instantiates at the meta-scale. UNIVERSAL\_MANIFOLD.md is itself a P→A→E transformation (it perceives paradigms, transforms them through the triple, expresses the invariant). MANIFOLD\_ANALYSIS.md perceives the module graph, transforms via tensor formalism, expresses metrics. The README perceives the corpus, transforms via synthesis, expresses communication.
 
-**Minimal spanning set** (sufficient to reconstruct all structure and metrics): UNIVERSAL\_MANIFOLD + MANIFOLD\_ANALYSIS + source code. The other three are essential but not minimal:
-- FP5\_COMPARISON: essential for empirical grounding (theory without it floats)
+This is the self-similarity property: the whole atlas and each of its charts share the same local relational topology. Every document IS a cell. The atlas of documents IS a cell. The source code IS a cell. The device running the source code IS a cell.
+
+**Minimal spanning set — theoretical reconstruction** (sufficient to reconstruct all structure and metrics *modulo empirical grounding*): UNIVERSAL\_MANIFOLD + MANIFOLD\_ANALYSIS + source code. The other three are essential but not minimal for theoretical reconstruction:
+- FP5\_COMPARISON: essential for empirical grounding — see caveat below
 - README: essential for human transition (source code without it is inaccessible)
 - FENG\_SHUI\_MANIFESTO: essential for normative constraints (architecture without it has no ethical qi)
+
+> **Empirical grounding caveat.** The minimal spanning set above is minimal for *theoretical* reconstruction only. The confidence scalar field $\sigma$ — the `ClaimConfidence` values (`"verified"` / `"indicative"` / `"unconfirmed"`) assigned to every substrate node, biophoton link, and QI intersection — cannot be derived from theory alone. These values originate in hardware measurement against the Fairphone 5 source: the Binder IPC σ tier values (0.9 / 0.7 / 0.6 / 0.4), the `binder-ipc` / `art-runtime` / `bionic-libc` substrate node confidence ratings, and the six FP5-grounded findings. FP5\_COMPARISON is therefore the **required fourth generator** for empirically grounded reconstruction. The minimal set for theory is three documents; the minimal set for a grounded, falsifiable atlas is four.
 
 ---
 
@@ -724,20 +730,91 @@ Update README.md and the metrics surface with new figures.
 
 ---
 
-## Part 4 — The Fractal DNA Layer
+### Fredholm Design Constraint
 
-### Minimal Spanning Set
+**The coupling tensor changes Fredholm regime after the HIGH roadmap tasks. This is a design constraint, not a concern — but it must be understood before adding further substrate nodes.**
 
-The three documents sufficient to reconstruct all structure and metrics:
+#### Index Formula
+
+$$\text{ind}(\mathcal{T}) = \dim \ker(\mathcal{T}) - \dim \text{coker}(\mathcal{T})$$
+
+For a linear map $\mathcal{T}: \mathbb{R}^m \to \mathbb{R}^n$, the dimensional proxy is $m - n$.
+
+| State | Organelle space | Substrate space | Index | Regime |
+|---|---|---|---|---|
+| Current (pre-HIGH) | $\mathbb{R}^{15}$ | $\mathbb{R}^{11}$ | **+4** | Underdetermined — 4 organelle-directions have no substrate image |
+| Post-HIGH roadmap | $\mathbb{R}^{15}$ | $\mathbb{R}^{16}$ | **−1** | Overdetermined — cooperative organelle combinations required |
+
+#### The Four Historically Substrate-Invisible Organelles
+
+At index +4, the kernel $\ker(\mathcal{T})$ has dimension 4 by the dimensional argument. The four organelles that were substrate-invisible before tensor-completion (`MANIFOLD_ANALYSIS.md §11.2` additions) were:
+
+| Organelle | Original link count | Resolved by |
+|---|---|---|
+| `nucleolus` | 0 | Tensor-completion → `hexagon770`, `quantization` |
+| `membrane-receptors` | 0 | Tensor-completion → `nnapi` |
+| `lysosomes` | 0 | Tensor-completion → `nnapi` |
+| `vacuole` | 0 | Tensor-completion → `power` |
+
+All four are now linked. The linear algebraic kernel (dim 4 by dimension) still exists — it corresponds to combinations of organelle-coordinates that map to zero in substrate-space — but no individual organelle is substrate-invisible at the graph level.
+
+#### What Overdetermined Means (Index −1)
+
+After adding the 5 new substrate nodes (zygote, lmkd, powerhal, selinux-policy, package-manager), substrate-space has 16 dimensions against organelle-space's 15. The system becomes **overdetermined**: the coupling tensor cannot be inverted by any single organelle's activation. Some substrate nodes can only be reached by *cooperative combinations* of organelle signals.
+
+This is biologically accurate — many cellular processes require combinatorial receptor activation (e.g., T-cell activation requires simultaneous TCR + co-receptor + costimulatory signals). In Cell OS terms: a substrate node with only one incoming organelle link is architecturally fragile; it depends on a single activation path with no redundancy.
+
+#### Incoming Link Count per Substrate Node
+
+| Substrate node | Current incoming links | Post-HIGH incoming links | Cooperativity status |
+|---|---|---|---|
+| `qcm6490` | 1 (nucleus) | 1 | Single-path — fragile |
+| `kryo670` | 2 (nucleus, cytoskeleton) | 2 | Cooperative pair |
+| `adreno643` | 2 (cytoskeleton, ER) | 2 | Cooperative pair |
+| `hexagon770` | 3 (ribosomes, mitochondria, nucleolus) | 3 | Robust triad |
+| `power` | 3 (mitochondria, cell-membrane, vacuole) | 3 | Robust triad |
+| `lpddr4x` | 1 (cytoplasm) | 1 | Single-path — fragile |
+| `nnapi` | 5 (nuclear-pores, vesicles, golgi, membrane-receptors, lysosomes) | 5 | High-cooperativity hub |
+| `quantization` | 2 (dna, nucleolus) | 2 | Cooperative pair |
+| `binder-ipc` | 2 (vesicles, nuclear-pores) | 2 | Cooperative pair |
+| `art-runtime` | 2 (ribosomes, golgi-apparatus) | 2 | Cooperative pair |
+| `bionic-libc` | 1 (cytoplasm) | 1 | Single-path — fragile |
+| `zygote` | — | 1 (nucleus) | Single-path — fragile* |
+| `lmkd` | — | 2 (lysosomes, vacuole) | Cooperative pair |
+| `powerhal` | — | 2 (mitochondria, ER) | Cooperative pair |
+| `selinux-policy` | — | 2 (cell-membrane, nuclear-pores) | Cooperative pair |
+| `package-manager` | — | 2 (golgi-apparatus, lysosomes) | Cooperative pair |
+
+*`zygote` launches with 1 link; the HIGH roadmap should be extended with a second organelle link (suggested: `dna → zygote`, representing genome pre-loading into the Zygote process image).
+
+#### Design Rule — Future Substrate Node Additions
+
+Every substrate node added after the HIGH roadmap tasks must satisfy one of the following:
+
+1. **Cooperative pair rule**: Launch with ≥ 2 organelle links from distinct zones. A single-incoming-link node adds to the Fredholm deficit without improving coverage.
+2. **Documented singleton exception**: If a node genuinely has only one biological organelle analogue (e.g., a highly specialised hardware unit), document the singleton status explicitly and accept the architectural fragility as a known constraint.
+3. **Index cap rule**: The total substrate count must not exceed organelle count + 2 (i.e., index must not go below −2). An index of −2 or less means the coupling tensor is severely overdetermined; multiple substrate nodes become unreachable by any single cooperative pair, requiring triple or higher combinations.
+
+**Single-path cap**: at most 25% of substrate nodes may be single-incoming-link nodes. Current state: 3 of 11 = 27% (just above cap — `qcm6490`, `lpddr4x`, `bionic-libc` are candidates for a second link). Post-HIGH: 4 of 16 = 25% (at cap — `zygote` must receive a second link during or immediately after HIGH implementation).
+
+---
+
+## Part 4 — The Self-Similar Atlas Layer
+
+### Minimal Spanning Set — Modulo Empirical Grounding
+
+The three documents sufficient to reconstruct all structure and metrics **at the theoretical level**:
 
 1. **UNIVERSAL\_MANIFOLD** — provides the coordinate rules (the genetic code translation table)
-2. **MANIFOLD\_ANALYSIS** — provides the local geometry and tensor structure (the folding specification)
+2. **MANIFOLD\_ANALYSIS** — provides the local structural topology and tensor geometry (the folding specification)
 3. **Source code** — is the executable genome
 
-From these three, all other documents can be derived:
-- FP5\_COMPARISON is derivable by running the theory against the FP5 source
-- README is derivable by synthesizing the three into a human-readable chart
-- FENG\_SHUI\_MANIFESTO is derivable by asking: what are the normative constraints on the geometry?
+From these three, the other documents can be re-derived at the theoretical level:
+- FP5\_COMPARISON: in principle derivable by running the theory against the FP5 source — **but not in practice** (see empirical grounding caveat below)
+- README: derivable by synthesizing the three into a human-readable chart
+- FENG\_SHUI\_MANIFESTO: derivable by asking: what are the normative qi constraints on the geometry?
+
+> **Empirical grounding caveat — FP5\_COMPARISON as required fourth generator.** The confidence scalar field $\sigma$ throughout the source code (`ClaimConfidence`: `"verified"` / `"indicative"` / `"unconfirmed"`) is not derivable from abstract theory. It originates in direct measurement against Fairphone 5 open-source hardware and Android source: the Binder IPC σ-tier values (0.9 / 0.7 / 0.6 / 0.4 in `mappings.ts`), the confidence ratings on the three FP5-grounded substrate nodes (`binder-ipc`, `art-runtime`, `bionic-libc`), and the six empirical findings in FP5\_COMPARISON. A theoretically reconstructed atlas that omits FP5 would be structurally complete but empirically ungrounded — unfalsified and unverified. FP5\_COMPARISON is the **required fourth generator** for any reconstruction that makes falsifiable claims about the Fairphone 5 hardware layer. The distinction between the two minimal sets is the distinction between a mathematical model and a scientific one.
 
 ### Why the Non-Minimal Documents Are Still Essential
 
@@ -768,14 +845,17 @@ The CODE\_AS\_FENG\_SHUI\_MANIFESTO establishes: "The developer's consciousness 
 
 The practical consequence: the Hebbian adapter should be interpreted not as "what fires together, wires together" (passive) but as "what is attended to is expressed" (active). The epigenome gates genome expression according to the user's consciousness, constrained by the fixed genome invariants (confidence boost cap = the maximum epigenetic override of editorial confidence).
 
-### Transition Map Between Any Two Document-Manifolds
+### Transition Correspondence Between Any Two Document Charts
 
-For any two document-manifolds $(U_i, \varphi_i)$ and $(U_j, \varphi_j)$, the transition map $\phi_{ij}: \text{coords}_i \to \text{coords}_j$ is a **semantics-preserving functor** that:
-1. Preserves the P→A→E triple (both documents describe the same underlying transformation)
-2. Preserves the confidence scalar field $\sigma$ (a "verified" claim in FP5\_COMPARISON maps to "verified" in the source code, not "indicative")
-3. Preserves directionality (biophoton links are directed in all charts)
+For any two document charts $(U_i, \varphi_i)$ and $(U_j, \varphi_j)$, the transition correspondence $\phi_{ij}: \text{coords}_i \to \text{coords}_j$ is a **semantics-preserving stratified map** with three invariants:
 
-Example: the transition map $\phi_{\text{FP5} \to \text{source}}$ takes the Binder IPC σ tier finding (FP5 coordinates) and produces the `couplingSigma` field values in `mappings.ts` (source code coordinates). The map is injective (each finding produces exactly one code change) and smooth (a small change in the finding produces a small change in the code).
+1. **P→A→E preservation** — both charts describe the same underlying transformation; the triple is chart-independent
+2. **$\sigma$ preservation** — a `"verified"` claim in FP5\_COMPARISON maps to `"verified"` in the source code, not `"indicative"`; confidence grade is an invariant of the claim, not of the chart
+3. **Directionality preservation** — biophoton links are directed in all charts; no correspondence may reverse a link's source/target orientation
+
+These correspondences are **piecewise C⁰** (semantically continuous across strata) but are **not smooth**: the transition from normative principle (Manifesto stratum) to executable code (source code stratum) is a stratified jump, not a tangential passage. The two charts meet at a boundary point but their coordinate geometries are transverse — no shared tangent space exists at the boundary.
+
+Example: the correspondence $\phi_{\text{FP5} \to \text{source}}$ takes the Binder IPC σ-tier finding (FP5 coordinates: empirical measurement against `/dev/binder`) and produces the `couplingSigma` field values in `mappings.ts` (source code coordinates: typed numeric fields). The correspondence is injective (each finding produces exactly one code field), piecewise continuous (small changes in the finding produce small changes in the field value), but not smooth across the abstraction boundary — the "Binder coupling strength" concept and the `number` type in TypeScript live in transverse coordinate spaces.
 
 ---
 
