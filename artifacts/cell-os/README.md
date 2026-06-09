@@ -31,7 +31,7 @@ Cell OS is a source code manifold. The codebase instantiates a rank-3 tensor fie
 Q^{z,p,s} : Zone^8 × TriadPhase^3 × Scale^11 → QiIntersection ∪ {∅}
 ```
 
-264 possible cells. 22 curated intersections at present (8.3% density). The manifold is sparse by design — high-signal intersections only, no padding.
+264 possible cells. 30 curated intersections at present (11.4% density). The manifold is sparse by design — high-signal intersections only, no padding.
 
 The organism has two layers:
 
@@ -155,6 +155,8 @@ CaptureResult crosses the AIDL boundary outward       [E]
 
 The theory is **predictive** here, not merely accommodating. Android before Project Treble (≤7.1) had no stable HAL interface — `/system` and `/vendor` called each other directly. When Google shipped OTA updates, hardware drivers broke. The coupling density was, in the theory's terms, excessive; the membrane did not exist. Project Treble (Android 8.0, mandatory from Android 9) imposed HIDL as a hard architectural boundary. The explicit design goal was independent partition updatability — the same architectural insight the theory labels "healthy zone coupling," reached independently by Android engineers solving the same fragility problem. [FP5\_MANIFOLD\_COMPARISON.md §Finding 2]
 
+The cell membrane encodes two junction types: **tight junctions** (SELinux Type Enforcement rules — paracellular seal, enforced by LSM hooks in the kernel) and **gap junctions** (Binder ashmem/memfd channels — direct shared-memory pass-through between trusted processes). Both coexist at the same membrane boundary, exactly as they do in epithelial tissue.
+
 ### Finding 3 — Binder IPC = Biophoton Links (verified)
 
 Android's Binder IPC instantiates the biophoton link system:
@@ -172,7 +174,7 @@ Four coupling tiers form a precise spectrum:
 | Ordered broadcast | 0.6 | Async, priority-chained |
 | Unordered broadcast | 0.4 | Fire-and-forget, fully decoupled |
 
-These σ values are now encoded in the `BiophotonLink` type as `couplingSigma`, and assigned to each of the six biophoton links in `mappings.ts`. [FP5\_MANIFOLD\_COMPARISON.md §Finding 3]
+These σ values are encoded in the `BiophotonLink` type as `couplingSigma`, and assigned to each of the nine biophoton links in `mappings.ts`. [FP5\_MANIFOLD\_COMPARISON.md §Finding 3]
 
 ### Finding 4 — ART Instantiates All Eight Zones (verified)
 
@@ -184,10 +186,11 @@ Android Runtime on the FP5 either instantiates each zone directly or delegates t
 | Ribosomes | Baseline JIT + optimizing JIT (profile-guided) — the dedicated decoding machinery |
 | Mitochondria | Concurrent generational GC — energy management and cleanup |
 | Golgi | `dex2oat` AOT compilation — writes native `.oat`/`.odex` files with hardware destination annotations |
-| Membrane | App sandbox (SELinux) + AIDL partition boundary |
+| Nucleolus | ART preloading / `dex2oat` AOT factory — builds class images before they are requested, as the nucleolus pre-assembles ribosomal subunits ahead of translation demand |
+| Membrane | App sandbox (SELinux tight junctions) + AIDL partition boundary + Binder ashmem gap junctions |
 | Cytoplasm | Bionic libc — jemalloc heap, pthreads, ARM64 syscall shims |
-| DNA | Verified boot chain — code signing from bootloader to app |
-| ER | WebView/Chromium — sandboxed rendering process |
+| DNA | Verified boot chain — code signing from bootloader to app; Zygote pre-loads the genome into every forked process |
+| ER | WebView/Chromium — sandboxed rendering process; Ca²⁺-analogue IP3R→PowerHAL cascade for thermal signaling |
 
 [FP5\_MANIFOLD\_COMPARISON.md §Finding 4]
 
@@ -212,30 +215,30 @@ The overall verdict of the FP5 analysis: the theory's structural claims are accu
 ## The Organism Architecture
 
 ```
-artifacts/cell-os/
+src/
 │
-├── src/domain/                     ← The Static Genome
-│   ├── types.ts                    ← Index-2 maximum: all type exports (20 contracts)
+├── domain/                         ← The Static Genome
+│   ├── types.ts                    ← Index-2 maximum: all type exports (20+ contracts)
 │   └── content/
 │       ├── organelles.ts           ← 15 organelles, 8 zones, osFeature mappings
-│       ├── mappings.ts             ← Coupling tensor + biophoton links (ipcMechanism, couplingSigma)
-│       ├── qiMatrix.ts             ← Rank-3 QI tensor: 22 curated intersections
+│       ├── mappings.ts             ← Coupling tensor (34 links) + biophoton links (9)
+│       ├── qiMatrix.ts             ← Rank-3 QI tensor: 30 curated intersections
 │       ├── fractalCycles.ts        ← 8 internal P→A→E cycles (FP5 source-grounded analogues)
-│       ├── substrate.ts            ← 11 substrate nodes (QCM6490 through Bionic libc)
+│       ├── substrate.ts            ← 16 substrate nodes (QCM6490 through package-manager)
 │       ├── scales.ts               ← 11 scale flows, quantum → cosmic + silicon
 │       ├── lineage.ts              ← 7 lineage events, 147 CE → 2026
 │       ├── manifoldMetrics.ts      ← Live health metrics from source arrays
 │       └── constants.ts            ← HARMONIC_CONSTANT = 0.7770777
 │
-├── src/features/learning/          ← The Epigenome
+├── features/learning/              ← The Epigenome
 │   ├── useLearningStore.ts         ← Zustand: visit counts, attention weights, zone-phase tensor
 │   ├── hebbianAdapter.ts           ← Pure Hebbian functions (sqrt-scaled intensity, blended weights)
 │   ├── useMembraneObserver.ts      ← The sole gatekeeper of store writes
 │   └── useLearnedManifold.ts       ← Live synthesis of genome + epigenome
 │
-├── src/features/explorer/          ← Coordinate navigation
-├── src/pages/                      ← 5 coordinate chart surfaces
-└── src/hooks/use-sacred-signature.ts ← SHA-256 seal, rotating every 7770ms
+├── features/explorer/              ← Coordinate navigation
+├── pages/                          ← 5 coordinate chart surfaces
+└── hooks/use-sacred-signature.ts   ← SHA-256 seal, rotating every 7770ms
 ```
 
 The import graph of the domain layer is a **directed acyclic graph** — TypeScript enforces this at the domain layer. The manifold $M$ is therefore **contractible**: it has the homotopy type of a point, and its zeroth Betti number $\beta_0 = 1$. There are no import cycles in the static genome. [MANIFOLD\_ANALYSIS.md §1.4]
@@ -288,28 +291,39 @@ Three tensors, three spaces of description.
 `ORGANELLE_SUBSTRATE_LINKS` in `mappings.ts`. A sparse matrix over organelle × substrate index space.
 
 ```
-Canonical space (MANIFOLD_ANALYSIS.md §2.3, 8 substrate nodes): 15 × 8  = 120
-Current space   (11 substrate nodes, after FP5 grounding round):  15 × 11 = 165
-Active links: 24
-Density:      24 / 165 ≈ 14.5%
+Canonical space (MANIFOLD_ANALYSIS.md §2.3, 8 substrate nodes):  15 × 8  = 120
+Pre-roadmap space (11 substrate nodes, after FP5 grounding):      15 × 11 = 165
+Current space   (16 substrate nodes, after biological accuracy):  15 × 16 = 240
+Active links: 34
+Density:      34 / 240 ≈ 14.2%
 Healthy:      10–25%  ← within range
 ```
 
-The substrate space grew from 8 to 11 nodes when the FP5 grounding round added `binder-ipc`, `art-runtime`, and `bionic-libc`. The MANIFOLD\_ANALYSIS.md §2.3 figure (120, density ≈ 11.7%) reflects the pre-grounding state; 165 / 14.5% is the live figure. The tensor is not self-adjoint (organelle and substrate index spaces are distinct — no natural diagonal). Column centrality: `binder-ipc` carries the highest in-degree of the new nodes.
+The substrate space grew from 8 → 11 → 16 nodes across two evolution rounds. The FP5 grounding round (8→11) added `binder-ipc`, `art-runtime`, and `bionic-libc`. The biological accuracy roadmap (11→16) added five `"stack"` category nodes:
+
+| New node | Biological analogue | Android role |
+|---|---|---|
+| `zygote` | Centrosome MTOC — pre-assembles spindle for every division | Process-forking hub; pre-loads genome (class images) into every child process |
+| `lmkd` | Lysosomal autophagy — bulk degradation under nutrient stress | Low Memory Killer Daemon; bulk-kills cached processes by `oom_score_adj` when memory pressure rises |
+| `powerhal` | Ca²⁺ second-messenger cascade — IP3R→CaM-kinase II | Power HAL; `powerHint()` type selects exactly one downstream subsystem (CPU governor, display, thermal zone) |
+| `selinux-policy` | Tight junctions (occludin/claudin) — paracellular seal | SELinux Type Enforcement rules; LSM hooks in the kernel enforce hard domain boundaries |
+| `package-manager` | Endolysosomal targeted routing — receptor-mediated endocytosis to lysosomal hydrolases | PackageManager; APK verification → dexopt → install dispatch; force-stop and uninstall as targeted degradation |
+
+The tensor is not self-adjoint (organelle and substrate index spaces are distinct — no natural diagonal). The dna→zygote and nucleus→zygote links form a **Fredholm cooperative pair**: both are required for the Zygote node's well-posedness (a Zygote without a genome is not a valid fork).
 
 ### The Attention Tensor $\mathcal{A}^{ij}$ (Biophoton Links)
 
-`BIOPHOTON_LINKS` in `mappings.ts`. Six directed organelle-to-organelle links with both biophysical rate-range weights (rateRange-derived proxy) and Android IPC coupling σ values.
+`BIOPHOTON_LINKS` in `mappings.ts`. Nine directed organelle-to-organelle links with biophysical rate-range weights and Android IPC coupling σ values.
 
 ```
-Current links: 6
+Current links: 9
 Space:         15 × 15 = 225 possible directed pairs
-Density:       2.7%
+Density:       4.0%
 ```
 
 Symmetrisation is an explicit modelling assumption, not a code property: $w_{ij} = w_{ji} = \frac{1}{2}(A^{ij} + A^{ji})$. [MANIFOLD\_ANALYSIS.md §2.4]
 
-All six links — proxy weights (midpoint of rateRange ÷ global max 100 ph/cm²/s) or explicit `attentionWeight` where set:
+All nine links — proxy weights (midpoint of rateRange ÷ global max 100 ph/cm²/s) or explicit `attentionWeight` where set:
 
 | $(i,j)$ | $w_{ij}$ | weight source | IPC analogue | $\sigma$ |
 |---|---|---|---|---|
@@ -319,8 +333,11 @@ All six links — proxy weights (midpoint of rateRange ÷ global max 100 ph/cm²
 | ER → golgi | 0.16 | proxy | Ordered broadcast | 0.6 |
 | ribosomes → golgi | 0.62 | explicit | Messenger | 0.7 |
 | dna → ribosomes | 0.58 | explicit | Binder direct | 0.9 |
+| membrane-receptors → cytoplasm | 0.71 | explicit | Messenger | 0.7 |
+| golgi-apparatus → lysosomes | 0.44 | explicit | Ordered broadcast | 0.6 |
+| mitochondria → dna | 0.52 | explicit | Binder direct | 0.9 |
 
-The two explicit weights (`ribosomes→golgi`, `dna→ribosomes`) were editorially set rather than computed from rateRange midpoints; they are encoded directly in `mappings.ts` as `attentionWeight`.
+The three new links encode cascade pathways: GPCR→G-protein cytoplasmic amplification, TGN→lysosome targeted degradation routing, and cytochrome c→CAD nuclear fragmentation (intrinsic apoptosis). The mitochondria→dna link (σ=0.9, binder) reflects the tightest coupling in the apoptotic program — once cytochrome c is released, nuclear fragmentation is committed.
 
 ### The QI Tensor $\mathcal{Q}^{z,p,s}$ (Rank-3)
 
@@ -328,14 +345,67 @@ The two explicit weights (`ribosomes→golgi`, `dna→ribosomes`) were editorial
 
 ```
 Space:   8 × 3 × 11 = 264 cells
-Current: 22 curated intersections
-Density: 8.3%
-Healthy: 5–10%  ← currently within range
+Current: 30 curated intersections
+Density: 11.4%
+Healthy: 5–10%  ← marginally above range; amber on the Metrics surface
 ```
+
+The 8 intersections added in the biological accuracy roadmap:
+
+| ID | Zone | Phase | Scale | Subject |
+|---|---|---|---|---|
+| qi-chromatin-affect-cellular | nucleus | affect | cellular | H3K4me3/H3K27me3 chromatin remodeling → profile-guided dex2oat |
+| qi-mrna-perception-silicon | ribosomes | perception | silicon | mRNA 5′-cap recognition → INT8 token embedding |
+| qi-calcium-affect-molecular | endoplasmic-reticulum | affect | molecular | IP3R Ca²⁺ release → PowerHAL thermal cascade |
+| qi-ups-affect-cellular | cytoplasm | affect | cellular | 26S proteasome targeted degradation → PackageManager |
+| qi-cellcycle-perception-generational | nucleus | perception | generational | G0→G1→S→G2→M cell cycle → Android process lifecycle |
+| qi-apoptosis-expression-organic | mitochondria | expression | organic | Cytochrome c → caspase cascade → LMKD SIGKILL |
+| qi-gapjunction-perception-cellular | membrane | perception | cellular | Connexin-43 gap junction → Binder ashmem shared memory |
+| qi-ecm-perception-apparatus | membrane | perception | apparatus | Integrin mechanotransduction → HAL CaptureRequest sensor registration |
 
 Each intersection is where three axes illuminate each other with maximum clarity. An empty cell is not a gap — it is a coordinate location that has not yet earned population. The tensor grows through editorial curation, not enumeration. [MANIFOLD\_ANALYSIS.md §2.5]
 
-The **Metrics surface** (`/metrics`) renders live values for all three tensors and flags deviations from healthy ranges. All figures are computed from the source arrays on every import — they cannot drift from the actual data.
+---
+
+## Biological Accuracy Roadmap — Implemented Changes
+
+The following changes were implemented and architect-reviewed across seven coordinated tasks (C1, H1–H4, M1, M2). All changes are in `domain/content/` — the static genome layer.
+
+### C1 — Nucleolus Remap
+
+`osFeature: "Bootloader / System Startup"` was biologically wrong. The nucleolus is the cell's ribosomal subunit factory — it pre-assembles rRNA and ribosomal proteins **before** translation demand arrives. It is not the initial wake signal.
+
+Corrected: `osFeature: "ART Preloading / dex2oat AOT Factory"`. The ART class-image pre-loading pipeline, which runs dex2oat at install time to compile `.dex` bytecode into native `.oat`/`.odex` before any process requests those classes, is the precise Android analogue.
+
+### H1 — Five New Substrate Nodes
+
+See the coupling tensor table above. Each node is `category: "stack"`, `confidence: "verified"`, with full `SpecRow[]` entries.
+
+Biological separation enforced: LMKD maps to bulk **autophagy** (lysosomal, mTOR-inhibited, bulk-kill), not to the ubiquitin-proteasome system (targeted, cytosolic, ATP-dependent). PackageManager maps to the **endolysosomal** targeted routing arm (receptor-mediated endocytosis → lysosomal hydrolases), distinct from LMKD's bulk pathway.
+
+### H2 — Ten New Organelle-Substrate Links
+
+The 10 links wire the 5 new nodes to biologically justified organelle pairs. The `dna→zygote` link is required by the **Fredholm cooperative-pair rule**: a Zygote without a genome is underdetermined. The `lysosomes` organelle now holds three substrate links — `nnapi` (existing, protein expression quality control), `lmkd` (bulk autophagy), and `package-manager` (targeted endolysosomal routing) — each biologically distinct.
+
+### H3 — Eight New QI Intersections
+
+Brings the total from 22 to 30. The QI density (11.4%) now sits marginally above the documented 5–10% healthy range — it renders amber on the Metrics surface. This is the correct editorial response to a more complete biological grounding; the tensor has grown because the intersections have been earned, not padded.
+
+### H4 — Three New Biophoton Links
+
+Three cascade pathways that were structurally implicit but not encoded: GPCR signal crossing from membrane receptors into cytoplasm, Golgi→lysosome targeted degradation routing, and mitochondria→DNA apoptotic commitment signal.
+
+### M1 — Fractal Cycle Phase Updates (Three Zones)
+
+**Membrane affect**: the GPCR cascade is now accurately described as subtype-specific: one receptor activates exactly one G-protein class (Gαs OR Gαq OR Gαi — not all simultaneously). The Android analogue is updated to match: each `powerHint()` type routes to exactly one downstream subsystem, not all at once.
+
+**ER expression**: bifurcated output correctly described — COPII protein release (structural output) runs in parallel with IP3R Ca²⁺ pulse dispatch (second-messenger output). The ER expresses in two channels simultaneously; the PowerHAL thermal cascade is the Ca²⁺ analogue.
+
+**Cytoskeleton affect**: split into three named filament systems with explicit timescales: actin (seconds-scale, Rho GTPase, UI thread analogue), microtubules (minutes-scale, directional, Binder thread pool analogue), intermediate filaments (hours-scale turnover — far less dynamic than actin/microtubules, not non-dynamic — kernel ABI stability analogue).
+
+### M2 — Cell Membrane Junction Distinction
+
+The cell-membrane organelle now encodes both junction types in `explanation` and `analogy`: tight junctions (SELinux TE rules, paracellular seal enforced by LSM hooks) and gap junctions (Binder ashmem/memfd channels, direct shared-memory pass-through between trusted compartments).
 
 ---
 
@@ -376,7 +446,7 @@ This is the surface where the organism explains itself in its own language.
 
 ### Substrate Atlas — The Hardware Surface (`/substrate`)
 
-The FP5 hardware substrate: QCM6490 SoC, Kryo 670 CPU (1+3+4 core arrangement), Hexagon 770 NPU (scalar + HVX + HTA + HMX sub-units, 12 TOPS INT8), Adreno 643 GPU, LPDDR4x 8GB, and the FP5-source-grounded software nodes added in the third evolution round — Binder IPC (`/dev/binder`, single-copy mmap, four σ tiers), Android Runtime (ART — dex2oat + JIT tiers), and Bionic libc (jemalloc heap, pthreads, ARM64 syscall shims). Full spec tables. Confidence ratings (`verified` / `indicative` / `unconfirmed`) for every claim.
+The FP5 hardware substrate: QCM6490 SoC, Kryo 670 CPU (1+3+4 core arrangement), Hexagon 770 NPU (scalar + HVX + HTA + HMX sub-units, 12 TOPS INT8), Adreno 643 GPU, LPDDR4x 8GB, and all 16 software stack nodes — Binder IPC, Android Runtime, Bionic libc, Zygote, LMKD, PowerHAL, SELinux policy, and PackageManager. Full spec tables. Confidence ratings (`verified` / `indicative` / `unconfirmed`) for every claim.
 
 This is the organism's skeleton made visible.
 
@@ -384,8 +454,10 @@ This is the organism's skeleton made visible.
 
 Select any of the eight zones and navigate its internal P→A→E cycle at depth-1. Each cycle has a biological description and a `hardwareAnalogue` grounded in the FP5 source:
 
-- Nucleus cycle: `arch/arm64/kernel/entry-common.S` → `irqentry_enter()` → `sys_call_table` → `syscall_exit_to_user_mode()`
-- Membrane cycle: Camera HAL3 `CaptureRequest` → ISP pipeline → `CaptureResult` across the AIDL boundary
+- **Nucleus cycle**: `arch/arm64/kernel/entry-common.S` → `irqentry_enter()` → `sys_call_table` → `syscall_exit_to_user_mode()`
+- **Membrane cycle**: Camera HAL3 `CaptureRequest` → ISP pipeline (GPCR cascade: one receptor, one G-protein subtype, one downstream cascade) → `CaptureResult` across the AIDL boundary
+- **ER cycle**: BiP/calnexin quality gate [A] → bifurcated expression: COPII protein release + IP3R Ca²⁺ pulse dispatch simultaneously [E]
+- **Cytoskeleton cycle**: integrin mechanotransduction [P] → three-filament reorganization (actin seconds-scale, microtubules minutes-scale, intermediate filaments hours-scale) [A] → new adhesion topology enables constrained movement [E]
 
 The scale invariance claim is not stated here — it is demonstrated. The fractal navigator shows the same triadic structure at depth 0 (the whole cell) and depth 1 (each zone's interior) without repeating the same content.
 
@@ -393,16 +465,16 @@ The scale invariance claim is not stated here — it is demonstrated. The fracta
 
 The manifold's blood panel. Live values for all health metrics, computed from the source arrays on every render:
 
-| Metric | Current | Healthy range |
-|---|---|---|
-| Coupling tensor density | 14.5% | 10–25% |
-| QI tensor density | 8.3% | 5–10% |
-| Biophoton link count | 6 | 2–10 |
-| Mean zone confidence | computed live | 75–100% |
-| Export rank total | computed live | 40–80 |
-| Phase transition count | computed live | 4–7 |
+| Metric | Current | Healthy range | Status |
+|---|---|---|---|
+| Coupling tensor density | 14.2% | 10–25% | Green |
+| QI tensor density | 11.4% | 5–10% | Amber |
+| Biophoton link count | 9 | 2–10 | Green |
+| Mean zone confidence | computed live | 75–100% | computed live |
+| Export rank total | computed live | 40–80 | computed live |
+| Phase transition count | computed live | 4–7 | computed live |
 
-Green = healthy. Amber = outside range. The organism monitors itself.
+Green = healthy. Amber = outside range. The QI density at 11.4% is marginally above the documented 5–10% range — this is correct: the intersections were earned through biological grounding, not enumerated to fill the space. The organism monitors itself.
 
 ---
 
@@ -467,6 +539,8 @@ mitochondria · golgi · endoplasmic-reticulum · membrane
 **The `ORGANELLE_TO_ZONE` map** — the canonical mapping from organelle ID to zone ID, defined once in `hebbianAdapter.ts` and used across the diagram, metrics, and learning subsystems. It must remain consistent across all three.
 
 **The static genome principle** — `domain/content/` files contain no logic, no API calls, no runtime computation. They are pure data: the organism's DNA. The epigenome may read from the genome; the genome does not read from the epigenome.
+
+**The Fredholm cooperative-pair rule** — any new substrate node that represents a process-forking or genome-instantiating mechanism must be linked by at least two organelle-substrate links forming a cooperative pair: the structural organelle (nucleus) and the content organelle (dna). A Zygote without a genome is underdetermined; both links are required for the coupling tensor to be well-posed at that column.
 
 ---
 
