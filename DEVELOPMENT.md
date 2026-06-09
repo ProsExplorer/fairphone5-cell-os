@@ -510,12 +510,14 @@ Add to `ORGANELLE_SUBSTRATE_LINKS`:
 // OrganelleSubstrateLink fields: organelleId, substrateId, description?, rateRange?, relevance?
 // 'strength' is not in the type — use 'relevance' (0–1, 1.0 = primary/canonical mapping)
 
-// Centrosome/MTOC → Zygote
+// Centrosome/MTOC → Zygote (two links required: Fredholm single-path rule — see §Fredholm Design Constraint)
 { organelleId: 'nucleus', substrateId: 'zygote', description: 'Nucleus governs Zygote pre-loading: the type system (genome) is pre-loaded into Zygote before any fork, ensuring all child processes inherit the correct chromosome set', relevance: 0.85 },
+{ organelleId: 'dna', substrateId: 'zygote', description: 'The genome (dna) is the content that Zygote pre-loads into every fork — verified-boot chain ensures the same signed genome image reaches every child process, exactly as the nucleotide sequence is faithfully copied into every daughter cell at division', relevance: 0.78 },
 
-// Autophagy/UPS → LMKD
-{ organelleId: 'lysosomes', substrateId: 'lmkd', description: 'Lysosomes execute LMKD-directed degradation: LMKD identifies the target (ubiquitin tagging), lysosomes execute the termination (26S proteasome)', relevance: 0.90 },
-{ organelleId: 'vacuole', substrateId: 'lmkd', description: 'Vacuole stores excess material; under LMKD pressure, vacuolar contents (cached process memory) are reclaimed first', relevance: 0.70 },
+// Autophagy → LMKD (lysosomal bulk degradation pathway, NOT the ubiquitin-proteasome system)
+// UPS (targeted protein degradation) maps to PackageManager below — these are distinct pathways
+{ organelleId: 'lysosomes', substrateId: 'lmkd', description: 'Lysosomes execute autophagy — bulk degradation of cytoplasmic contents when nutrients are scarce or organelles are damaged. LMKD is the Android autophagy axis: when memory pressure rises (mTOR inhibited = low memory signal), LMKD bulk-kills cached background processes in oom_score_adj order. Not the ubiquitin-proteasome system (which is targeted); this is the bulk lysosomal pathway.', relevance: 0.90 },
+{ organelleId: 'vacuole', substrateId: 'lmkd', description: 'Vacuole stores excess material and regulates osmotic pressure; under LMKD memory pressure, vacuolar contents (cached process memory) are reclaimed first — equivalent to the vacuole releasing stored reserves during nutrient stress', relevance: 0.70 },
 
 // Ca²⁺ signaling → PowerHAL
 { organelleId: 'mitochondria', substrateId: 'powerhal', description: 'Mitochondria generate the power gradient; PowerHAL converts power state changes into second-messenger signals exactly as Ca²⁺ flux converts membrane potential into intracellular cascade', relevance: 0.80 },
@@ -554,10 +556,12 @@ Add to `ORGANELLE_SUBSTRATE_LINKS`:
 },
 
 // 2. mRNA processing — from raw transcript to translatable message
+// phaseId: 'perception' — the ribosomes zone PERCEIVES the processed mRNA before translating it.
+// Part 2 gap description identifies {ribosomes × perception × silicon} as the missing intersection.
 {
-  id: 'qi-mrna-expression-silicon',
+  id: 'qi-mrna-perception-silicon',
   zoneId: 'ribosomes',
-  phaseId: 'expression',
+  phaseId: 'perception',
   scaleId: 'silicon',
   title: 'mRNA Processing as DEX Pipeline',
   narrative: 'Pre-mRNA undergoes spliceosome processing (U1/U2/U4/U5/U6 snRNPs remove introns), 5-prime capping (CBC cap-binding complex), and 3-prime polyadenylation (CPSF) before export. The DEX pipeline is structurally isomorphic: dex2oat verify stage removes invalid instructions (splicing), D8 desugaring adapts bytecode for runtime (exon modification), ART quickening opcodes mark hot paths (5-prime cap). Only processed DEX exits to the runtime.',
@@ -578,15 +582,18 @@ Add to `ORGANELLE_SUBSTRATE_LINKS`:
 },
 
 // 4. Ubiquitin-Proteasome — targeted protein degradation
+// NOTE: The UPS operates at the PROTEIN level (individual molecule targeting), not process level.
+// LMKD is the Android analogue of AUTOPHAGY (bulk lysosomal degradation), not the UPS.
+// The correct UPS analogue is PackageManager (targeted app-level degradation with typed identification).
 {
   id: 'qi-ups-affect-cellular',
   zoneId: 'cytoplasm',
   phaseId: 'affect',
   scaleId: 'cellular',
-  title: 'Ubiquitin-Proteasome as LMKD Targeted Kill',
-  narrative: 'UBA1 (E1) activates ubiquitin → UBE2D (E2) conjugates → RING/HECT E3 ligase recognizes the specific substrate → poly-ubiquitin chain attached → 26S proteasome (19S+20S) unfolds and cleaves the target → ubiquitin recycled. LMKD calculates oom_score_adj per process (E3 recognition step) → sends SIGKILL to the specific target via /proc/pid/oom_score → memory reclaimed → process slot recycled. Targeted, not indiscriminate. The E3 ubiquitin ligase = the oom_score_adj algorithm.',
-  hardwareAnalogue: 'LMKD (lmkd daemon), oom_score_adj, SIGKILL, /proc/pid/oom_score',
-  evidence: 'verified'
+  title: 'Ubiquitin-Proteasome as PackageManager Targeted Degradation',
+  narrative: 'UBA1 (E1) activates ubiquitin → UBE2D (E2) conjugates → RING/HECT E3 ligase recognizes the specific substrate by its degradation signal (degron) → poly-ubiquitin chain attached → 26S proteasome (19S+20S) unfolds and cleaves that specific target → ubiquitin recycled. Critically: UPS acts on INDIVIDUAL PROTEINS with typed recognition — it is not bulk degradation. PackageManager is the correct Android analogue: it recognises a specific APK by package name (E3 degron recognition), executes force-stop or uninstall against exactly that target (26S proteasome cleavage), and frees its storage (ubiquitin recycling). Process-level bulk killing (LMKD) maps instead to the lysosomal autophagy pathway.',
+  hardwareAnalogue: 'PackageManager force-stop, pm uninstall, dexopt cleanup — NOT LMKD (which is autophagy)',
+  evidence: 'indicative'
 },
 
 // 5. Cell cycle — organism lifecycle phases
@@ -723,7 +730,7 @@ Document in this file: when the 15-organelle constraint is lifted in a future ev
 
 After adding the 5 new substrate nodes and their links, recompute:
 - Coupling tensor space: 15 × 16 = 240 (if 16 substrate nodes)
-- Density: 24 + 9 new links = 33 / 240 ≈ 13.8%
+- Density: 24 + 10 new links = 34 / 240 ≈ 14.2% (H2 adds 10 links: 9 originally specified + `dna→zygote` added to satisfy Fredholm cooperative-pair rule)
 - QI tensor: 22 + 8 new intersections = 30 / 264 ≈ 11.4% (approaching upper bound of 10% healthy range — curate, do not pad)
 
 Update README.md and the metrics surface with new figures.
@@ -779,13 +786,11 @@ This is biologically accurate — many cellular processes require combinatorial 
 | `binder-ipc` | 2 (vesicles, nuclear-pores) | 2 | Cooperative pair |
 | `art-runtime` | 2 (ribosomes, golgi-apparatus) | 2 | Cooperative pair |
 | `bionic-libc` | 1 (cytoplasm) | 1 | Single-path — fragile |
-| `zygote` | — | 1 (nucleus) | Single-path — fragile* |
+| `zygote` | — | 2 (nucleus, dna) | Cooperative pair |
 | `lmkd` | — | 2 (lysosomes, vacuole) | Cooperative pair |
 | `powerhal` | — | 2 (mitochondria, ER) | Cooperative pair |
 | `selinux-policy` | — | 2 (cell-membrane, nuclear-pores) | Cooperative pair |
 | `package-manager` | — | 2 (golgi-apparatus, lysosomes) | Cooperative pair |
-
-*`zygote` launches with 1 link; the HIGH roadmap should be extended with a second organelle link (suggested: `dna → zygote`, representing genome pre-loading into the Zygote process image).
 
 #### Design Rule — Future Substrate Node Additions
 
@@ -795,7 +800,7 @@ Every substrate node added after the HIGH roadmap tasks must satisfy one of the 
 2. **Documented singleton exception**: If a node genuinely has only one biological organelle analogue (e.g., a highly specialised hardware unit), document the singleton status explicitly and accept the architectural fragility as a known constraint.
 3. **Index cap rule**: The total substrate count must not exceed organelle count + 2 (i.e., index must not go below −2). An index of −2 or less means the coupling tensor is severely overdetermined; multiple substrate nodes become unreachable by any single cooperative pair, requiring triple or higher combinations.
 
-**Single-path cap**: at most 25% of substrate nodes may be single-incoming-link nodes. Current state: 3 of 11 = 27% (just above cap — `qcm6490`, `lpddr4x`, `bionic-libc` are candidates for a second link). Post-HIGH: 4 of 16 = 25% (at cap — `zygote` must receive a second link during or immediately after HIGH implementation).
+**Single-path cap**: at most 25% of substrate nodes may be single-incoming-link nodes. Current state: 3 of 11 = 27% (just above cap — `qcm6490`, `lpddr4x`, `bionic-libc` are candidates for a second link). Post-HIGH: 3 of 16 = 18.75% (below cap — the `dna→zygote` link added to H2 brings all five new substrate nodes to cooperative-pair status, clearing the cap constraint).
 
 ---
 
@@ -812,11 +817,13 @@ The three documents sufficient to reconstruct all structure and metrics **at the
 From these three, the other documents can be re-derived at the theoretical level:
 - FP5\_COMPARISON: in principle derivable by running the theory against the FP5 source — **but not in practice** (see empirical grounding caveat below)
 - README: derivable by synthesizing the three into a human-readable chart
-- FENG\_SHUI\_MANIFESTO: derivable by asking: what are the normative qi constraints on the geometry?
+- FENG\_SHUI\_MANIFESTO: **not derivable** from the three theoretical generators — normative constraints (which movements are harmonious) are a separate input class from descriptive generators (how the system moves). See caveat below.
 
 > **Empirical grounding caveat — FP5\_COMPARISON as required fourth generator.** The confidence scalar field $\sigma$ throughout the source code (`ClaimConfidence`: `"verified"` / `"indicative"` / `"unconfirmed"`) is not derivable from abstract theory. It originates in direct measurement against Fairphone 5 open-source hardware and Android source: the Binder IPC σ-tier values (0.9 / 0.7 / 0.6 / 0.4 in `mappings.ts`), the confidence ratings on the three FP5-grounded substrate nodes (`binder-ipc`, `art-runtime`, `bionic-libc`), and the six empirical findings in FP5\_COMPARISON. A theoretically reconstructed atlas that omits FP5 would be structurally complete but empirically ungrounded — unfalsified and unverified. FP5\_COMPARISON is the **required fourth generator** for any reconstruction that makes falsifiable claims about the Fairphone 5 hardware layer. The distinction between the two minimal sets is the distinction between a mathematical model and a scientific one.
 
 ### Why the Non-Minimal Documents Are Still Essential
+
+> **Normative non-derivability of FENG\_SHUI\_MANIFESTO.** The three theoretical generators (UNIVERSAL\_MANIFOLD + MANIFOLD\_ANALYSIS + source code) are fully *descriptive*: they specify what the system is, how it is structured, and what constraints it satisfies. They are silent on *which configurations are harmonious*. The FENG\_SHUI\_MANIFESTO introduces a separate input class — normative constraints (HARMONIC\_CONSTANT, SACRED\_SEED, useMembraneObserver as sole store writer, the confidence boost cap as the maximum epigenetic override). These constraints cannot be derived from descriptive generators by any formal operation: a normative judgment ("this movement is harmonious") is not the logical consequence of a structural description ("this system has these tensor properties"). The Manifesto is therefore a **fifth generator** — not derivable, not redundant, and not replaceable by theory. The correct minimal set for a normatively constrained atlas is: UNIVERSAL\_MANIFOLD + MANIFOLD\_ANALYSIS + source code + FP5\_COMPARISON (empirical grounding) + FENG\_SHUI\_MANIFESTO (normative grounding). Five generators, not three.
 
 **FP5\_COMPARISON is essential** because derivability ≠ realizability. A theory that survives contact with real source code has a different epistemic status than a theory that has not been tested. Without FP5\_COMPARISON, the manifold remains unfalsified but also unverified. The confidence scalar field $\sigma$ would have no empirical anchors.
 
@@ -853,7 +860,7 @@ For any two document charts $(U_i, \varphi_i)$ and $(U_j, \varphi_j)$, the trans
 2. **$\sigma$ preservation** — a `"verified"` claim in FP5\_COMPARISON maps to `"verified"` in the source code, not `"indicative"`; confidence grade is an invariant of the claim, not of the chart
 3. **Directionality preservation** — biophoton links are directed in all charts; no correspondence may reverse a link's source/target orientation
 
-These correspondences are **piecewise C⁰** (semantically continuous across strata) but are **not smooth**: the transition from normative principle (Manifesto stratum) to executable code (source code stratum) is a stratified jump, not a tangential passage. The two charts meet at a boundary point but their coordinate geometries are transverse — no shared tangent space exists at the boundary.
+These correspondences are **piecewise C⁰** (semantically continuous across strata) but are **not smooth**: the transition from normative principle (Manifesto stratum) to executable code (source code stratum) is an **inter-stratum non-smooth transition** — the two charts meet at a shared semantic boundary point but their coordinate geometries are transverse, so no shared tangent space exists at the boundary. (In stratified space terminology: two adjacent strata share a boundary stratum of lower dimension; a path crossing from one into the other passes through this lower-dimensional stratum, and the derivative of the path is undefined at the crossing point — hence C⁰ but not C¹ at the boundary.)
 
 Example: the correspondence $\phi_{\text{FP5} \to \text{source}}$ takes the Binder IPC σ-tier finding (FP5 coordinates: empirical measurement against `/dev/binder`) and produces the `couplingSigma` field values in `mappings.ts` (source code coordinates: typed numeric fields). The correspondence is injective (each finding produces exactly one code field), piecewise continuous (small changes in the finding produce small changes in the field value), but not smooth across the abstraction boundary — the "Binder coupling strength" concept and the `number` type in TypeScript live in transverse coordinate spaces.
 
@@ -869,7 +876,7 @@ WEEK 1
 
 WEEK 2
 ├── H1: Add 5 substrate nodes to substrate.ts
-├── H2: Add 9 organelle-substrate links to mappings.ts
+├── H2: Add 10 organelle-substrate links to mappings.ts (9 original + dna→zygote for Fredholm pair rule)
 └── H4: Add 3 biophoton links to mappings.ts
 
 WEEK 3
@@ -883,6 +890,6 @@ FUTURE (schema evolution required)
 
 ---
 
-*This document is a coordinate chart on the Universal Manifold — a development-phase description of the Cell OS sub-manifold's biological accuracy gaps and their correction path. It is itself a P→A→E transformation: it perceives the audit findings, transforms them through the roadmap formalism, and expresses them as concrete TypeScript changes.*
+*This document is a coordinate chart in the C⁰ stratified semantic space — a development-phase description of the Cell OS stratum's biological accuracy gaps and their correction path. It is itself a P→A→E transformation: it perceives the audit findings, transforms them through the roadmap formalism, and expresses them as concrete TypeScript changes.*
 
 *活氣 — the roadmap is complete. Now the organism must grow.*
