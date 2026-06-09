@@ -19,7 +19,7 @@ A Fairphone 5 concept OS that names what was already true: the structure of a li
 
 **Stack**: React + Vite · Tailwind v4 · Zustand · Wouter · TypeScript  
 **Device**: Qualcomm QCM6490 · Android 13 · AIDL-native  
-**Theory**: `UNIVERSAL_MANIFOLD.md` · `MANIFOLD_ANALYSIS.md` · `FP5_MANIFOLD_COMPARISON.md`
+**Theory**: `artifacts/cell-os/docs/UNIVERSAL_MANIFOLD.md` · `artifacts/cell-os/docs/MANIFOLD_ANALYSIS.md` · `artifacts/cell-os/docs/FP5_MANIFOLD_COMPARISON.md`
 
 ---
 
@@ -155,7 +155,7 @@ CaptureResult crosses the AIDL boundary outward       [E]
 
 The theory is **predictive** here, not merely accommodating. Android before Project Treble (≤7.1) had no stable HAL interface — `/system` and `/vendor` called each other directly. When Google shipped OTA updates, hardware drivers broke. The coupling density was, in the theory's terms, excessive; the membrane did not exist. Project Treble (Android 8.0, mandatory from Android 9) imposed HIDL as a hard architectural boundary. The explicit design goal was independent partition updatability — the same architectural insight the theory labels "healthy zone coupling," reached independently by Android engineers solving the same fragility problem. [FP5\_MANIFOLD\_COMPARISON.md §Finding 2]
 
-The cell membrane now encodes two junction types: **tight junctions** (SELinux Type Enforcement rules — paracellular seal, enforced by LSM hooks in the kernel) and **gap junctions** (Binder ashmem/memfd channels — direct shared-memory pass-through between trusted processes). Both coexist at the same membrane boundary, exactly as they do in epithelial tissue.
+The cell membrane encodes two junction types: **tight junctions** (SELinux Type Enforcement rules — paracellular seal, enforced by LSM hooks in the kernel) and **gap junctions** (Binder ashmem/memfd channels — direct shared-memory pass-through between trusted processes). Both coexist at the same membrane boundary, exactly as they do in epithelial tissue.
 
 ### Finding 3 — Binder IPC = Biophoton Links (verified)
 
@@ -186,10 +186,10 @@ Android Runtime on the FP5 either instantiates each zone directly or delegates t
 | Ribosomes | Baseline JIT + optimizing JIT (profile-guided) — the dedicated decoding machinery |
 | Mitochondria | Concurrent generational GC — energy management and cleanup |
 | Golgi | `dex2oat` AOT compilation — writes native `.oat`/`.odex` files with hardware destination annotations |
-| Nucleolus | ART preloading / `dex2oat` AOT factory — builds class images before they are requested, exactly as the nucleolus pre-assembles ribosomal subunits ahead of translation demand |
+| Nucleolus | ART preloading / `dex2oat` AOT factory — builds class images before they are requested, as the nucleolus pre-assembles ribosomal subunits ahead of translation demand |
 | Membrane | App sandbox (SELinux tight junctions) + AIDL partition boundary + Binder ashmem gap junctions |
 | Cytoplasm | Bionic libc — jemalloc heap, pthreads, ARM64 syscall shims |
-| DNA | Verified boot chain — code signing from bootloader to app; Zygote pre-loads the genome into every forked process |
+| DNA | Verified boot chain — code signing from bootloader to app; `dm-verity` enforces partition integrity at runtime. (Zygote pre-loads ART class images — a distinct mechanism at a different layer; see Nucleolus row.) |
 | ER | WebView/Chromium — sandboxed rendering process; Ca²⁺-analogue IP3R→PowerHAL cascade for thermal signaling |
 
 [FP5\_MANIFOLD\_COMPARISON.md §Finding 4]
@@ -305,7 +305,7 @@ The substrate space grew from 8 → 11 → 16 nodes across two evolution rounds.
 |---|---|---|
 | `zygote` | Centrosome MTOC — pre-assembles spindle for every division | Process-forking hub; pre-loads genome (class images) into every child process |
 | `lmkd` | Lysosomal autophagy — bulk degradation under nutrient stress | Low Memory Killer Daemon; bulk-kills cached processes by `oom_score_adj` when memory pressure rises |
-| `powerhal` | Ca²⁺ second-messenger cascade — IP3R→CaM-kinase II | Power HAL; `powerHint()` type selects exactly one downstream subsystem (CPU governor, display, thermal zone) |
+| `powerhal` | Ca²⁺ second-messenger cascade — IP3R→CaM-kinase II | Power HAL; each `powerHint()` type routes to a primary downstream subsystem (CPU governor, display, or thermal zone); some hints affect multiple subsystems in concert |
 | `selinux-policy` | Tight junctions (occludin/claudin) — paracellular seal | SELinux Type Enforcement rules; LSM hooks in the kernel enforce hard domain boundaries |
 | `package-manager` | Endolysosomal targeted routing — receptor-mediated endocytosis to lysosomal hydrolases | PackageManager; APK verification → dexopt → install dispatch; force-stop and uninstall as targeted degradation |
 
@@ -455,7 +455,7 @@ This is the organism's skeleton made visible.
 Select any of the eight zones and navigate its internal P→A→E cycle at depth-1. Each cycle has a biological description and a `hardwareAnalogue` grounded in the FP5 source:
 
 - **Nucleus cycle**: `arch/arm64/kernel/entry-common.S` → `irqentry_enter()` → `sys_call_table` → `syscall_exit_to_user_mode()`
-- **Membrane cycle**: Camera HAL3 `CaptureRequest` → ISP pipeline (GPCR cascade: one receptor, one G-protein subtype, one downstream cascade) → `CaptureResult` across the AIDL boundary
+- **Membrane cycle**: Camera HAL3 `CaptureRequest` → ISP pipeline (GPCR cascade: each receptor subtype couples to a primary G-protein class, routing to one predominant downstream cascade under standard conditions) → `CaptureResult` across the AIDL boundary
 - **ER cycle**: BiP/calnexin quality gate [A] → bifurcated expression: COPII protein release + IP3R Ca²⁺ pulse dispatch simultaneously [E]
 - **Cytoskeleton cycle**: integrin mechanotransduction [P] → three-filament reorganization (actin seconds-scale, microtubules minutes-scale, intermediate filaments hours-scale) [A] → new adhesion topology enables constrained movement [E]
 
@@ -463,7 +463,7 @@ The scale invariance claim is not stated here — it is demonstrated. The fracta
 
 ### Metrics — The Health Surface (`/metrics`)
 
-The manifold's blood panel. Live values for all health metrics, computed from the source arrays on every render:
+The manifold's blood panel. Live values for all health metrics, computed from the source arrays (memoized on mount):
 
 | Metric | Current | Healthy range | Status |
 |---|---|---|---|
@@ -488,11 +488,11 @@ Cell OS descends from a specific corpus, and the descent is direct, not analogic
 
 **`HUNYUAN_QI_HOLOGRAPHIC_CRYSTALLIZATION.md`** — the eleven-scale atlas. Cell OS's `scales.ts` is a direct instantiation.
 
-**`UNIVERSAL_MANIFOLD.md`** — the formal universality thesis: P→A→E as a language-invariant structural invariant, proven across eight paradigms.
+**`artifacts/cell-os/docs/UNIVERSAL_MANIFOLD.md`** — the formal universality thesis: P→A→E as a language-invariant structural invariant, proven across eight paradigms.
 
-**`MANIFOLD_ANALYSIS.md`** — the tensor field decomposition of the Cell OS codebase: Euler-Lagrangian mechanics applied to the module import graph, producing the coupling tensor, attention tensor, QI tensor, and the manifold health metric definitions.
+**`artifacts/cell-os/docs/MANIFOLD_ANALYSIS.md`** — the tensor field decomposition of the Cell OS codebase: Euler-Lagrangian mechanics applied to the module import graph, producing the coupling tensor, attention tensor, QI tensor, and the manifold health metric definitions.
 
-**`FP5_MANIFOLD_COMPARISON.md`** — the source code validation: six findings from the Fairphone 5 kernel, HAL, Binder IPC, ART, longevity model, and verified limits of the theory. The theory survived contact with real source code.
+**`artifacts/cell-os/docs/FP5_MANIFOLD_COMPARISON.md`** — the source code validation: six findings from the Fairphone 5 kernel, HAL, Binder IPC, ART, longevity model, and verified limits of the theory. The theory survived contact with real source code.
 
 **EdgeNode** (`harmony-ecosystem.replit.app`) — the digital implementation proof: a WebAssembly LLM running entirely in a browser tab, completing the silicon-scale P→A→E cycle at τ = 0.7770777, on hardware as old as 2018.
 
