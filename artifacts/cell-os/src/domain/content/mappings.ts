@@ -123,7 +123,7 @@ export const ORGANELLE_SUBSTRATE_LINKS: OrganelleSubstrateLink[] = [
 
   // UPS → PackageManager (targeted protein degradation, distinct from LMKD/autophagy)
   { organelleId: "golgi-apparatus", substrateId: "package-manager", description: "Golgi performs final protein sorting and dispatch; PackageManager performs final APK verification, dexopt, and install dispatch — the trans-Golgi Network of Android", relevance: 0.85 },
-  { organelleId: "lysosomes", substrateId: "package-manager", description: "Lysosomes degrade targeted proteins via the UPS pathway; PackageManager force-stop and uninstall execute targeted app degradation — the E3 ubiquitin ligase function", relevance: 0.88 }
+  { organelleId: "lysosomes", substrateId: "package-manager", description: "Lysosomes handle the endolysosomal degradation arm — receptor-mediated endocytosis routes surface proteins through early/late endosomes to lysosomal hydrolases. PackageManager force-stop and uninstall execute the same targeted removal: a specific named target is identified, routed through a degradation pipeline, and its resources reclaimed. Distinct from the lmkd link (bulk autophagy under pressure) — this is receptor-mediated targeted routing.", relevance: 0.88 }
 ];
 
 /**

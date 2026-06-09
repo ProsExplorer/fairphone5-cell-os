@@ -9,9 +9,10 @@ import type { QiIntersection } from "@/domain/types";
  *   C: scale       (11 values) — symbolic → quantum → … → silicon
  *
  * Full tensor: 8 × 3 × 11 = 264 intersections.
- * This file exports 18 curated intersections — the ones where the three axes
+ * This file exports curated intersections — the ones where the three axes
  * illuminate each other most sharply. They are chosen for conceptual coherence
  * and evidence quality, not for their count's sacred geometry.
+ * Current count: 30 of 264 (≈ 11.4%). Do not encode product logic around counts.
  *
  * Architect note: do not encode product logic around counts. If a new scale or
  * zone is added, the tensor grows and the selection criteria remain the same.

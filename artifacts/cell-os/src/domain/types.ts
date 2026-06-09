@@ -211,8 +211,9 @@ export type QuantizationLayer = {
  * One intersection in the 3-axis qi tensor:
  *   A (zone, 8) × B (triad phase, 3) × C (scale, 11) = 264 cells.
  *
- * QI_INTERSECTIONS contains 18 curated high-signal intersections — the ones
+ * QI_INTERSECTIONS contains curated high-signal intersections — the ones
  * where the three axes illuminate each other most clearly.
+ * Current count: 30 of 264 (≈ 11.4%). Do not encode product logic around counts.
  */
 export type QiIntersection = {
   id: string;
