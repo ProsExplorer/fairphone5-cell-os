@@ -341,7 +341,7 @@ All eleven links — proxy weights (midpoint of rateRange ÷ global max 100 ph/c
 | cell-membrane → nucleus | 0.83 | explicit | Binder direct | 0.9 |
 | endoplasmic-reticulum → lysosomes | 0.49 | explicit | Ordered broadcast | 0.6 |
 
-The original three links encode cascade pathways: GPCR→G-protein cytoplasmic amplification, TGN→lysosome targeted degradation routing, and cytochrome c→CAD nuclear fragmentation (intrinsic apoptosis). The two new links complete the open items: cell-membrane→nucleus encodes the action potential→gene-expression path (Ca²⁺/CaM-kinase IV→CREB, σ=0.9 because hardirq→syscall is non-maskable); ER→lysosomes encodes the ERAD misfolded-protein routing path (σ=0.6, ordered-broadcast — directed but not synchronous).
+The original three links encode cascade pathways: GPCR→G-protein cytoplasmic amplification, TGN→lysosome targeted degradation routing, and cytochrome c→CAD nuclear fragmentation (intrinsic apoptosis). The two new links complete the open items: cell-membrane→nucleus encodes the action potential→gene-expression path (Ca²⁺/CaM-kinase IV→CREB, σ=0.9 because hardirq→syscall is non-maskable); ER→lysosomes encodes the **ER-phagy (reticulophagy)** bulk-clearance path — distinct from classical ERAD (which routes individual misfolded proteins to the 26S proteasome); ER-phagy engulfs ER fragments via FAM134B/RTN3 receptors and delivers them to autolysosomes (σ=0.6, ordered-broadcast).
 
 ### The QI Tensor $\mathcal{Q}^{z,p,s}$ (Rank-3)
 
@@ -483,12 +483,12 @@ The manifold's blood panel. Live values for all health metrics, computed from th
 |---|---|---|---|
 | Coupling tensor density | 15.7% | 10–25% | Green |
 | QI tensor density | 12.5% | 5–10% | Amber |
-| Biophoton link count | 11 | 2–10 | Green |
+| Biophoton link count | 11 | 2–10 | Amber |
 | Mean zone confidence | computed live | 75–100% | computed live |
 | Export rank total | computed live | 40–80 | computed live |
 | Phase transition count | computed live | 4–7 | computed live |
 
-Green = healthy. Amber = outside range. The QI density at 12.5% is above the documented 5–10% range — this is correct: every intersection was earned through biological grounding (membrane potential, peroxisomal containment, chaperone folding loop), not enumerated to fill the space. The organism monitors itself.
+Green = healthy. Amber = outside range. Two metrics are amber: QI density at 12.5% (above the 5–10% range) and biophoton link count at 11 (above the 2–10 range). In both cases the overshoot is editorially correct — every intersection and every biophoton link was earned through biological grounding (membrane potential, peroxisomal containment, chaperone folding loop, ERAD/ER-phagy routing), not enumerated to fill the space. The organism monitors itself.
 
 ---
 

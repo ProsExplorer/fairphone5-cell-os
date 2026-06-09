@@ -264,11 +264,14 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
     couplingSigma: 0.9
   },
 
-  // #19 Chaperone ERAD path — ER routes misfolded proteins to lysosomes for degradation
+  // #19 ER-phagy path — distinct from classical ERAD (ERAD→proteasome; ER-phagy→lysosome).
+  // Classical ERAD: retrotranslocation → polyubiquitination → 26S proteasome (NOT lysosomes).
+  // ER-phagy (reticulophagy): ER membrane/lumen fragments engulfed by autophagosome → lysosomal fusion.
+  // This biophoton link models the ER-phagy axis; the ER→art-runtime substrate link models ERAD.
   {
     sourceOrganelleId: "endoplasmic-reticulum",
     targetOrganelleId: "lysosomes",
-    description: "ERAD (ER-Associated Degradation): proteins that fail the ER quality gate (BiP/calnexin cannot rescue them) are retrotranslocated through the Sec61 channel, polyubiquitinated, and routed to the lysosome-proteasome axis for degradation. In Android: ART code that fails JIT optimisation (deopt path) is flagged in the profile, and subsequent dexopt passes route the problematic method to interpreter-only execution — the 'misfolded' code is removed from the hot-compiled set and handed to the lysosomal degradation pipeline (PackageManager dex cache cleanup on next dexopt). Ordered broadcast σ=0.6: the ERAD routing is a directed, sequenced signal (not synchronous Binder).",
+    description: "ER-phagy (reticulophagy): when ER quality control is overwhelmed or ER morphology is disrupted, FAM134B/RTN3 receptors flag ER fragments for autophagosomal capture — the ER membrane and its lumenal contents are engulfed and delivered to lysosomes for bulk degradation. This is distinct from classical ERAD (which routes individual misfolded proteins to the 26S proteasome). In Android: the ART interpreter fallback pool (code that has failed JIT optimisation and been demoted) accumulates until the next dexopt cycle, at which point the dex cache is evicted via PackageManager — a bulk, autophagosome-like sweep of accumulated failed-fold material, not a targeted single-protein strike. Ordered broadcast σ=0.6: the ER-phagy signal is directed and sequenced but not synchronous.",
     rateRange: "0.5–15 ph/cm²/s",
     confidence: "indicative",
     attentionWeight: 0.49,

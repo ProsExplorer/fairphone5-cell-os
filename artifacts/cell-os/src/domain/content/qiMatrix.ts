@@ -293,6 +293,22 @@ export const QI_INTERSECTIONS: QiIntersection[] = [
     evidence: "verified",
   },
 
+  // ── QI Slot Multi-Occupancy Policy ──────────────────────────────────────────
+  // The tensor allows multi-occupancy of a zone×phase×scale slot when the two
+  // intersections address genuinely distinct biological sub-mechanisms at the same
+  // coordinate. Two pre-existing multi-occupied slots:
+  //   cytoplasm × affect × cellular — occupied by both "cytoplasm-affect-cellular"
+  //     (signal amplification via kinase cascade) and "qi-ups-affect-cellular"
+  //     (ubiquitin-proteasome targeted degradation). These are mechanistically
+  //     orthogonal: amplification vs. degradation.
+  //   membrane × perception × cellular — occupied by both "membrane-perception-cellular"
+  //     (NNAPI graph partitioning) and "qi-gapjunction-perception-cellular"
+  //     (Binder shared-memory direct channel). These are also mechanistically
+  //     orthogonal: discriminative gating vs. direct-pass-through.
+  // This is an explicit editorial decision. All three new open-items slots
+  // (cytoplasm×affect×apparatus, membrane×affect×silicon,
+  //  endoplasmic-reticulum×affect×silicon) are singly occupied.
+
   // ── Biological Accuracy Roadmap Additions (DEVELOPMENT.md Part 3 H3) ─────────
   // 8 new intersections; post-add total: 30 of 264 ≈ 11.4%.
   // All field names verified against QiIntersection type in types.ts.
@@ -421,8 +437,8 @@ export const QI_INTERSECTIONS: QiIntersection[] = [
     scaleId: "silicon",
     title: "Protein Chaperone / HSP Folding as ART Verify–JIT–Deopt Loop",
     narrative:
-      "Molecular chaperones (HSP70, HSP90, GroEL/GroES, BiP, calnexin) do not carry information about the final folded structure — they prevent aggregation and provide a protected environment in which the polypeptide chain can sample conformations and find its native state. If refolding fails after repeated chaperone cycles, the protein is handed to the ERAD pathway (retrotranslocation → polyubiquitination → proteasomal or lysosomal degradation). Three chaperone modes map precisely to three ART execution modes: (1) BiP initial binding and release cycles = ART verifier checking DEX bytecode correctness before any execution begins — the quality gate before the chain is extended; (2) Calnexin/calreticulin refolding with glycan trimming = JIT recompilation of hot methods guided by profile data — the chaperone revisits the chain after it has run and refolds it into a faster native form; (3) Chaperone fallback to interpreter mode when JIT cannot optimise = HSP90 holdover-client state, where the protein remains functional but slower, still chaperoned, never reaching independent native fold. The affect phase captures the transformation work — not the perception of a newly synthesised chain arriving at the ER (that is perception), but the active folding labour inside the ER lumen.",
-    hardwareAnalogue: "ART verifier (dex2oat --verify-at-runtime), JIT compiler (profile-guided recompile), deopt/interpreter fallback, ERAD → ART dex cache eviction",
+      "Molecular chaperones (HSP70, HSP90, GroEL/GroES, BiP, calnexin) do not carry information about the final folded structure — they prevent aggregation and provide a protected environment in which the polypeptide chain can sample conformations and find its native state. If refolding fails after repeated chaperone cycles, the protein is handed to the canonical ERAD pathway: retrotranslocation through the Sec61 or Hrd1 translocon, polyubiquitination by RING E3 ligases (HRD1, gp78), extraction by p97/VCP ATPase, and delivery to the 26S proteasome for proteolysis. A parallel pathway — ER-phagy (reticulophagy) — routes bulk ER contents to lysosomes via autophagosomal capture; this is distinct from ERAD and acts on ER structure rather than individual misfolded proteins. Three chaperone modes map precisely to three ART execution modes: (1) BiP initial binding and release cycles = ART verifier checking DEX bytecode correctness before any execution begins — the quality gate before the chain is extended; (2) Calnexin/calreticulin refolding with glycan trimming = JIT recompilation of hot methods guided by profile data — the chaperone revisits the chain after it has run and refolds it into a faster native form; (3) Chaperone fallback to interpreter mode when JIT cannot optimise = HSP90 holdover-client state, where the protein remains functional but slower, still chaperoned, never reaching independent native fold. The affect phase captures the transformation work — not the perception of a newly synthesised chain arriving at the ER (that is perception), but the active folding labour inside the ER lumen.",
+    hardwareAnalogue: "ART verifier (dex2oat --verify-at-runtime), JIT compiler (profile-guided recompile), deopt/interpreter fallback, ER-phagy → ART dex cache eviction (PackageManager dexopt cleanup)",
     substrateIds: ["art-runtime"],
     evidence: "indicative",
   },
