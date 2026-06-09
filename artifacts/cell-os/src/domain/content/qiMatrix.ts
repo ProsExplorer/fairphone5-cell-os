@@ -290,5 +290,98 @@ export const QI_INTERSECTIONS: QiIntersection[] = [
     narrative:
       "The membrane's 窗 (window) is selective in both directions: only signals that pass the receptor test enter; only signals that are correctly addressed exit. The character 窗 contains 心 (heart/mind) — the exit is not mechanical but intentional. Expression through the membrane is not leakage; it is release. The cell sends only what it has decided to send, in a form the receiver can use. This is the highest expression of selective permeability.",
     evidence: "verified",
-  }
+  },
+
+  // ── Biological Accuracy Roadmap Additions (DEVELOPMENT.md Part 3 H3) ─────────
+  // 8 new intersections; post-add total: 30 of 264 ≈ 11.4%.
+  // All field names verified against QiIntersection type in types.ts.
+
+  {
+    id: "qi-chromatin-affect-cellular",
+    zoneId: "nucleus",
+    phaseId: "affect",
+    scaleId: "cellular",
+    title: "Chromatin Remodeling as Epigenetic Gate",
+    narrative:
+      "SWI/SNF complexes alter histone-DNA contacts to open or occlude genomic regions — histone H3K4me3 marks active regions, H3K27me3 marks silenced ones. In Android, ART profile-guided compilation (.prof files) opens or closes method JIT-compilation: H3K4me3 = hot method (AOT-compiled), H3K27me3 = interpreted-only method. dex2oat --compiler-filter=speed-profile is the chromatin remodeling complex. Affect at the cellular scale is the decision about which genes are accessible — not expression, but the gating of expression.",
+    hardwareAnalogue: "ART profile-guided compilation (.prof files), dex2oat --compiler-filter=speed-profile",
+    evidence: "indicative",
+  },
+  {
+    id: "qi-mrna-perception-silicon",
+    zoneId: "ribosomes",
+    phaseId: "perception",
+    scaleId: "silicon",
+    title: "mRNA Processing as DEX Pipeline",
+    narrative:
+      "Pre-mRNA undergoes spliceosome processing (U1/U2/U4/U5/U6 snRNPs remove introns), 5-prime capping (CBC cap-binding complex), and 3-prime polyadenylation (CPSF) before nuclear export — only the processed transcript reaches the ribosome. The DEX pipeline is structurally isomorphic: dex2oat verify stage removes invalid instructions (splicing), D8 desugaring adapts bytecode for the target runtime (exon modification), ART quickening opcodes mark hot paths (5-prime cap). Only processed DEX exits to the runtime. The ribosome perceives the finished transcript; the ribosomal zone perceives the finished DEX.",
+    hardwareAnalogue: "dex2oat verify stage, D8 desugaring, ART quickening opcodes",
+    evidence: "indicative",
+  },
+  {
+    id: "qi-calcium-affect-molecular",
+    zoneId: "endoplasmic-reticulum",
+    phaseId: "affect",
+    scaleId: "molecular",
+    title: "Calcium Signal as Power HAL Second Messenger",
+    narrative:
+      "IP3R (inositol 1,4,5-trisphosphate receptor) opens ER Ca²⁺ channels → [Ca²⁺]i rises from 100nM to 1μM in milliseconds → calmodulin binds Ca²⁺ → CaM-kinase II cascade activates. SERCA pumps restore ER stores within seconds. In Android: a thermal threshold crossing triggers Power HAL IPower::powerHint() → CPU frequency governor adjusts clocks in milliseconds → downstream services adapt. Both are discrete, fast, reversible second-messenger signals — a molecular-scale affect that resets without lasting structural change.",
+    hardwareAnalogue: "Power HAL IPower::powerHint(), CPU frequency governor, thermal zone thresholds",
+    evidence: "indicative",
+  },
+  {
+    id: "qi-ups-affect-cellular",
+    zoneId: "cytoplasm",
+    phaseId: "affect",
+    scaleId: "cellular",
+    title: "Ubiquitin-Proteasome as PackageManager Targeted Degradation",
+    narrative:
+      "UBA1 (E1) activates ubiquitin → UBE2D (E2) conjugates → RING/HECT E3 ligase recognizes the specific substrate by its degradation signal (degron) → poly-ubiquitin chain attached → 26S proteasome (19S+20S) unfolds and cleaves that specific target → ubiquitin recycled. Critically: UPS acts on individual proteins with typed recognition — it is not bulk degradation. PackageManager is the correct Android analogue: it recognises a specific APK by package name (E3 degron recognition), executes force-stop or uninstall against exactly that target (26S proteasome cleavage), and frees its storage (ubiquitin recycling). Process-level bulk killing (LMKD) maps to the lysosomal autophagy pathway, not the UPS.",
+    hardwareAnalogue: "PackageManager force-stop, pm uninstall, dexopt cleanup",
+    evidence: "indicative",
+  },
+  {
+    id: "qi-cellcycle-perception-generational",
+    zoneId: "nucleus",
+    phaseId: "perception",
+    scaleId: "generational",
+    title: "Cell Cycle as Android Boot-to-Update Lifecycle",
+    narrative:
+      "G0 (quiescent, Cyclin D low) = cached background process. G1 (Cyclin D/CDK4 active) = Application.onCreate(). S phase (Cyclin E/CDK2) = asset loading and database init. G2 (Cyclin B/CDK1 building) = idle foreground with memory check. M phase (mitosis, SAC/Mad2 checkpoint) = OTA update and reboot. Checkpoints: p53/p21 DNA damage checkpoint = StrictMode; spindle assembly checkpoint (Mad2 delays anaphase until all chromosomes attached) = ANR watchdog (kills if main thread does not complete within 5 seconds). Perception at the generational scale is the nucleus registering which phase of the lifecycle it is in.",
+    hardwareAnalogue: "Application.onCreate(), ActivityManager lifecycle, OTA update pipeline, ANR watchdog (5s timeout)",
+    evidence: "indicative",
+  },
+  {
+    id: "qi-apoptosis-expression-organic",
+    zoneId: "mitochondria",
+    phaseId: "expression",
+    scaleId: "organic",
+    title: "Apoptosis as Ordered Process Termination",
+    narrative:
+      "Intrinsic apoptosis: Bcl-2/Bax/Bak family balance tips pro-apoptotic → MOMP (mitochondrial outer membrane permeabilization) → cytochrome c released → Apaf-1 apoptosome forms → caspase-9 activated → caspase-3 executes fragmentation. In Android: oom_score_adj weighting = Bcl-2 family balance. LMKD SIGKILL = cytochrome c release. onStop() → onDestroy() → process exit = caspase cascade. Non-inflammatory: memory freed cleanly, no system crash. Expression at the organic scale is the organism releasing a unit that has served its purpose — cleanly, with signal integrity preserved.",
+    hardwareAnalogue: "LMKD SIGKILL, ActivityManager.forceStopPackage(), onStop/onDestroy lifecycle",
+    evidence: "indicative",
+  },
+  {
+    id: "qi-gapjunction-perception-cellular",
+    zoneId: "membrane",
+    phaseId: "perception",
+    scaleId: "cellular",
+    title: "Gap Junctions as Binder Shared Memory",
+    narrative:
+      "Connexin-43 (GJA1) hexamers (connexons) align between adjacent cells to form direct aqueous channels. Ions, cAMP, IP3, and small molecules pass directly — no exocytosis/endocytosis intermediary. In Android: ashmem (anonymous shared memory) and memfd create direct memory-mapped channels between processes. The Binder single-copy mmap mechanism (/dev/binder BINDER_MMAP ioctl) is the closest structural homologue: one kernel-side write, two process-side reads, zero intermediate copy. Gap junctions and Binder mmap share the same architectural principle — direct pass-through bypassing the exocytotic default.",
+    hardwareAnalogue: "ashmem/memfd, Binder mmap single-copy, /dev/binder BINDER_MMAP ioctl",
+    evidence: "indicative",
+  },
+  {
+    id: "qi-ecm-perception-apparatus",
+    zoneId: "membrane",
+    phaseId: "perception",
+    scaleId: "apparatus",
+    title: "ECM / Integrin as Sensor HAL Mechanotransduction",
+    narrative:
+      "α/β integrin heterodimers bind ECM proteins (fibronectin, collagen) → conformational change activates focal adhesion kinase (FAK) and Src → Rho GTPase cascade (RhoA/Rac1/Cdc42) → cytoskeletal reorganization and gene expression changes. ECM stiffness drives mechanotransduction — the physical environment shapes the organism. In Android: SensorManager HAL receives physical environment signals → ContextHub (STM32) processes → adaptive battery, adaptive display, adaptive Wi-Fi respond. The apparatus perceives through its physical attachment to the world.",
+    hardwareAnalogue: "SensorManager HAL, ContextHub (STM32), adaptive battery API, LocationManager",
+    evidence: "indicative",
+  },
 ];

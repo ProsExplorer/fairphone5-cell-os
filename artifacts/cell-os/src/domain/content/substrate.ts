@@ -187,6 +187,82 @@ export const SUBSTRATE_NODES: SubstrateNode[] = [
     ],
     confidence: "verified",
     color: "hsl(260, 60%, 50%)"
+  },
+
+  // ── Biological Accuracy Roadmap Additions (DEVELOPMENT.md Part 3 HIGH) ────────
+  // Five Android software-stack nodes that complete the substrate graph to 16 nodes.
+  // All five are category "stack" — they are HAL or framework layers, not silicon.
+  // After addition: coupling tensor space = 15 × 16 = 240; density ≈ 14.2%.
+
+  {
+    id: "zygote",
+    name: "Zygote",
+    category: "stack",
+    role: "Process forking hub — all app processes are forks of Zygote, exactly as all microtubules nucleate from the centrosome gamma-tubulin ring complex",
+    detail:
+      "Zygote pre-loads the Android runtime and common framework classes, then forks on demand. Fork = microtubule nucleation. Every app inherits the same pre-loaded chromosome set. The verified-boot chain ensures the same signed genome image reaches every child process.",
+    specs: [
+      { label: "Mechanism", value: "posix fork() + SO_REUSEADDR socket" },
+      { label: "Cold start saving", value: "~100ms class loading avoided per fork" }
+    ],
+    confidence: "verified",
+    color: "#7c3aed"
+  },
+  {
+    id: "lmkd",
+    name: "LMKD",
+    category: "stack",
+    role: "Low Memory Killer Daemon — bulk process termination under memory pressure, analogous to the lysosomal autophagy pathway (not the ubiquitin-proteasome system)",
+    detail:
+      "Monitors /proc/meminfo and PSI (Pressure Stall Information). Kills processes in order of oom_score_adj: cached background first, then services, then visible, then foreground. Bulk degradation under nutrient stress — the mTOR inhibition → autophagy axis of Android.",
+    specs: [
+      { label: "Signal", value: "SIGKILL to target PID" },
+      { label: "Policy source", value: "/sys/module/lowmemorykiller/parameters/" }
+    ],
+    confidence: "verified",
+    color: "#dc2626"
+  },
+  {
+    id: "powerhal",
+    name: "Power HAL",
+    category: "stack",
+    role: "Power state management and thermal signaling — the Ca²⁺ second-messenger system of Android: discrete, fast, reversible state signals that cascade through the system",
+    detail:
+      "Implements IPower AIDL interface. Receives power hints (INTERACTION, SUSTAINED_PERFORMANCE, VR_MODE) and translates to CPU governor, thermal throttle, display brightness. Warning/critical/emergency thresholds = low/medium/high reactive oxygen species (ROS) signal tiers.",
+    specs: [
+      { label: "Interface", value: "android.hardware.power@1.3" },
+      { label: "Hint types", value: "INTERACTION, SUSTAINED_PERFORMANCE, LAUNCH" }
+    ],
+    confidence: "verified",
+    color: "#f59e0b"
+  },
+  {
+    id: "selinux-policy",
+    name: "SELinux Policy",
+    category: "stack",
+    role: "Mandatory access control — tight junctions of Android. Prevents direct cross-domain interaction exactly as tight junctions seal adjacent cells against paracellular passage",
+    detail:
+      "Type Enforcement (TE) rules define allowed transitions between security domains. Neverallow rules = tight junction seals: no paracellular passage permitted. Every app, service, and HAL has a distinct security domain. Cross-domain communication only through defined transitions — never direct membrane crossing.",
+    specs: [
+      { label: "Policy compiler", value: "checkpolicy / sepolicy-analyze" },
+      { label: "Enforcement", value: "LSM hooks in kernel" }
+    ],
+    confidence: "verified",
+    color: "#065f46"
+  },
+  {
+    id: "package-manager",
+    name: "PackageManager",
+    category: "stack",
+    role: "App lifecycle orchestration — the E3 ubiquitin ligase of Android: recognizes specific targets for installation, update, or removal, and executes targeted degradation",
+    detail:
+      "PackageManagerService manages the APK install/uninstall/update pipeline. Targeted: acts on specific packages by name (E3 degron recognition), not all processes. Dexopt pipeline = E1/E2/E3 ubiquitin cascade (verify → optimize → install). Force-stop = targeted degradation without removal. Distinct from LMKD (autophagy/bulk killing).",
+    specs: [
+      { label: "Service", value: "com.android.server.pm.PackageManagerService" },
+      { label: "Storage", value: "/data/app/, /data/dalvik-cache/" }
+    ],
+    confidence: "verified",
+    color: "#1d4ed8"
   }
 ];
 

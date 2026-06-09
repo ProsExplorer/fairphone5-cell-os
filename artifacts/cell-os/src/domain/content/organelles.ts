@@ -24,9 +24,9 @@ export const CELL_MAPPINGS: Organelle[] = [
   {
     id: "nucleolus",
     name: "Nucleolus",
-    osFeature: "Bootloader / System Startup",
-    explanation: "The initial sequence that wakes up the device, loading the environment required for everything else to run.",
-    analogy: "The nucleolus builds ribosomes and runs first to prepare the cell; the bootloader wakes the hardware and prepares the runtime environment.",
+    osFeature: "ART Preloading / dex2oat AOT Factory",
+    explanation: "The nucleolus pre-assembles ribosomal subunits for export through nuclear pores. On Android, dex2oat pre-compiles DEX bytecode into native ARM64 machine code before any app executes. The factory runs before the product is needed — manufactured ahead of demand.",
+    analogy: "The nucleolus is not the first thing to wake — it is the pre-assembly factory that runs before it is needed. dex2oat compiles apps into native binaries at install time, before any user ever taps them.",
     color: "hsl(320, 80%, 60%)" // Pink
   },
   {
@@ -41,8 +41,8 @@ export const CELL_MAPPINGS: Organelle[] = [
     id: "cell-membrane",
     name: "Cell Membrane",
     osFeature: "HAL Boundary / Security Layer",
-    explanation: "The double boundary of the Android OS: the HAL partition enforced by HIDL and AIDL (the /system↔/vendor wall that Project Treble made mandatory from Android 8 onward), and the app permissions layer controlling what data leaves or enters each sandboxed process. The Fairphone 5 launched on Android 13 — AIDL-native — making this boundary the most formally enforced in the device's history.",
-    analogy: "The membrane is the cell's only legal channel for crossing the boundary in either direction; Android's HAL partition is the same principle enforced in silicon — before Project Treble, /system and /vendor leaked into each other freely, and OTA updates broke hardware drivers. Treble fixed it by making the membrane real.",
+    explanation: "The double boundary of the Android OS: the HAL partition enforced by HIDL and AIDL (the /system↔/vendor wall that Project Treble made mandatory from Android 8 onward), and the app permissions layer controlling what data leaves or enters each sandboxed process. The Fairphone 5 launched on Android 13 — AIDL-native — making this boundary the most formally enforced in the device's history. Two junction types coexist: tight junctions (SELinux Type Enforcement rules — paracellular seal, no direct cross-domain passage permitted, enforced by LSM hooks in the kernel) and gap junctions (Binder ashmem/memfd channels — direct shared-memory pass-through between processes without exocytosis, the connexin-43 of Android IPC).",
+    analogy: "The membrane is the cell's only legal channel for crossing the boundary in either direction; Android's HAL partition is the same principle enforced in silicon — before Project Treble, /system and /vendor leaked into each other freely, and OTA updates broke hardware drivers. Treble fixed it by making the membrane real. Tight junctions (SELinux) seal the paracellular space; gap junctions (Binder mmap) provide direct cytoplasmic continuity between trusted compartments.",
     color: "hsl(140, 100%, 60%)" // Lime Green
   },
   {

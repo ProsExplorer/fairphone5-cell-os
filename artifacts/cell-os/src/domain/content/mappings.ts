@@ -98,7 +98,32 @@ export const ORGANELLE_SUBSTRATE_LINKS: OrganelleSubstrateLink[] = [
     description: "The cytoplasm is the fluid medium in which all organelles and reactions are suspended — not passive, but the active environment of transformation. Bionic libc is ART's cytoplasm: jemalloc manages every object's heap allocation, pthreads manages every thread, and Bionic's syscall shims are the interface to the kernel nucleus below.",
     rateRange: "jemalloc: ~50–100ns per allocation (thread-local cache path)",
     relevance: 0.95
-  }
+  },
+
+  // ── Biological Accuracy Roadmap Additions (DEVELOPMENT.md Part 3 H2) ─────────
+  // 10 links wiring the 5 new substrate nodes to organelles.
+  // All organelleIds and substrateIds verified against frozen IDs.
+  // dna→zygote required by Fredholm cooperative-pair rule (see DEVELOPMENT.md §Fredholm).
+
+  // Centrosome/MTOC → Zygote (cooperative pair: nucleus + dna)
+  { organelleId: "nucleus", substrateId: "zygote", description: "Nucleus governs Zygote pre-loading: the type system (genome) is pre-loaded into Zygote before any fork, ensuring all child processes inherit the correct chromosome set", relevance: 0.85 },
+  { organelleId: "dna", substrateId: "zygote", description: "The genome (dna) is the content that Zygote pre-loads into every fork — verified-boot chain ensures the same signed genome image reaches every child process, exactly as the nucleotide sequence is faithfully copied into every daughter cell at division", relevance: 0.78 },
+
+  // Autophagy → LMKD (lysosomal bulk degradation; NOT the ubiquitin-proteasome system)
+  { organelleId: "lysosomes", substrateId: "lmkd", description: "Lysosomes execute autophagy — bulk degradation of cytoplasmic contents when nutrients are scarce or organelles are damaged. LMKD is the Android autophagy axis: when memory pressure rises (mTOR inhibited = low memory signal), LMKD bulk-kills cached background processes in oom_score_adj order. Not the ubiquitin-proteasome system (which is targeted); this is the bulk lysosomal pathway.", relevance: 0.90 },
+  { organelleId: "vacuole", substrateId: "lmkd", description: "Vacuole stores excess material and regulates osmotic pressure; under LMKD memory pressure, vacuolar contents (cached process memory) are reclaimed first — equivalent to the vacuole releasing stored reserves during nutrient stress", relevance: 0.70 },
+
+  // Ca²⁺ signaling → PowerHAL
+  { organelleId: "mitochondria", substrateId: "powerhal", description: "Mitochondria generate the power gradient; PowerHAL converts power state changes into second-messenger signals exactly as Ca²⁺ flux converts membrane potential into intracellular cascade", relevance: 0.80 },
+  { organelleId: "endoplasmic-reticulum", substrateId: "powerhal", description: "ER Ca²⁺ stores buffer the calcium signal; PowerHAL thermal limits buffer the power signal — both provide reserve capacity and prevent spike propagation", relevance: 0.65 },
+
+  // Tight junctions → SELinux
+  { organelleId: "cell-membrane", substrateId: "selinux-policy", description: "Cell membrane enforces passage rules; SELinux policy enforces domain transition rules — both are the tight junction sealing adjacent cellular compartments", relevance: 0.95 },
+  { organelleId: "nuclear-pores", substrateId: "selinux-policy", description: "Nuclear pores enforce selective transport; SELinux neverallow rules enforce hard transport prohibitions between security domains", relevance: 0.80 },
+
+  // UPS → PackageManager (targeted protein degradation, distinct from LMKD/autophagy)
+  { organelleId: "golgi-apparatus", substrateId: "package-manager", description: "Golgi performs final protein sorting and dispatch; PackageManager performs final APK verification, dexopt, and install dispatch — the trans-Golgi Network of Android", relevance: 0.85 },
+  { organelleId: "lysosomes", substrateId: "package-manager", description: "Lysosomes degrade targeted proteins via the UPS pathway; PackageManager force-stop and uninstall execute targeted app degradation — the E3 ubiquitin ligase function", relevance: 0.88 }
 ];
 
 /**
@@ -149,6 +174,40 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
     confidence: "indicative",
     ipcMechanism: "unordered-broadcast",
     couplingSigma: 0.4
+  },
+
+  // ── Biological Accuracy Roadmap Additions (DEVELOPMENT.md Part 3 H4) ─────────
+  // 3 new links completing missing cascade paths; post-add total: 9 biophoton links.
+  // No 'id' field on BiophotonLink. ipcMechanism values verified against types.ts.
+  {
+    sourceOrganelleId: "membrane-receptors",
+    targetOrganelleId: "cytoplasm",
+    description: "Receptor-activated G-protein cascade — ligand binding at membrane receptor triggers cytoplasmic kinase cascade exactly as GPCR activates cAMP/PKA through the cytoplasm. The signal crosses the membrane boundary and amplifies through the cytoplasmic medium.",
+    rateRange: "10–200 photons/cm²/s",
+    confidence: "indicative",
+    attentionWeight: 0.71,
+    couplingSigma: 0.7,
+    ipcMechanism: "messenger",
+  },
+  {
+    sourceOrganelleId: "golgi-apparatus",
+    targetOrganelleId: "lysosomes",
+    description: "Trans-Golgi Network routes misfolded or damaged proteins to lysosomes for degradation via mannose-6-phosphate receptor-mediated vesicle targeting — the APK verification pipeline routes failed packages to forced-uninstall through PackageManager.",
+    rateRange: "1–20 photons/cm²/s",
+    confidence: "indicative",
+    attentionWeight: 0.44,
+    couplingSigma: 0.6,
+    ipcMechanism: "ordered-broadcast",
+  },
+  {
+    sourceOrganelleId: "mitochondria",
+    targetOrganelleId: "dna",
+    description: "Cytochrome c release from mitochondria during intrinsic apoptosis triggers nuclear DNA fragmentation via caspase-activated DNase (CAD) — LMKD SIGKILL triggers ordered process shutdown including all file descriptor cleanup and memory reclamation.",
+    rateRange: "5–60 photons/cm²/s",
+    confidence: "indicative",
+    attentionWeight: 0.52,
+    couplingSigma: 0.9,
+    ipcMechanism: "binder",
   },
 
   // ── Attention-map completion additions (MANIFOLD_ANALYSIS.md §11.5) ──────────

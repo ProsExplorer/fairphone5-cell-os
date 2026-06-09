@@ -95,11 +95,11 @@ export const FRACTAL_CYCLES: FractalCycle[] = [
       },
       {
         id: "affect",
-        title: "Actin Polymerization and Microtubule Dynamics",
+        title: "Three-Filament Reorganization — Actin, Microtubules, Intermediate Filaments",
         description:
-          "In response to force, actin monomers polymerize at the leading edge; microtubules reorganize their minus ends toward the centrosome. The cytoskeleton's affect is structural reorganization — the architecture changes to match what the environment demands. This is not repair; it is learning.",
+          "The cytoskeleton's affect operates through three distinct filament systems, each with its own dynamics. (1) Actin polymerization (Arp2/3-branched networks at the leading edge; UI thread responsiveness, membrane tension regulation): fast, reversible, driven by Rho GTPases. (2) Microtubule dynamics (GTP-tubulin polymerization toward the cell periphery; vesicle transport along kinesin/dynein tracks; Binder thread pool routing): directional, polarized, driven by the centrosome MTOC. (3) Intermediate filament stability (keratin, vimentin, nuclear lamina; structural backbone that does not treadmill; analogous to the kernel's fixed memory layout and ABI): slow, non-dynamic, providing mechanical resilience without constant energy expenditure. All three reorganize simultaneously in response to force, but on different timescales and with different Android analogues. Structural learning is not a single mechanism but a three-layer adaptive system.",
         scaleLabel: "Cellular",
-        hardwareAnalogue: "Graph compilation — NNAPI partitions the model to match hardware topology",
+        hardwareAnalogue: "Graph compilation (NNAPI partitions to hardware topology); Binder thread pool routing; kernel memory layout / ABI stability",
       },
       {
         id: "expression",
@@ -235,11 +235,11 @@ export const FRACTAL_CYCLES: FractalCycle[] = [
       },
       {
         id: "expression",
-        title: "Correctly Folded Protein Enters COPII Vesicle",
+        title: "Correctly Folded Protein Released — and Ca²⁺ Dispatched",
         description:
-          "A properly folded protein acquires its COPII coat and buds from the ER exit site, addressed for the Golgi. Only proteins that passed the quality check are permitted to proceed. The ER's expression is selective release: not everything that enters, exits. What exits has been verified.",
+          "The ER expresses in two channels simultaneously. First: a properly folded protein acquires its COPII coat and buds from the ER exit site, addressed for the Golgi — only proteins that passed the quality check proceed. Second: IP3R (inositol 1,4,5-trisphosphate receptor) channels open in response to IP3 signals from the plasma membrane → [Ca²⁺]i rises from 100nM to 1μM in milliseconds → calmodulin and CaM-kinase II cascade activate → SERCA pumps restore ER stores within seconds. The ER's expression is therefore bifurcated: selective protein release (structural output) and Ca²⁺ pulse dispatch (second-messenger output). Both are permitted passages. In Android: KV cache write (verified activation persisted for the next context window) + Power HAL thermal-threshold signal dispatched to CPU governor.",
         scaleLabel: "Cellular",
-        hardwareAnalogue: "KV cache write — only verified activations are persisted for the next context window",
+        hardwareAnalogue: "KV cache write (verified activation → next context window); Power HAL Ca²⁺ analogue: IP3R → powerHint() → CPU governor cascade",
       },
     ],
   },
@@ -260,11 +260,11 @@ export const FRACTAL_CYCLES: FractalCycle[] = [
       },
       {
         id: "affect",
-        title: "Conformational Change — Signal Discrimination",
+        title: "Conformational Change — Signal Discrimination and Cascade",
         description:
-          "Receptor binding triggers allosteric conformational change: the intracellular domain adopts a new shape that enables it to recruit and activate downstream proteins (G-proteins, kinases). Incorrect ligands that bind with low affinity dissociate before triggering this change. The membrane's affect is discrimination in both directions: confirming the genuine signal, rejecting noise.",
+          "Receptor binding triggers allosteric conformational change: the intracellular domain adopts a new shape that recruits and activates downstream G-proteins (Gαs, Gαi, Gαq). Gαs activates adenylyl cyclase → cAMP produced → PKA activated → target proteins phosphorylated. Gαq activates PLC → IP3 + DAG released → IP3 opens ER Ca²⁺ channels → CaM-kinase II cascade. Incorrect ligands dissociate before triggering this change. The membrane's affect is discrimination in both directions — confirming the genuine signal, rejecting noise — followed by intracellular cascade amplification that spreads the decision through the cytoplasm. In Android: ISP pipeline processes the CaptureRequest (HAL configures the Image Signal Processor); Power HAL powerHint() cascades to CPU governor, thermal zone, and display brightness — the intracellular G-protein cascade of the device.",
         scaleLabel: "Molecular",
-        hardwareAnalogue: "ISP pipeline processes the CaptureRequest: HAL configures the Image Signal Processor, sets exposure curves, focus distances, and noise-reduction parameters — all transformation occurring inside the vendor partition, invisible to the framework above. Pre-Treble, this boundary did not exist; OTA updates broke these drivers because there was no membrane to contain the affect.",
+        hardwareAnalogue: "ISP HAL CaptureRequest processing; Power HAL IPower::powerHint() → CPU governor → thermal cascade",
       },
       {
         id: "expression",
