@@ -88,17 +88,17 @@ export const CELL_MAPPINGS: Organelle[] = [
   {
     id: "lysosomes",
     name: "Lysosomes",
-    osFeature: "Cache Cleanup / Uninstaller",
-    explanation: "The digital recycling center that clears out residual junk data, temporary caches, and uninstalls old apps to keep the system fresh.",
-    analogy: "Lysosomes break down cellular waste; the system cleaner breaks down digital waste, tying perfectly into Fairphone's recycling ethos.",
+    osFeature: "Cache Cleanup / Uninstaller / TEE Containment",
+    explanation: "The digital recycling center that clears out residual junk data, temporary caches, and uninstalls old apps. At the apparatus scale this organelle also carries the peroxisomal containment function (frozen-15 constraint): just as peroxisomes neutralise H₂O₂ inside a hard membrane boundary, the Keystore/TEE neutralises cryptographic operations inside ARM TrustZone's Secure World — the blast radius of dangerous chemistry never reaches the cytoplasm.",
+    analogy: "Lysosomes break down cellular waste; peroxisomes contain reactive chemistry within a sealed enclave. Both functions are expressed here: system cleanup maps to the lysosomal degradation axis, and cryptographic key isolation maps to the peroxisomal containment axis.",
     color: "hsl(80, 90%, 50%)" // Yellow-green
   },
   {
     id: "vacuole",
     name: "Vacuole",
-    osFeature: "Storage / File System",
-    explanation: "The secure vault where all your photos, documents, and downloaded applications are stored persistently.",
-    analogy: "A vacuole stores nutrients and water; the file system is the storage reservoir holding your personal data.",
+    osFeature: "Storage / File System / Key Vault",
+    explanation: "The secure vault where all your photos, documents, and downloaded applications are stored persistently. The vacuole's sequestered-reserve function also maps to the TEE key vault: hardware-backed key material is isolated in the Secure World, inaccessible to the Normal World OS — a reserve that can be drawn upon only through a controlled interface, never exported directly.",
+    analogy: "A vacuole stores nutrients in a membrane-sealed compartment, inaccessible to cytoplasmic enzymes except through controlled release. The file system stores your data; the Keystore/StrongBox stores your keys in a hardware enclave with the same controlled-access property.",
     color: "hsl(190, 70%, 40%)" // Deep Cyan
   },
   {

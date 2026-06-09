@@ -123,7 +123,26 @@ export const ORGANELLE_SUBSTRATE_LINKS: OrganelleSubstrateLink[] = [
 
   // UPS → PackageManager (targeted protein degradation, distinct from LMKD/autophagy)
   { organelleId: "golgi-apparatus", substrateId: "package-manager", description: "Golgi performs final protein sorting and dispatch; PackageManager performs final APK verification, dexopt, and install dispatch — the trans-Golgi Network of Android", relevance: 0.85 },
-  { organelleId: "lysosomes", substrateId: "package-manager", description: "Lysosomes handle the endolysosomal degradation arm — receptor-mediated endocytosis routes surface proteins through early/late endosomes to lysosomal hydrolases. PackageManager force-stop and uninstall execute the same targeted removal: a specific named target is identified, routed through a degradation pipeline, and its resources reclaimed. Distinct from the lmkd link (bulk autophagy under pressure) — this is receptor-mediated targeted routing.", relevance: 0.88 }
+  { organelleId: "lysosomes", substrateId: "package-manager", description: "Lysosomes handle the endolysosomal degradation arm — receptor-mediated endocytosis routes surface proteins through early/late endosomes to lysosomal hydrolases. PackageManager force-stop and uninstall execute the same targeted removal: a specific named target is identified, routed through a degradation pipeline, and its resources reclaimed. Distinct from the lmkd link (bulk autophagy under pressure) — this is receptor-mediated targeted routing.", relevance: 0.88 },
+
+  // #9 Peroxisomes → Keystore/TEE (DEVELOPMENT.md item 9, frozen-15 backfill)
+  // vacuole: isolated storage vault ↔ TEE key vault; nuclear-pores: gated entry ↔ TEE boundary;
+  // lysosomes: containment/detox ↔ cryptographic toxic-op isolation.
+  // Three distinct incoming zones (cytoplasm, nucleus, cytoplasm) — vacuole+lysosomes from
+  // cytoplasm zone but mechanistically distinct; nuclear-pores from nucleus zone → cooperative triad.
+  { organelleId: "vacuole", substrateId: "keystore-tee", description: "Vacuole is the cell's isolated storage vault — sequestered from the cytoplasm, used to store reserves that must not be freely accessible. The TEE is Android's key vault: hardware-backed key material is sequestered in the Secure World and never exposed to the Normal World, exactly as vacuolar contents are sequestered from cytoplasmic enzymes.", relevance: 0.91 },
+  { organelleId: "nuclear-pores", substrateId: "keystore-tee", description: "Nuclear pores enforce strict gated entry — only correctly tagged molecules pass the nuclear envelope. The TEE boundary (TrustZone world switch) enforces the same hard gating: only vetted, privilege-checked calls may cross from Normal World into Secure World. No bypass exists at the hardware level, exactly as there is no bypass of nuclear pore selectivity.", relevance: 0.88 },
+  { organelleId: "lysosomes", substrateId: "keystore-tee", description: "Peroxisomes (mapped here under the frozen-15 constraint) contain H₂O₂ and execute beta-oxidation within a single-membrane enclave, destroying reactive byproducts before they can damage other organelles. The TEE processes cryptographic operations within ARM TrustZone's hard enclave boundary — the 'toxic' key material never leaves the Secure World. Both structures exist precisely to contain the blast radius of dangerous chemistry.", relevance: 0.79 },
+
+  // #13 Membrane potential / ion channels → Kryo670 interrupt subsystem
+  // cell-membrane: resting gradient ↔ IRQ priority baseline; threshold crossing ↔ ISR dispatch.
+  // membrane-receptors: receptor discrimination ↔ interrupt source identification.
+  { organelleId: "cell-membrane", substrateId: "kryo670", description: "The plasma membrane maintains a resting potential via Na⁺/K⁺-ATPase (electrochemical gradient = interrupt priority queue). At threshold, voltage-gated channels open and the action potential fires — non-maskable, must complete. The Kryo 670's interrupt controller maintains per-IRQ priority levels (GIC-500 priority registers = resting gradient). When an IRQ fires at threshold, the hardirq handler is dispatched non-preemptibly, exactly as the action potential propagates without interruption.", relevance: 0.76 },
+  { organelleId: "membrane-receptors", substrateId: "kryo670", description: "Membrane receptors discriminate between ligands before triggering a cascade — only the correct molecular key initiates signalling. The Kryo 670 interrupt controller identifies the IRQ source (GIC distributor GICD_ISPENDR register) before dispatching to the correct ISR vector. Receptor discrimination = interrupt source identification; cascade trigger = ISR dispatch.", relevance: 0.72 },
+
+  // #19 Protein chaperones / HSPs → ART Runtime
+  // ER is where post-translational folding occurs; ART verify+JIT+deopt is the Android chaperone.
+  { organelleId: "endoplasmic-reticulum", substrateId: "art-runtime", description: "The rough ER is the site of post-translational protein folding: BiP/HSP70 binds nascent chains, calnexin/calreticulin monitor glycosylation state, and ERAD (ER-Associated Degradation) routes irreparably misfolded proteins for destruction. ART is the Android chaperone: the verifier checks DEX bytecode correctness before execution (BiP quality gate), the JIT recompiles hot methods when profile data shows suboptimal folding (calnexin-guided refolding), and the interpreter fallback handles code that cannot be optimised (chaperone-assisted slow fold). The deopt path is ERAD — irreparably unoptimisable code is routed back to interpretation.", relevance: 0.84 }
 ];
 
 /**
@@ -231,6 +250,30 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
     attentionWeight: 0.58,
     ipcMechanism: "binder",
     couplingSigma: 0.9
+  },
+
+  // #13 Membrane potential — action potential propagates from membrane to nucleus (gene expression change)
+  {
+    sourceOrganelleId: "cell-membrane",
+    targetOrganelleId: "nucleus",
+    description: "Action potential propagation: the membrane potential crossing threshold triggers a cascade that ultimately reaches the nucleus — Ca²⁺ influx activates CaM-kinase IV, which phosphorylates CREB, which modulates gene expression. In Android: a hardirq fires at the membrane (interrupt controller), propagates through the kernel's IRQ thread, crosses the Binder boundary as a system call, and reaches the nucleus (kernel syscall table) where the process state is updated. The tightest IPC path — σ=0.9 because hardirq→syscall is synchronous and non-maskable.",
+    rateRange: "1–500 ph/cm²/s",
+    confidence: "indicative",
+    attentionWeight: 0.83,
+    ipcMechanism: "binder",
+    couplingSigma: 0.9
+  },
+
+  // #19 Chaperone ERAD path — ER routes misfolded proteins to lysosomes for degradation
+  {
+    sourceOrganelleId: "endoplasmic-reticulum",
+    targetOrganelleId: "lysosomes",
+    description: "ERAD (ER-Associated Degradation): proteins that fail the ER quality gate (BiP/calnexin cannot rescue them) are retrotranslocated through the Sec61 channel, polyubiquitinated, and routed to the lysosome-proteasome axis for degradation. In Android: ART code that fails JIT optimisation (deopt path) is flagged in the profile, and subsequent dexopt passes route the problematic method to interpreter-only execution — the 'misfolded' code is removed from the hot-compiled set and handed to the lysosomal degradation pipeline (PackageManager dex cache cleanup on next dexopt). Ordered broadcast σ=0.6: the ERAD routing is a directed, sequenced signal (not synchronous Binder).",
+    rateRange: "0.5–15 ph/cm²/s",
+    confidence: "indicative",
+    attentionWeight: 0.49,
+    ipcMechanism: "ordered-broadcast",
+    couplingSigma: 0.6
   }
 ];
 

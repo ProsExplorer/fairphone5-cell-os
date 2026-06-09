@@ -263,6 +263,24 @@ export const SUBSTRATE_NODES: SubstrateNode[] = [
     ],
     confidence: "verified",
     color: "#1d4ed8"
+  },
+
+  // ── Biological Accuracy Roadmap: Open Items (DEVELOPMENT.md #9, #13, #19) ──────
+  // One node is the Fredholm cap (index 15-17 = -2). Cooperative-pair rule satisfied below.
+  {
+    id: "keystore-tee",
+    name: "Keystore / TEE (KeyMint/StrongBox)",
+    category: "stack",
+    role: "Isolated cryptographic execution and toxic-operation containment — the peroxisomal quarantine of Android: processes dangerous operations in a secure world enclave and neutralises the blast radius before it can reach normal-world processes",
+    detail:
+      "ARM TrustZone splits the SoC into two worlds: the Normal World (Android OS) and the Secure World (TEE). Key operations (generation, signing, attestation) execute inside the Secure World and never expose raw key material to Normal World processes. StrongBox/KeyMint provides hardware-backed key storage; keystore2 + keymintd are the HAL services. Exactly as peroxisomes generate and immediately destroy H₂O₂ within a single-membrane enclave, the TEE processes cryptographic 'toxins' inside a hard boundary and releases only the neutralised output. seccomp filtering and the keystore daemon's isolated process context extend this containment to the syscall layer.",
+    specs: [
+      { label: "Boundary", value: "ARM TrustZone secure world / KeyMint HAL" },
+      { label: "Isolation", value: "StrongBox/TEE non-exportable keys, hardware attestation" },
+      { label: "Services", value: "keystore2, keymintd, /dev/hw_random" }
+    ],
+    confidence: "verified",
+    color: "#0f766e"
   }
 ];
 

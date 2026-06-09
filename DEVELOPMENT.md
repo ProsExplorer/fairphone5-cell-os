@@ -222,15 +222,13 @@ Missing: no substrate node for package-manager, no biophoton link from `lysosome
 
 ---
 
-**9. Peroxisomes** — ABSENT
+**9. Peroxisomes** — IMPLEMENTED ✓
 
 Biological: Peroxisomes are single-membrane organelles that perform oxidative reactions: beta-oxidation of very long-chain fatty acids, detoxification of H₂O₂ (via catalase), and synthesis of plasmalogens. They generate H₂O₂ as a byproduct and immediately destroy it — reactive oxygen species (ROS) containment.
 
 Android mapping (proposed): **Keystore / Verified Boot / seccomp / SELinux** — the security containment layer that processes "dangerous" operations (cryptographic key operations, privileged syscalls) in an isolated context and neutralizes their blast radius. Just as peroxisomes contain H₂O₂ to prevent it from damaging other organelles, the keystore daemon processes sensitive key material in a TEE (Trusted Execution Environment) and prevents it from reaching user space.
 
-Missing: entirely absent from the model. No organelle maps to this function. The `membrane-receptors` organelle is the closest (boundary function) but is semantically incorrect.
-
-Note: Adding peroxisomes as a 16th organelle would require unfreezing the 15-organelle constraint. The MEDIUM-priority recommendation is to map this function to `lysosomes` or `vacuole` with an extended osFeature description, pending a future schema evolution that allows a 16th organelle.
+Implementation (open-items round, frozen-15 backfill): New `keystore-tee` substrate node added (`category: "stack"`, `confidence: "verified"`). Three new organelle-substrate links: `vacuole→keystore-tee` (isolated vault, rel=0.91), `nuclear-pores→keystore-tee` (gated boundary, rel=0.88), `lysosomes→keystore-tee` (containment/detox, rel=0.79). One QI intersection: `qi-peroxisome-affect-apparatus` (cytoplasm × affect × apparatus). Organelle descriptions for `lysosomes` and `vacuole` updated to document the peroxisomal backfill. Fredholm index now −2 (cap reached: 15 − 17 = −2). When the 15-organelle constraint is lifted, a dedicated `peroxisome` organelle with `osFeature: "Keystore/StrongBox TEE"` should replace this backfill.
 
 ---
 
@@ -277,13 +275,13 @@ Android mapping differentiation:
 
 ---
 
-**13. Membrane potential / ion channels** — PARTIAL
+**13. Membrane potential / ion channels** — IMPLEMENTED ✓
 
 Biological: The plasma membrane maintains a resting potential (−70mV in neurons) via ion concentration gradients (Na⁺/K⁺-ATPase pump). Voltage-gated ion channels open at threshold, allowing rapid ion flux (action potential). This is the fastest signaling mechanism in biology.
 
-Current mapping: `cell-membrane` and `membrane-receptors` exist. The electrochemical gradient aspect is not represented.
-
 Android mapping: **IRQ latency + CPU interrupt priority + real-time kernel patches**. The electrochemical gradient = interrupt priority queue. Voltage threshold = IRQ trigger level. Action potential = hardirq handler execution (non-maskable, must complete before anything else).
+
+Implementation (open-items round): Two new organelle-substrate links: `cell-membrane→kryo670` (resting gradient = GIC-500 priority register, rel=0.76) and `membrane-receptors→kryo670` (receptor discrimination = IRQ source identification, rel=0.72). One QI intersection: `qi-membranepotential-affect-silicon` (membrane × affect × silicon). One biophoton link: `cell-membrane→nucleus` (σ=0.9, binder, attentionWeight=0.83) encoding the Ca²⁺/CaM-kinase IV→CREB→gene-expression propagation path.
 
 ---
 
@@ -357,13 +355,13 @@ Android mapping for intrinsic apoptosis: **Low Memory Kill → OOM kill escalati
 
 ---
 
-**19. Protein chaperones / heat shock proteins (HSPs)** — PARTIAL
+**19. Protein chaperones / heat shock proteins (HSPs)** — IMPLEMENTED ✓
 
-Biological: HSP70, HSP90, GroEL/GroES assist newly synthesized or stress-denatured proteins in reaching their correct fold. They prevent aggregation, refold misfolded proteins, and target irreparably damaged proteins to the proteasome.
-
-Current mapping: implicitly covered by `ribosomes` (translation) but the post-translational folding assistance is not distinct.
+Biological: HSP70, HSP90, GroEL/GroES assist newly synthesized or stress-denatured proteins in reaching their correct fold. They prevent aggregation, refold misfolded proteins, and target irreparably damaged proteins to the proteasome via ERAD.
 
 Android mapping: **ART's JIT compilation + verification** — ART verifies DEX bytecode (ensures the "protein" has the correct sequence before it runs), JIT re-optimizes hot methods (refolds proteins that are frequently used), and the ART interpreter mode (for code that fails optimization) is the chaperone's fallback — still functional, just slower.
+
+Implementation (open-items round): One new organelle-substrate link: `endoplasmic-reticulum→art-runtime` (ER chaperone folding = ART verifier + JIT recompile + deopt/interpreter fallback, rel=0.84). One QI intersection: `qi-chaperone-affect-silicon` (endoplasmic-reticulum × affect × silicon) with a three-mode chaperone narrative (BiP=verifier gate, calnexin=JIT refold, chaperone fallback=interpreter holdover). One biophoton link: `endoplasmic-reticulum→lysosomes` (σ=0.6, ordered-broadcast, attentionWeight=0.49) encoding the ERAD misfolded-protein routing path.
 
 ---
 
@@ -400,17 +398,17 @@ COPI retrograde = App rollback / package restore from backup.
 | 6 | Ca²⁺ second messenger | ABSENT | HIGH |
 | 7 | Autophagy | PARTIAL | MEDIUM |
 | 8 | Ubiquitin-proteasome | ABSENT | HIGH |
-| 9 | Peroxisomes | ABSENT | MEDIUM* |
+| 9 | Peroxisomes | IMPLEMENTED ✓ | MEDIUM* |
 | 10 | Centrosome / MTOC | ABSENT | HIGH |
 | 11 | Cytoskeletal dynamics (all 3) | PARTIAL | MEDIUM |
 | 12 | Vesicle trafficking directionality | PARTIAL | MEDIUM |
-| 13 | Membrane potential / ion channels | PARTIAL | LOW |
+| 13 | Membrane potential / ion channels | IMPLEMENTED ✓ | LOW |
 | 14 | Gap / tight junctions | ABSENT | HIGH |
 | 15 | ECM / integrin signaling | ABSENT | MEDIUM |
 | 16 | Redox signaling | ABSENT | MEDIUM |
 | 17 | Cell cycle | ABSENT | HIGH |
 | 18 | Apoptosis pathway | PARTIAL | MEDIUM |
-| 19 | Protein chaperones / HSPs | PARTIAL | LOW |
+| 19 | Protein chaperones / HSPs | IMPLEMENTED ✓ | LOW |
 | 20 | Secretory pathway completeness | PARTIAL | MEDIUM |
 
 *Peroxisomes require unfreezing the 15-organelle constraint — schema evolution needed.

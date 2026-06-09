@@ -7,3 +7,4 @@
 - [Cell OS docs accuracy fixes](cell-os-docs-corrections.md) — seven code-mismatch corrections found by architect review of the six documentation files.
 - [FP5 manifold comparison findings](fp5-manifold-findings.md) — key durable findings from comparing Fairphone 5 source to UNIVERSAL_MANIFOLD.md theory.
 - [Cell OS self-learning layer](cell-os-learning-layer.md) — epigenome architecture: three tensors, Hebbian adapter, observation point, visual expression pattern.
+- [Cell OS open-items tensor state](cell-os-open-items-state.md) — final tensor metrics after #9/#13/#19 closure; Fredholm cap reached; frozen-15 backfill pattern; next evolution triggers.

@@ -385,4 +385,45 @@ export const QI_INTERSECTIONS: QiIntersection[] = [
     hardwareAnalogue: "SensorManager HAL, ContextHub (STM32), adaptive battery API, LocationManager",
     evidence: "indicative",
   },
+
+  // ── Open Items: #9 Peroxisomes, #13 Membrane Potential, #19 Chaperones ─────────
+  // 3 new intersections; post-add total: 33 of 264 = 12.5%.
+  // QI density enters amber-high but all three are biologically grounded (not speculative).
+
+  {
+    id: "qi-peroxisome-affect-apparatus",
+    zoneId: "cytoplasm",
+    phaseId: "affect",
+    scaleId: "apparatus",
+    title: "Peroxisomal ROS Containment as TEE Cryptographic Enclave",
+    narrative:
+      "Peroxisomes are single-membrane enclaves that generate H₂O₂ as a metabolic byproduct and immediately destroy it via catalase — the danger is produced and neutralised within the same boundary, never reaching the cytoplasm. This is not incidental containment; it is the peroxisome's principal architectural property. The Keystore/TEE implements the identical principle: ARM TrustZone partitions the SoC into Normal World and Secure World, and cryptographic key operations are performed entirely inside the Secure World — the 'toxic' key material is generated, used, and stored without ever being exported to the Normal World. The blast radius of compromise is confined to the enclave, exactly as peroxisomal H₂O₂ is confined to the organelle. Under the frozen-15 organelle constraint, this function is carried by the cytoplasm/vacuole/lysosomes cluster; when the 16th organelle slot opens, a dedicated peroxisome organelle should be added with osFeature 'Keystore/StrongBox TEE'.",
+    hardwareAnalogue: "ARM TrustZone, KeyMint HAL, StrongBox / keystore2, keymintd isolated process",
+    substrateIds: ["keystore-tee", "selinux-policy"],
+    evidence: "indicative",
+  },
+  {
+    id: "qi-membranepotential-affect-silicon",
+    zoneId: "membrane",
+    phaseId: "affect",
+    scaleId: "silicon",
+    title: "Membrane Potential / Action Potential as IRQ Priority Cascade",
+    narrative:
+      "The plasma membrane maintains a resting potential of −70 mV via the Na⁺/K⁺-ATPase pump, establishing an electrochemical gradient across the bilayer — a standing potential difference held in precise equilibrium by continuous ion pumping. Voltage-gated Na⁺ channels (Nav1.x) open when the membrane depolarises past threshold (≈ −55 mV), triggering an all-or-nothing action potential that propagates non-decrementally along the membrane. This is the fastest signalling mechanism in biology — non-maskable, must complete before any other signal can fire. The Kryo 670 CPU implements the silicon homologue: each IRQ line has a hardware priority level held in the GIC-500 interrupt controller's priority register (= resting gradient). When an interrupt fires above the CPU's current priority mask threshold (= depolarisation threshold), the GIC preempts the running code and dispatches the hardirq handler non-preemptibly — no other lower-priority interrupt can interrupt a running hardirq, exactly as no competing signal can abort an action potential mid-propagation. The affect phase is where the gradient transforms: it is not the perception of the stimulus (receptor binding / IRQ assertion) but the active work of propagation and cascade — the moment the potential becomes signal.",
+    hardwareAnalogue: "Kryo 670 GIC-500 interrupt priority registers, hardirq handler dispatch, /proc/interrupts",
+    substrateIds: ["kryo670", "qcm6490"],
+    evidence: "indicative",
+  },
+  {
+    id: "qi-chaperone-affect-silicon",
+    zoneId: "endoplasmic-reticulum",
+    phaseId: "affect",
+    scaleId: "silicon",
+    title: "Protein Chaperone / HSP Folding as ART Verify–JIT–Deopt Loop",
+    narrative:
+      "Molecular chaperones (HSP70, HSP90, GroEL/GroES, BiP, calnexin) do not carry information about the final folded structure — they prevent aggregation and provide a protected environment in which the polypeptide chain can sample conformations and find its native state. If refolding fails after repeated chaperone cycles, the protein is handed to the ERAD pathway (retrotranslocation → polyubiquitination → proteasomal or lysosomal degradation). Three chaperone modes map precisely to three ART execution modes: (1) BiP initial binding and release cycles = ART verifier checking DEX bytecode correctness before any execution begins — the quality gate before the chain is extended; (2) Calnexin/calreticulin refolding with glycan trimming = JIT recompilation of hot methods guided by profile data — the chaperone revisits the chain after it has run and refolds it into a faster native form; (3) Chaperone fallback to interpreter mode when JIT cannot optimise = HSP90 holdover-client state, where the protein remains functional but slower, still chaperoned, never reaching independent native fold. The affect phase captures the transformation work — not the perception of a newly synthesised chain arriving at the ER (that is perception), but the active folding labour inside the ER lumen.",
+    hardwareAnalogue: "ART verifier (dex2oat --verify-at-runtime), JIT compiler (profile-guided recompile), deopt/interpreter fallback, ERAD → ART dex cache eviction",
+    substrateIds: ["art-runtime"],
+    evidence: "indicative",
+  },
 ];
