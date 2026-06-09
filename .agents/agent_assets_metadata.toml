@@ -23,3 +23,9 @@ id = "j3roSv8yv_yvLR7t669-r"
 uri = "file://artifacts/cell-os/README.md"
 type = "text"
 title = "Cell OS — GitHub README"
+
+[[outputs]]
+id = "myjB0S8q7pa3AdTcKifdR"
+uri = "file://DEVELOPMENT.md"
+type = "text"
+title = "DEVELOPMENT.md — Cellular Accuracy Roadmap (Unabridged)"
