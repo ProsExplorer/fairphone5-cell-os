@@ -15,8 +15,18 @@ interface SubstrateAtlasProps {
   onToggleSubstrate: (id: string) => void;
 }
 
-function withAlpha(hsl: string, alpha: number): string {
-  return hsl.replace("hsl", "hsla").replace(")", `, ${alpha})`);
+function withAlpha(color: string, alpha: number): string {
+  if (color.startsWith("hsl")) {
+    return color.replace("hsl", "hsla").replace(")", `, ${alpha})`);
+  }
+  if (color.startsWith("#")) {
+    const hex = color.slice(1);
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  return color;
 }
 
 function SubstrateCard({
