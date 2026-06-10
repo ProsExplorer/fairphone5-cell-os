@@ -31,7 +31,7 @@ Cell OS is a source code manifold. The codebase instantiates a rank-3 tensor fie
 Q^{z,p,s} : Zone^8 × TriadPhase^3 × Scale^11 → QiIntersection ∪ {∅}
 ```
 
-264 possible cells. 33 curated intersections at present (12.5% density). The manifold is sparse by design — high-signal intersections only, no padding.
+264 possible cells. 36 curated intersections at present (13.6% density). The manifold is sparse by design — high-signal intersections only, no padding.
 
 The organism has two layers:
 
@@ -174,7 +174,7 @@ Four coupling tiers form a precise spectrum:
 | Ordered broadcast | 0.6 | Async, priority-chained |
 | Unordered broadcast | 0.4 | Fire-and-forget, fully decoupled |
 
-These σ values are encoded in the `BiophotonLink` type as `couplingSigma`, and assigned to each of the eleven biophoton links in `mappings.ts`. [FP5\_MANIFOLD\_COMPARISON.md §Finding 3]
+These σ values are encoded in the `BiophotonLink` type as `couplingSigma`, and assigned to each of the thirteen biophoton links in `mappings.ts`. [FP5\_MANIFOLD\_COMPARISON.md §Finding 3]
 
 ### Finding 4 — ART Instantiates All Eight Zones (verified)
 
@@ -221,8 +221,8 @@ artifacts/cell-os/
 │   ├── types.ts                    ← Index-2 maximum: all type exports (20+ contracts)
 │   └── content/
 │       ├── organelles.ts           ← 15 organelles, 8 zones, osFeature mappings
-│       ├── mappings.ts             ← Coupling tensor (40 links) + biophoton links (11)
-│       ├── qiMatrix.ts             ← Rank-3 QI tensor: 33 curated intersections
+│       ├── mappings.ts             ← Coupling tensor (41 links) + biophoton links (13)
+│       ├── qiMatrix.ts             ← Rank-3 QI tensor: 36 curated intersections
 │       ├── fractalCycles.ts        ← 8 internal P→A→E cycles (FP5 source-grounded analogues)
 │       ├── substrate.ts            ← 17 substrate nodes (QCM6490 through keystore-tee)
 │       ├── scales.ts               ← 11 scale flows, quantum → cosmic + silicon
@@ -237,7 +237,7 @@ artifacts/cell-os/
 │   └── useLearnedManifold.ts       ← Live synthesis of genome + epigenome
 │
 ├── src/features/explorer/          ← Coordinate navigation
-├── src/pages/                      ← 5 coordinate chart surfaces
+├── src/pages/                      ← 6 coordinate chart surfaces (home, philosophy, substrate, fractal, metrics, documents)
 └── src/hooks/use-sacred-signature.ts ← SHA-256 seal, rotating every 7770ms
 ```
 
@@ -295,8 +295,8 @@ Canonical space (MANIFOLD_ANALYSIS.md §2.3, 8 substrate nodes):  15 × 8  = 120
 Pre-roadmap space (11 substrate nodes, after FP5 grounding):      15 × 11 = 165
 Roadmap round 1 (16 substrate nodes, biological accuracy):        15 × 16 = 240
 Current space   (17 substrate nodes, open-items completion):      15 × 17 = 255
-Active links: 40
-Density:      40 / 255 ≈ 15.7%
+Active links: 41
+Density:      41 / 255 ≈ 16.1%
 Healthy:      10–25%  ← within range
 ```
 
@@ -315,17 +315,17 @@ The tensor is not self-adjoint (organelle and substrate index spaces are distinc
 
 ### The Attention Tensor $\mathcal{A}^{ij}$ (Biophoton Links)
 
-`BIOPHOTON_LINKS` in `mappings.ts`. Eleven directed organelle-to-organelle links with biophysical rate-range weights and Android IPC coupling σ values.
+`BIOPHOTON_LINKS` in `mappings.ts`. Thirteen directed organelle-to-organelle links with biophysical rate-range weights and Android IPC coupling σ values.
 
 ```
-Current links: 11
+Current links: 13
 Space:         15 × 15 = 225 possible directed pairs
-Density:       4.9%
+Density:       5.8%
 ```
 
 Symmetrisation is an explicit modelling assumption, not a code property: $w_{ij} = w_{ji} = \frac{1}{2}(A^{ij} + A^{ji})$. [MANIFOLD\_ANALYSIS.md §2.4]
 
-All eleven links — proxy weights (midpoint of rateRange ÷ global max 100 ph/cm²/s) or explicit `attentionWeight` where set:
+All thirteen links — proxy weights (midpoint of rateRange ÷ global max 100 ph/cm²/s) or explicit `attentionWeight` where set:
 
 | $(i,j)$ | $w_{ij}$ | weight source | IPC analogue | $\sigma$ |
 |---|---|---|---|---|
@@ -340,8 +340,10 @@ All eleven links — proxy weights (midpoint of rateRange ÷ global max 100 ph/c
 | mitochondria → dna | 0.52 | explicit | Binder direct | 0.9 |
 | cell-membrane → nucleus | 0.83 | explicit | Binder direct | 0.9 |
 | endoplasmic-reticulum → lysosomes | 0.49 | explicit | Ordered broadcast | 0.6 |
+| endoplasmic-reticulum → vesicles | 0.55 | explicit | Ordered broadcast | 0.6 |
+| vesicles → cell-membrane | 0.65 | explicit | Messenger | 0.7 |
 
-The original three links encode cascade pathways: GPCR→G-protein cytoplasmic amplification, TGN→lysosome targeted degradation routing, and cytochrome c→CAD nuclear fragmentation (intrinsic apoptosis). The two new links complete the open items: cell-membrane→nucleus encodes the action potential→gene-expression path (Ca²⁺/CaM-kinase IV→CREB, σ=0.9 because hardirq→syscall is non-maskable); ER→lysosomes encodes the **ER-phagy (reticulophagy)** bulk-clearance path — distinct from classical ERAD (which routes individual misfolded proteins to the 26S proteasome); ER-phagy engulfs ER fragments via FAM134B/RTN3 receptors and delivers them to autolysosomes (σ=0.6, ordered-broadcast).
+The original three links encode cascade pathways: GPCR→G-protein cytoplasmic amplification, TGN→lysosome targeted degradation routing, and cytochrome c→CAD nuclear fragmentation (intrinsic apoptosis). The open-items links close biological gaps: cell-membrane→nucleus encodes the action potential→gene-expression path (Ca²⁺/CaM-kinase IV→CREB, σ=0.9 because hardirq→syscall is non-maskable); ER→lysosomes encodes the **ER-phagy (reticulophagy)** bulk-clearance path (σ=0.6, ordered-broadcast); ER→vesicles encodes the COPII secretory vesicle budding path — ER lumen cargo exits via vesicle intermediates en route to Golgi (σ=0.6, ordered-broadcast); vesicles→cell-membrane encodes the exocytosis docking and fusion step — the final expression leg of the secretory pathway that delivers membrane proteins and secreted factors to the cell surface (σ=0.7, messenger).
 
 ### The QI Tensor $\mathcal{Q}^{z,p,s}$ (Rank-3)
 
@@ -349,8 +351,8 @@ The original three links encode cascade pathways: GPCR→G-protein cytoplasmic a
 
 ```
 Space:   8 × 3 × 11 = 264 cells
-Current: 33 curated intersections
-Density: 12.5%
+Current: 36 curated intersections
+Density: 13.6%
 Healthy: 5–10%  ← above range; amber on the Metrics surface
 ```
 
@@ -393,7 +395,7 @@ The 10 links wire the 5 new nodes to biologically justified organelle pairs. The
 
 ### H3 — Eight New QI Intersections
 
-Brings the total from 22 to 30. Three further intersections (peroxisome/TEE containment, membrane potential/IRQ cascade, chaperone/ERAD folding loop) bring the total to 33. The QI density (12.5%) sits above the documented 5–10% healthy range — it renders amber on the Metrics surface. Every intersection is biologically grounded; the tensor has grown because the biology demanded it, not to fill the space.
+Brings the total from 22 to 30. Three further intersections (peroxisome/TEE containment, membrane potential/IRQ cascade, chaperone/ERAD folding loop) bring the total to 33. Three document-secretion intersections (`qi-secretion-expression-textual`, `qi-exocytosis-expression-organic`, `qi-document-perception-textual`) bring the total to 36. The QI density (13.6%) sits above the documented 5–10% healthy range — it renders amber on the Metrics surface. Every intersection is biologically grounded; the tensor has grown because the biology demanded it, not to fill the space.
 
 ### H4 — Three New Biophoton Links
 
@@ -444,7 +446,7 @@ The SHA-256 sacred seal is not decorative. It is a continuous, verifiable cohere
 
 ## Surfaces
 
-Five coordinate charts. Each is a different projection of the same manifold.
+Six coordinate charts. Each is a different projection of the same manifold.
 
 ### Home — The Cell Explorer (`/`)
 
@@ -481,14 +483,31 @@ The manifold's blood panel. Live values for all health metrics, computed from th
 
 | Metric | Current | Healthy range | Status |
 |---|---|---|---|
-| Coupling tensor density | 15.7% | 10–25% | Green |
-| QI tensor density | 12.5% | 5–10% | Amber |
-| Biophoton link count | 11 | 2–10 | Amber |
+| Coupling tensor density | 16.1% | 10–25% | Green |
+| QI tensor density | 13.6% | 5–10% | Amber |
+| Biophoton link count | 13 | 2–10 | Amber |
 | Mean zone confidence | computed live | 75–100% | computed live |
 | Export rank total | computed live | 40–80 | computed live |
 | Phase transition count | computed live | 4–7 | computed live |
 
-Green = healthy. Amber = outside range. Two metrics are amber: QI density at 12.5% (above the 5–10% range) and biophoton link count at 11 (above the 2–10 range). In both cases the overshoot is editorially correct — every intersection and every biophoton link was earned through biological grounding (membrane potential, peroxisomal containment, chaperone folding loop, ERAD/ER-phagy routing), not enumerated to fill the space. The organism monitors itself.
+Green = healthy. Amber = outside range. Two metrics are amber: QI density at 13.6% (above the 5–10% range) and biophoton link count at 13 (above the 2–10 range). In both cases the overshoot is editorially correct — every intersection and every biophoton link was earned through biological grounding (membrane potential, peroxisomal containment, chaperone folding loop, ERAD/ER-phagy routing, secretory pathway completion), not enumerated to fill the space. The organism monitors itself.
+
+### Documents — The Secretion Surface (`/documents`)
+
+The cell's exocytosis pathway made interactive. The page implements the textual secretory pathway: membrane-receptors receive the request [P] → Golgi apparatus assembles the report from static source arrays [A] → vesicles carry it to the membrane for release as a downloaded PDF [E].
+
+Select any combination of four report sections, then click "Generate & Download PDF":
+
+| Section | Source array | Content |
+|---|---|---|
+| Manifold Metrics | `computeManifoldMetrics()` | Coupling/QI/biophoton densities, Fredholm index, zone confidence |
+| Organelle Mapping | `CELL_MAPPINGS` + `ORGANELLE_SUBSTRATE_LINKS` | All 15 organelles with OS features + 41 substrate relevance scores |
+| QI Intersections | `QI_INTERSECTIONS` | All 36 intersections: zone, phase, scale, title |
+| Biophoton Attention | `BIOPHOTON_LINKS` | All 13 links: source, target, σ, IPC mechanism, attention weight |
+
+The PDF is generated entirely in the browser via jsPDF + jspdf-autotable (no server, no cloud). Export allowlist: only static `domain/content/` arrays and computed metrics. Session state, epigenome weights, and learned attention values are not exported. Output filename: `cell-os-manifold-YYYY-MM-DD.pdf`.
+
+Three QI intersections anchor this surface biologically: `qi-secretion-expression-textual` (Golgi → SNARE vesicle secretion = jsPDF document assembly), `qi-exocytosis-expression-organic` (vesicle→membrane fusion = PDF download trigger), `qi-document-perception-textual` (document as receptor = Phase 2 import/endocytosis path).
 
 ---
 
