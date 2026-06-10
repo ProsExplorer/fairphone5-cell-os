@@ -310,7 +310,7 @@ export const QI_INTERSECTIONS: QiIntersection[] = [
   //  endoplasmic-reticulum×affect×silicon) are singly occupied.
 
   // ── Biological Accuracy Roadmap Additions (DEVELOPMENT.md Part 3 H3) ─────────
-  // 8 new intersections; post-add total: 33 of 264 ≈ 12.5%.
+  // 8 new intersections; post-add running total at that point: 33 of 264 ≈ 12.5% (now 36/13.6% after Phase 1).
   // All field names verified against QiIntersection type in types.ts.
 
   {
@@ -403,7 +403,7 @@ export const QI_INTERSECTIONS: QiIntersection[] = [
   },
 
   // ── Open Items: #9 Peroxisomes, #13 Membrane Potential, #19 Chaperones ─────────
-  // 3 new intersections; post-add total: 33 of 264 = 12.5%.
+  // 3 new intersections; running total at that point: 33 of 264 = 12.5% (now 36/13.6% after Phase 1).
   // QI density enters amber-high but all three are biologically grounded (not speculative).
 
   {

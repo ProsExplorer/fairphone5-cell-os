@@ -30,13 +30,6 @@ function fmt(n: number, decimals = 1) {
   return (n * 100).toFixed(decimals) + "%";
 }
 
-function slugify(s: string) {
-  return s
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
 async function generateReport(
   metrics: ReturnType<typeof computeManifoldMetrics>,
   sections: Set<ReportSection>
@@ -150,7 +143,7 @@ async function generateReport(
     });
     y = (doc as any).lastAutoTable.finalY + 8;
 
-    addSectionHeader("§2b  Organelle-Substrate Links (41 total)", COL_A);
+    addSectionHeader(`§2b  Organelle-Substrate Links (${ORGANELLE_SUBSTRATE_LINKS.length} total)`, COL_A);
     const linkRows = ORGANELLE_SUBSTRATE_LINKS.map(l => [l.organelleId, l.substrateId, l.relevance != null ? l.relevance.toFixed(2) : "—"]);
     autoTable(doc, {
       startY: y,
@@ -167,7 +160,7 @@ async function generateReport(
   }
 
   if (sections.has("qi")) {
-    addSectionHeader("§3  QI Tensor Intersections (36 of 264)", COL_G);
+    addSectionHeader(`§3  QI Tensor Intersections (${QI_INTERSECTIONS.length} of ${metrics.qiTensorSpace})`, COL_G);
     autoTable(doc, {
       startY: y,
       margin: { left: MARGIN, right: MARGIN },
@@ -183,7 +176,7 @@ async function generateReport(
   }
 
   if (sections.has("biophoton")) {
-    addSectionHeader("§4  Biophoton Attention Map (13 links)", COL_E);
+    addSectionHeader(`§4  Biophoton Attention Map (${BIOPHOTON_LINKS.length} links)`, COL_E);
     autoTable(doc, {
       startY: y,
       margin: { left: MARGIN, right: MARGIN },

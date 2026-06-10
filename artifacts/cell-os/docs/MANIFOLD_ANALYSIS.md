@@ -563,7 +563,7 @@ The manifold framing is not merely descriptive. Once $M$, $\mathcal{T}^i_{\ j}$,
 
 ### 11.2 Tensor Completion Roadmap
 
-Given $\mathcal{T}^i_{\ j}$ at 15.7% density, which of the 215 empty cells are the most natural to fill next? The existing pattern reveals a **substrate affinity signature** per organelle category:
+Given $\mathcal{T}^i_{\ j}$ at 16.1% density, which of the 214 empty cells are the most natural to fill next? The existing pattern reveals a **substrate affinity signature** per organelle category:
 
 | Substrate node | Current links | Category affinity | Natural extension candidates |
 |---|---|---|---|
@@ -628,7 +628,7 @@ $\mathcal{Q}^{z,p,s}$ at 13.6% density (36/264) is heavily biased along two axes
 - **Phase bias**: perception entries dominate — Cell OS narrates input/sensing more richly than output/expression.
 - **Scale bias**: `silicon` and `cellular` are the co-dominant scales, with `molecular`, `organic`, and `generational` each well-represented.
 
-**SVD interpretation**: If the 33 populated cells are treated as a sparse 3D tensor and flattened to a matrix (zone × phase-scale), the dominant left singular vector identifies the zone most correlated with the most-populated (phase, scale) combinations. Preliminary inspection: `nucleus` and `mitochondria` appear in the most intersections, suggesting they are the **principal narrative axes** of the QI tensor — the zones where the biological-computational analogy is richest.
+**SVD interpretation**: If the 36 populated cells are treated as a sparse 3D tensor and flattened to a matrix (zone × phase-scale), the dominant left singular vector identifies the zone most correlated with the most-populated (phase, scale) combinations. Preliminary inspection: `nucleus` and `mitochondria` appear in the most intersections, suggesting they are the **principal narrative axes** of the QI tensor — the zones where the biological-computational analogy is richest.
 
 ---
 
