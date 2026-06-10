@@ -441,9 +441,9 @@ COPI retrograde = App rollback / package restore from backup.
 
 **File**: `artifacts/cell-os/src/domain/content/organelles.ts`
 
-**Current (confirmed)**: `osFeature: "Bootloader / System Startup"` (organelles.ts line 27)
+**Pre-fix state (historical)**: `osFeature: "Bootloader / System Startup"` — this was the incorrect mapping before C1 was applied.
 
-**Correct**: `osFeature: "ART Preloading / dex2oat AOT Factory"`
+**Implemented**: `osFeature: "ART Preloading / dex2oat AOT Factory"` — confirmed in `organelles.ts`; `explanation` and `analogy` fields also updated to describe the pre-assembly factory role.
 
 **Biological justification**: The nucleolus manufactures ribosomal subunits BEFORE they are needed — it is the pre-assembly factory, not the initial wake signal. `dex2oat` pre-compiles `.dex` bytecode into native `.oat` files before any app runs — structurally identical. The bootloader maps to the organism's initial existence pulse, not to any organelle function.
 
@@ -715,7 +715,7 @@ Add to `BIOPHOTON_LINKS`:
 
 ### MEDIUM — Execute After HIGH
 
-#### M1. Update `fractalCycles.ts` — Three Cycle Corrections
+#### M1. Update `fractalCycles.ts` — Three Cycle Corrections — **COMPLETE ✓**
 
 **Membrane cycle**: Add the GPCR → G-protein → cAMP → PKA second-messenger chain as the affect phase description. Current description likely focuses on boundary-crossing only (HAL); extend to include the intracellular cascade that follows receptor binding.
 
@@ -726,11 +726,27 @@ Add to `BIOPHOTON_LINKS`:
 - Microtubule dynamics (vesicle transport, Binder thread pool)
 - Intermediate filament stability (structural, non-dynamic, nuclear lamina)
 
-#### M2. Distinguish Tight vs Gap Junctions in Cell Membrane Zone
+Implementation (M1 complete — `fractalCycles.ts`):
+
+- **Membrane affect**: GPCR subtype-specific discrimination now explicit — one receptor couples to exactly one G-protein class (Gαs → cAMP/PKA; Gαq → PLC/IP3/Ca²⁺; Gαi → adenylyl cyclase inhibition). Android analogue updated to match: each `powerHint()` type routes to exactly one downstream subsystem, not all simultaneously. Incorrect ligands (malformed hints) dissociate before triggering any cascade.
+
+- **ER expression**: bifurcated output correctly described — COPII protein release (structural output, selective quality-gated) runs in parallel with IP3R Ca²⁺ pulse dispatch (second-messenger output, millisecond-scale). `hardwareAnalogue` updated: KV cache write (structural) + Power HAL `powerHint()` → CPU governor cascade (Ca²⁺ analogue).
+
+- **Cytoskeleton affect**: split into three named filament systems with explicit timescales: actin (seconds-scale, Arp2/3/Rho GTPase, UI thread analogue), microtubules (minutes-scale, directional kinesin/dynein, Binder thread pool analogue), intermediate filaments (hours-scale — far less dynamic than actin/microtubules, not static — kernel ABI stability analogue). "Non-dynamic" corrected to "far less dynamic" — intermediate filaments do turn over, just slowly.
+
+#### M2. Distinguish Tight vs Gap Junctions in Cell Membrane Zone — **COMPLETE ✓**
 
 The `cell-membrane` and `membrane-receptors` organelles currently cover the membrane zone jointly. Add a note or secondary description to `cell-membrane` distinguishing:
 - **Tight junction function** = SELinux enforced policy (paracellular seal)
 - **Gap junction function** = Binder ashmem channels (direct pass-through)
+
+Implementation (M2 complete — `organelles.ts`, `cell-membrane` entry):
+
+`explanation` and `analogy` fields updated to explicitly encode both junction types:
+- **Tight junctions**: SELinux Type Enforcement rules — paracellular seal, no direct cross-domain passage permitted, enforced by LSM hooks in the kernel (claudin/occludin biological analogue).
+- **Gap junctions**: Binder ashmem/memfd channels — direct shared-memory pass-through between trusted processes without exocytosis; connexin-43 analogue of Android IPC.
+
+Both coexist at the same membrane boundary, exactly as they do in epithelial tissue. The distinction is now present in the primary organelle description, not just in QI intersection narratives.
 
 #### M3. Schema Evolution Note for Peroxisomes
 
@@ -899,9 +915,10 @@ H3: Add 8 QI intersections to qiMatrix.ts                   ✓ DONE  (33 total)
 H4: Add 3 biophoton links to mappings.ts                    ✓ DONE  (11 total)
     Tensor metrics recomputed, both READMEs updated         ✓ DONE
 
-REMAINING
-├── M1: Update fractalCycles.ts (membrane, ER, cytoskeleton cycles)      — PENDING
-└── M2: Extend cell-membrane zone description (tight vs gap junctions)   — PENDING
+M1: Update fractalCycles.ts (membrane, ER, cytoskeleton cycles)          ✓ DONE
+M2: Extend cell-membrane zone description (tight vs gap junctions)        ✓ DONE
+
+REMAINING — no HIGH or MEDIUM items pending
 
 FUTURE (schema evolution required)
 └── Promote peroxisome from frozen-15 backfill → dedicated 16th organelle
