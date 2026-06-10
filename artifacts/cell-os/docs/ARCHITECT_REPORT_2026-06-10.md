@@ -246,8 +246,10 @@ Before any feature work begins, the three drift items must be resolved:
 
 **Organelle/zone mapping for the UI**:
 - The document request enters at **membrane-receptors** (P: user action crosses the membrane)
-- Assembly happens in the **ER** + **Golgi** (A: data gathered, formatted, addressed)
+- Assembly happens primarily in the **Golgi** (A: data formatted, addressed, packaged into document structure)
 - The PDF exits through **vesicles** → **cell-membrane** (E: packaged artifact released by exocytosis)
+
+> ⚠ **Audit correction (ARCHITECT_AUDIT_2026-06-10.md, finding #11)**: The ER's role in document synthesis should be framed as the execution *environment* (WebView/Chromium rendering context — its existing semantic) rather than the synthesis *origin*. PDF content assembly begins at the Golgi, not the ER, to preserve the ER's existing meaning without collision. The secretory pathway framing is otherwise intact.
 
 **New QI intersections** (no new zones or substrate nodes; these fill currently empty cells in the 264-tensor):
 
@@ -266,10 +268,12 @@ Before any feature work begins, the three drift items must be resolved:
 
 **Substrate links** (new links to existing nodes — zero new nodes):
 
+> ⚠ **Audit correction (ARCHITECT_AUDIT_2026-06-10.md, finding #7)**: `vesicles→binder-ipc` already exists in `mappings.ts` (relevance=0.97, "the cargo packet IS the vesicle"). Only `golgi-apparatus→bionic-libc` is a genuinely new link. Post-add total = **41 links** (not 42), density = **16.1%** (not 16.5%). Both remain within the 10–25% healthy coupling range.
+
 | Organelle | Substrate | Relevance | Description |
 |---|---|---|---|
 | `golgi-apparatus` | `bionic-libc` | 0.77 | Golgi cisternae stack processes cargo sequentially; jemalloc slab allocation manages the sequential heap frames in which document data is assembled and addressed |
-| `vesicles` | `binder-ipc` | 0.83 | Secretory vesicles ARE Binder Parcels — discrete, addressed, typed payloads crossing a membrane boundary; the PDF blob is the Parcel content |
+| ~~`vesicles`~~ | ~~`binder-ipc`~~ | ~~0.83~~ | ~~Already exists in mappings.ts — do not add again~~ |
 
 **Minimal viable first step** (demonstrates capability without touching any invariant):
 
@@ -314,7 +318,12 @@ If Stirling-PDF is exposed directly to the browser (client-side REST calls to a 
 
 These risks are fully mitigated by the proxy architecture (Phase 2): the api-server becomes the security boundary, validates all inputs, strips dangerous parameters, and only forwards sanitized requests to a Stirling instance that is not network-accessible to the front-end.
 
-The browser-native Phase 1 (pdf-lib / @react-pdf/renderer) has **no security concerns** — it runs entirely in the browser, generates PDFs from typed TypeScript data, and has no file-processing attack surface.
+The browser-native Phase 1 (pdf-lib / @react-pdf/renderer) runs entirely in the browser and generates PDFs from typed TypeScript data. However:
+
+> ⚠ **Audit correction (ARCHITECT_AUDIT_2026-06-10.md, findings #10–11)**: "No security concerns" is an overstatement. Three Phase 1 controls are required:
+> 1. **Data-leakage boundary** — define an explicit export schema (allowlist of manifold fields); never pass raw store state to the renderer. Enforce this structurally before session data is added to the epigenome.
+> 2. **PDF import limits** — if import/edit flows are added, enforce max file size (5MB), max page count, and max object count client-side; use pdf-lib (not pdf.js) to avoid embedded-JS execution; never `dangerouslySetInnerHTML` with extracted text.
+> 3. **Filename normalization** — normalize all PDF filenames to safe ASCII slugs before setting the `download` attribute to prevent Unicode spoofing.
 
 ---
 
@@ -332,7 +341,7 @@ The browser-native Phase 1 (pdf-lib / @react-pdf/renderer) has **no security con
 | `endoplasmic-reticulum→vesicles` biophoton | Tensor | NOT STARTED | P1 (with documents page) |
 | `vesicles→cell-membrane` biophoton | Tensor | NOT STARTED | P1 (with documents page) |
 | `golgi-apparatus→bionic-libc` substrate link | Tensor | NOT STARTED | P1 (with documents page) |
-| `vesicles→binder-ipc` substrate link | Tensor | NOT STARTED | P1 (with documents page) |
+| ~~`vesicles→binder-ipc` substrate link~~ | ~~Tensor~~ | ~~ALREADY EXISTS~~ | ~~removed — audit finding #7~~ |
 | api-server Stirling-PDF proxy | Feature | NOT STARTED | P2 — after Phase 1 validated |
 | Stirling security hardening (proxy + authz) | Security | NOT STARTED | P2 — prerequisite for Stirling |
 
