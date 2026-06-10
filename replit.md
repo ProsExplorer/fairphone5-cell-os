@@ -126,66 +126,244 @@ artifacts/cell-os/src/
 
 Navigate to `/documents` while the dev server is running. The page shows a live manifold state panel (all counts derived from source arrays at render time) and a section selector before generating the PDF.
 
-### How the PDF pipeline works
+### Data flow — source to PDF
+
+Every value in the PDF traces back to one of five source arrays or the metrics function derived from them:
 
 ```
-User clicks "Generate & Download PDF"
-  → handleGenerate() sets generating=true
-  → generateReport(metrics, selectedSections) is called (async)
-      → jsPDF and jspdf-autotable are dynamic-imported (lazy — not in initial bundle)
-      → addSectionHeader() / autoTable() build the document imperatively
-      → doc.save("cell-os-manifold-YYYY-MM-DD.pdf") triggers browser download
-  → generating=false, generated=true (resets after 3s)
+domain/content/organelles.ts    → CELL_MAPPINGS          (15 entries)
+domain/content/substrate.ts     → SUBSTRATE_NODES         (17 entries)
+domain/content/mappings.ts      → ORGANELLE_SUBSTRATE_LINKS (41)
+                                → BIOPHOTON_LINKS          (13)
+domain/content/qiMatrix.ts      → QI_INTERSECTIONS         (36)
+domain/content/manifoldMetrics.ts → computeManifoldMetrics()
+  ↳ couplingTensorLinks / Space / Density   (from ORGANELLE_SUBSTRATE_LINKS + SUBSTRATE_NODES + CELL_MAPPINGS)
+  ↳ qiTensorLinks / Space / Density         (from QI_INTERSECTIONS)
+  ↳ biophotonLinks / Space / Coverage       (from BIOPHOTON_LINKS + CELL_MAPPINGS)
+  ↳ meanZoneConfidence                      (from ORGANELLE_SUBSTRATE_LINKS)
+  ↳ zoneConfidenceCentroids / exportRankTotal / phaseTransitionCount  (computed but NOT used in PDF)
 ```
 
-`generateReport` receives two arguments:
-- `metrics` — the result of `computeManifoldMetrics()` (computed once via `useMemo` in the page component)
-- `sections` — a `Set<ReportSection>` of the user's checked sections (`"manifold" | "organelles" | "qi" | "biophoton"`)
+In the component, `metrics` is computed once:
+```ts
+const metrics = useMemo(() => computeManifoldMetrics(), []);
+```
+It is then passed directly into `generateReport(metrics, selected)` on button click. No other data fetching occurs.
 
-The function is **not** a React component — it is a plain async function that builds the jsPDF document imperatively and calls `doc.save()`. It lives at module level in `documents.tsx`.
+**Which `metrics` fields the PDF actually uses:**
+- Header strip: `couplingTensorLinks`, `qiTensorLinks`, `biophotonLinks`
+- Manifold table (§1): all density/link/space triples, `meanZoneConfidence`, plus `SUBSTRATE_NODES.length`
+- QI section header (§3): `qiTensorSpace` (the denominator 264)
+- No other fields — `zoneConfidenceCentroids`, `exportRankTotal`, `phaseTransitionCount` are computed but unused in the current PDF
 
-### Export schema allowlist — what goes in, what stays out
+### Full sequence inside `generateReport()`
 
-| Included | Excluded |
+`generateReport` is a plain async module-level function (not a React component). Its full execution order:
+
+```
+1. Lazy-import jsPDF and jspdf-autotable (dynamic import — see below)
+2. Construct jsPDF instance: portrait, mm units, A4 format
+3. Define layout constants: PAGE_W=210, MARGIN=18, CONTENT_W=174
+4. Define RGB color palette tuples (COL_BG, COL_HDR, COL_TEXT, COL_MUTED, COL_P, COL_A, COL_E, COL_G)
+5. Define fillPage() — paints full 210×297 rect with COL_BG on current page
+6. Define addSectionHeader(title, color) — draws a muted rule + colored bold title;
+   if y > 250, inserts doc.addPage() + fillPage() + resets y to MARGIN
+7. fillPage() — paint first page background
+8. Header block:
+   a. Report label (small caps, muted)
+   b. "Cell OS" title (20pt bold)
+   c. "Generated YYYY-MM-DD · P→A→E Manifold · Fairphone 5" (9pt muted)
+   d. Live counts line: couplingTensorLinks + qiTensorLinks + biophotonLinks + "Fredholm index −2" (8pt blue)
+9. For each section in {manifold, organelles, qi, biophoton} — if sections.has(id):
+   → addSectionHeader()
+   → autoTable() call (see section details below)
+   → y = (doc as any).lastAutoTable.finalY + 8
+10. Footer loop: for i in 1..pageCount → doc.setPage(i) → write footer at y=291
+11. doc.save("cell-os-manifold-YYYY-MM-DD.pdf") — triggers browser download
+```
+
+**`addSectionHeader` page-break logic**: the guard `if (y > 250)` catches the case where a heading would appear at the bottom of a page with no room for content. It does *not* handle mid-table overflow — that is handled automatically by jspdf-autotable's built-in pagination.
+
+### The four report sections — data, columns, transforms, widths
+
+**§1 Manifold Metrics** (`sections.has("manifold")`)
+- Source: `metrics` output + hardcoded structural constants
+- Columns: `Metric | Value | Space | Health`
+- Rows (7): coupling density `fmt()`, QI density `fmt()`, biophoton coverage `fmt(n,2)`, mean zone confidence `toFixed(3)`, Fredholm index hardcoded `−2`, organelles hardcoded `15`, substrate nodes `SUBSTRATE_NODES.length`
+- Column widths (mm): 55 / 25 / 35 / 25
+
+**§2 Organelle Mapping** (`sections.has("organelles")`) — two sub-tables:
+- **§2a** — source `CELL_MAPPINGS`; columns `# | Organelle | Android OS Feature`; widths 8 / 42 / (CONTENT_W−50)
+- **§2b** — source `ORGANELLE_SUBSTRATE_LINKS`; columns `Organelle | Substrate | Relevance`; relevance rendered as `toFixed(2)` or `"—"` if null; widths 55 / 45 / 20
+
+**§3 QI Intersections** (`sections.has("qi")`)
+- Source: `QI_INTERSECTIONS`
+- Columns: `Zone | Phase | Scale | Title`
+- **Narrative field is intentionally excluded** (see export schema below)
+- Column widths: 30 / 20 / 22 / (CONTENT_W−72)
+- Section header is fully dynamic: `` `${QI_INTERSECTIONS.length} of ${metrics.qiTensorSpace}` ``
+
+**§4 Biophoton Attention Map** (`sections.has("biophoton")`)
+- Source: `BIOPHOTON_LINKS`
+- Columns: `Source | → Target | σ | IPC | Attention`
+- `couplingSigma?.toFixed(1) ?? "—"`, `attentionWeight?.toFixed(2) ?? "—"`, `ipcMechanism ?? "—"`
+- Column widths: 38 / 38 / 12 / 28 / 20
+
+### UI state model
+
+```ts
+selected:  Set<ReportSection>   // which sections are checked; default = all four
+generating: boolean             // true while generateReport() is running
+generated:  boolean             // true for 3s after success (shows "✓ Secreted")
+```
+
+**Section selector cards**: each card calls `toggle(id)`, which copies the current Set, adds or removes the id, and calls `setSelected(next)`. The generate button is disabled when `selected.size === 0` or `generating === true`.
+
+**Live tensor preview cards** (6 cards below the selector): all values are read directly from `metrics` or array `.length` at render time — they update automatically whenever the source arrays change and the page re-mounts.
+
+**P→A→E diagram**: purely presentational static data rendered as a 3-column grid. It maps the secretory pathway framing onto the UI interaction: Perception (membrane-receptors receives the click) → Affect (Golgi assembles data) → Expression (membrane exocytoses the PDF).
+
+### Export schema — what goes in, what stays out
+
+**Rule**: if the data is a static constant in `domain/content/`, it can be exported. If it comes from a Zustand store (`useLearningStore`, `useCellVitalStore`) or derives from runtime interaction, it cannot.
+
+| ✓ Included | ✗ Excluded |
 |---|---|
-| `CELL_MAPPINGS` — organelle names + OS features | Epigenome weights from `useLearningStore` |
-| `ORGANELLE_SUBSTRATE_LINKS` — organelle ID, substrate ID, relevance | Zustand vital store state (`activeZone`, signals) |
-| `QI_INTERSECTIONS` — zone, phase, scale, **title only** (not full narrative) | User session / interaction history |
-| `BIOPHOTON_LINKS` — source, target, σ, IPC, attention weight | Any runtime-computed personalised values |
-| `computeManifoldMetrics()` output — densities, counts, confidence | |
+| `CELL_MAPPINGS` — organelle names + `osFeature` | Epigenome attention weights (`useLearningStore`) |
+| `ORGANELLE_SUBSTRATE_LINKS` — IDs + relevance | `useCellVitalStore` state (`activeZone`, signals) |
+| `QI_INTERSECTIONS` — zone/phase/scale/**title only** | Full QI narratives (long prose, not needed for a report) |
+| `BIOPHOTON_LINKS` — pairs + σ + IPC + attention weight | Any personalised/session state |
+| `computeManifoldMetrics()` — densities, counts, confidence | `zoneConfidenceCentroids` (per-zone detail, not surfaced) |
+| `SUBSTRATE_NODES.length` | Individual substrate node descriptions |
 
-**Rule**: if the data comes from a source array in `domain/content/`, it can be exported. If it comes from a Zustand store or a `useMemo` that reads from one, it cannot.
+QI narratives are specifically excluded because: (a) they are long prose that would make the PDF unwieldy, and (b) they are the "living" interpretive layer — the titles are the addressable index, the narratives are the contents of the stacks.
 
-### Adding a new report section
+### How to add a new report section — worked example
 
-1. Add a new value to the `ReportSection` union type at the top of `documents.tsx`:
-   ```ts
-   type ReportSection = "manifold" | "organelles" | "qi" | "biophoton" | "your-section";
-   ```
+**Goal**: add a **"§5 Substrate Nodes"** section listing all 17 `SUBSTRATE_NODES` with id, category, and a one-line detail.
 
-2. Add an entry to the `SECTIONS` constant (glyph, label, color, subtext):
-   ```ts
-   { id: "your-section", label: "Your Section", glyph: "新", color: ACCENT_P }
-   ```
+**Touch point 1 — extend the union type** (top of `documents.tsx`):
+```ts
+type ReportSection = "manifold" | "organelles" | "qi" | "biophoton" | "substrate";
+```
 
-3. Add the corresponding `if (sections.has("your-section")) { ... }` block inside `generateReport`, following the existing pattern. Use `autoTable(doc, { ... })` for tabular data; use `addSectionHeader(title, color)` for the heading.
+**Touch point 2 — add a `SECTIONS` card** (the `SECTIONS` constant array):
+```ts
+{ id: "substrate", label: "Substrate Nodes", glyph: "基", color: "#94a3b8" }
+```
+The `desc` subtext for the card (inside the map):
+```ts
+{sec.id === "substrate" && `${SUBSTRATE_NODES.length} nodes · Fredholm index −2`}
+```
 
-4. Update the `desc` subtext in the `SECTIONS` entry to show a live count — derive it from the source array, not a hardcoded number.
+**Touch point 3 — add to default selected set**:
+```ts
+const [selected, setSelected] = useState<Set<ReportSection>>(
+  new Set(["manifold", "organelles", "qi", "biophoton", "substrate"])
+);
+```
 
-### jsPDF conventions used in this file
+**Touch point 4 — add the PDF section** (inside `generateReport`, after the biophoton block):
+```ts
+if (sections.has("substrate")) {
+  addSectionHeader(`§5  Substrate Nodes (${SUBSTRATE_NODES.length})`, [148, 163, 184]);
+  autoTable(doc, {
+    startY: y,
+    margin: { left: MARGIN, right: MARGIN },
+    theme: "plain",
+    headStyles: { fillColor: COL_HDR, textColor: COL_TEXT, fontSize: 6.5, fontStyle: "bold" },
+    bodyStyles: { fillColor: COL_BG,  textColor: COL_TEXT, fontSize: 6.5 },
+    alternateRowStyles: { fillColor: [12, 17, 30] as [number, number, number] },
+    head: [["ID", "Category", "Detail"]],
+    body: SUBSTRATE_NODES.map(n => [n.id, n.category ?? "—", n.detail ?? "—"]),
+    columnStyles: { 0: { cellWidth: 38 }, 1: { cellWidth: 28 }, 2: { cellWidth: CONTENT_W - 66 } },
+  });
+  y = (doc as any).lastAutoTable.finalY + 8;
+}
+```
 
-- `doc.setFillColor(...rgb)` / `doc.rect(0, 0, 210, 297, "F")` — full-page background fill (called `fillPage()`)
-- `doc.setFontSize(n)` + `doc.setTextColor(...rgb)` + `doc.text(str, x, y)` — manual text placement
-- `autoTable(doc, { startY: y, ... })` — table; after each call, advance `y` via `(doc as any).lastAutoTable.finalY + 8`
-- Page footer loop: iterate `doc.internal.getNumberOfPages()`, call `doc.setPage(i)`, write footer text at `y=291`
-- Colors are defined as `[r, g, b]` tuples at the top of `generateReport`; reuse them, don't inline new hex values
+Check `substrate.ts` for the exact field names on `SubstrateNode` — use the type from `domain/types.ts` as the canonical reference.
 
-### Gotchas
+### jsPDF API conventions
 
-- `(doc as any).lastAutoTable.finalY` — jspdf-autotable attaches `lastAutoTable` to the doc object at runtime; TypeScript doesn't know about it, hence the cast. This is the standard pattern.
-- Page overflow: `addSectionHeader` checks `if (y > 250) { doc.addPage(); fillPage(); y = MARGIN; }`. If a table itself overflows, jspdf-autotable handles pagination automatically via its `didDrawPage` hook (not wired here, but built-in).
-- Dynamic import: `jsPDF` and `autoTable` are lazy-loaded inside `generateReport`. This keeps them out of the initial bundle. They will load on first click — subsequent clicks reuse the cached modules.
-- Do not import `jsPDF` at the top of the file with a static `import` — it breaks Vite's tree-shaking and adds ~300 KB to the initial load.
+```ts
+// Full-page dark background (call after every doc.addPage())
+fillPage = () => {
+  doc.setFillColor(...COL_BG);           // spread RGB tuple
+  doc.rect(0, 0, PAGE_W, 297, "F");     // "F" = filled rect, no stroke
+}
+
+// Manual text
+doc.setFontSize(11);
+doc.setFont("helvetica", "bold");
+doc.setTextColor(...COL_TEXT);
+doc.text("some text", MARGIN, y);
+y += 7;  // advance cursor manually after each text block
+
+// Table (jspdf-autotable)
+autoTable(doc, { startY: y, ... });
+y = (doc as any).lastAutoTable.finalY + 8;  // always advance after table
+
+// Page footer
+const pageCount = (doc as any).internal.getNumberOfPages();
+for (let i = 1; i <= pageCount; i++) {
+  doc.setPage(i);
+  doc.text(`footer text · p. ${i} of ${pageCount}`, MARGIN, 291);
+}
+```
+
+**Color palette** (RGB tuples defined at top of `generateReport`):
+
+| Constant | RGB | Used for |
+|---|---|---|
+| `COL_BG` | `[9, 11, 19]` | Page background fill |
+| `COL_HDR` | `[15, 23, 42]` | Table header row fill |
+| `COL_TEXT` | `[226, 232, 240]` | Body text, header labels |
+| `COL_MUTED` | `[100, 116, 139]` | Captions, meta lines, footer |
+| `COL_P` | `[125, 211, 252]` | Perception accent (live counts line) |
+| `COL_A` | `[196, 181, 253]` | Affect accent (organelles section) |
+| `COL_E` | `[134, 239, 172]` | Expression accent (biophoton section) |
+| `COL_G` | `[244, 114, 182]` | Golgi/QI accent |
+
+### The dynamic import pattern
+
+```ts
+// Inside generateReport() — NOT at the top of the file
+const { default: jsPDF }    = await import("jspdf");
+const { default: autoTable } = await import("jspdf-autotable");
+```
+
+**Why dynamic**: jsPDF is ~300 KB. Importing it statically at the module level adds that to the initial bundle for every user who visits `/documents`, even if they never click "Generate". The dynamic import defers loading until first click. On subsequent clicks the browser returns the already-cached module instantly.
+
+**Do not do this**:
+```ts
+// ✗ WRONG — static import at top of documents.tsx
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+```
+This breaks Vite's tree-shaking, inflates the `/documents` chunk, and defeats the lazy-load design.
+
+### Known limitations and future extension points
+
+| Limitation | Detail |
+|---|---|
+| `(doc as any).lastAutoTable` cast | jspdf-autotable attaches `lastAutoTable` at runtime; TypeScript has no declaration for it. This is the standard workaround — no better option without forking the types. |
+| Portrait A4 only | `new jsPDF({ orientation: "portrait", format: "a4" })` is hardcoded. Landscape or letter would require a config option on `generateReport`. |
+| No pre-download preview | The user cannot preview the PDF before downloading. A future improvement could render a summary table in the page UI. |
+| Manual y-cursor | Text positioning is fully manual (`y += n`). Complex mixed-content layouts (text + table interleaved) require careful cursor accounting. |
+| Table overflow between sections | `addSectionHeader` guards against a heading stranded at the bottom of a page, but does not pre-calculate whether the following table will fit. jspdf-autotable handles intra-table overflow automatically. |
+| Phase 2 — import / endocytosis | `qi-document-perception-textual` was added to the tensor specifically to anchor this path. The biological framing: File API drag-and-drop = receptor-mediated endocytosis. The implementation would read a dropped PDF into a `FileReader`, parse it, and route its content to the Golgi zone for re-processing. |
+
+### Cross-references for developers working on `documents.tsx`
+
+| File | Why you need it |
+|---|---|
+| `domain/types.ts` | `SubstrateNode`, `BiophotonLink`, `QiIntersection`, `ManifoldMetrics` type definitions — the canonical field names |
+| `domain/content/manifoldMetrics.ts` | `computeManifoldMetrics()` — understand which fields are computed and which are unused in the PDF |
+| `domain/content/mappings.ts` | `ORGANELLE_SUBSTRATE_LINKS` + `BIOPHOTON_LINKS` source arrays |
+| `domain/content/qiMatrix.ts` | `QI_INTERSECTIONS` — understand the zone/phase/scale axes and why narrative is excluded |
+| `domain/content/organelles.ts` | `CELL_MAPPINGS` — `name` and `osFeature` fields used in §2a |
+| `domain/content/substrate.ts` | `SUBSTRATE_NODES` — needed if adding a substrate section; check field names against `SubstrateNode` type |
 
 ## Architecture decisions
 

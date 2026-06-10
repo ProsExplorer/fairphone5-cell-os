@@ -400,7 +400,7 @@ export default function Documents() {
           <p style={{ fontSize: "0.75rem", color: MUTED, margin: 0, lineHeight: 1.6 }}>
             Reports contain only static domain data: organelle mappings, QI intersection titles (not full narratives),
             biophoton link pairs, and computed manifold metrics. Session state, epigenome weights, and learned attention values
-            are not exported. Filenames are normalized to safe ASCII slugs.
+            are not exported. The filename is a fixed safe string: <code>cell-os-manifold-YYYY-MM-DD.pdf</code>.
           </p>
         </div>
 
