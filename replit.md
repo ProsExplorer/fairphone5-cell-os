@@ -10,7 +10,7 @@ The app has three conceptual layers:
 ## Run & Operate
 
 - `pnpm --filter @workspace/cell-os run dev` — start the Cell OS frontend (Vite dev server)
-- `pnpm run typecheck` — full typecheck across all packages
+- `pnpm --filter @workspace/cell-os run typecheck` — typecheck cell-os only
 - `pnpm run build` — typecheck + build all packages
 
 **Cell OS is frontend-only** — no backend, no database, no API server required.
@@ -23,28 +23,41 @@ The app has three conceptual layers:
 
 - **Monorepo**: pnpm workspaces, Node.js 24, TypeScript 5.9
 - **Frontend**: React 19, Vite, Tailwind v4, wouter (routing), shadcn/ui, Zustand
+- **PDF generation**: jsPDF + jspdf-autotable (browser-native; used by `/documents`)
 - **Other artifacts** in this workspace: `api-server` (Express 5 + PostgreSQL + Drizzle, unrelated to Cell OS), `mockup-sandbox` (canvas component preview server)
+
+## Pages & Routes
+
+| Route | File | Purpose |
+|---|---|---|
+| `/` | `pages/home.tsx` | Main cell explorer (CellExplorerLayout) |
+| `/philosophy` | `pages/philosophy.tsx` | Philosophy / manifesto — sacred pulse fires here |
+| `/substrate` | `pages/substrate.tsx` | Full substrate hardware reference |
+| `/metrics` | `pages/metrics.tsx` | Hidden developer surface — live manifold health dashboard |
+| `/fractal` | `pages/fractal.tsx` | Fractal map — 12-scale P→A→E invariance, tensor compression cascade |
+| `/documents` | `pages/documents.tsx` | Document secretion — generates a PDF report via exocytosis framing |
 
 ## Where things live
 
 ```
 artifacts/cell-os/src/
-├── App.tsx                          # Router: / → Home, /philosophy, /substrate
+├── App.tsx                          # Router: /, /philosophy, /substrate, /metrics, /fractal, /documents
 ├── main.tsx                         # React entry point
 ├── index.css                        # Tailwind v4 + custom keyframes (bioluminescent palette)
 │
 ├── domain/
-│   ├── types.ts                     # All TypeScript contracts (Organelle, SubstrateNode, etc.)
+│   ├── types.ts                     # All TypeScript contracts (Organelle, SubstrateNode, QiIntersection, etc.)
 │   └── content/
-│       ├── organelles.ts            # 15 organelle → OS feature mappings (CELL_MAPPINGS)
-│       ├── substrate.ts             # Real FP5 hardware nodes (SUBSTRATE_NODES)
-│       ├── mappings.ts              # Cross-links: organelle ↔ substrate, biophoton links, triad phases
+│       ├── organelles.ts            # 15 organelle → OS feature mappings (CELL_MAPPINGS) [FROZEN]
+│       ├── substrate.ts             # 17 real FP5 hardware nodes (SUBSTRATE_NODES) [FROZEN — Fredholm cap]
+│       ├── mappings.ts              # ORGANELLE_SUBSTRATE_LINKS (41), BIOPHOTON_LINKS (13), TRIAD_PHASES
+│       ├── manifoldMetrics.ts       # computeManifoldMetrics() — live tensor densities, zone confidence
+│       ├── qiMatrix.ts              # QI_INTERSECTIONS (36 of 264 = 13.6%) — rank-3 tensor
 │       ├── citations.ts             # Full bibliography (CITATIONS, CITATION_MAP)
 │       ├── constants.ts             # Harmonic constant (0.7770777) and sacred coherence tokens
 │       ├── edgeNode.ts              # EdgeNode on-device inference content
 │       ├── fractalCycles.ts         # Nine-scale / fractal cycle data
 │       ├── lineage.ts               # Deep lineage timeline content
-│       ├── qiMatrix.ts              # Qi tensor matrix data
 │       ├── quantizationBiology.ts   # Quantization ↔ biology mapping data
 │       └── scales.ts                # Nine-scale flow content
 │
@@ -54,34 +67,27 @@ artifacts/cell-os/src/
 │   │   └── state/
 │   │       └── useCellVitalStore.ts # Zustand store: activeZone, breath signals, emitSignal()
 │   │
-│   └── explorer/
-│       ├── useExplorerFlow.ts       # Core reducer: focus state (hover/click lock), ExplorerView
-│       ├── selectors.ts             # Pure lookups: getOrganelle, getSubstrateForOrganelle, etc.
-│       ├── navigation/
-│       │   ├── CellExplorerLayout.tsx  # Root shell: header, chip bar, sidebar, viewport
-│       │   ├── CellMapNav.tsx          # Animated concentric ring zone navigator (SVG)
-│       │   ├── ZoneContentViewport.tsx # Renders the active zone's panel
-│       │   └── useExplorerNavigation.ts # Zone selection, inward/outward traversal
-│       ├── components/
-│       │   ├── InfoPanel.tsx           # Organelle detail panel (right side on desktop)
-│       │   ├── EdgeNodeSection.tsx     # EdgeNode / on-device AI section
-│       │   ├── NineScaleFlow.tsx       # Nine-scale animation component
-│       │   ├── SubstrateAtlas.tsx      # Substrate hardware node cards
-│       │   ├── TriadicFlow.tsx         # Perception → Affect → Expression visualiser
-│       │   ├── QuantizationBiologySection.tsx
-│       │   ├── CodeSnippet.tsx         # Syntax-highlighted AOSP/kernel code snippet
-│       │   ├── DeepLineageTimeline.tsx
-│       │   ├── FractalNavigator.tsx
-│       │   └── ConfidenceBadge.tsx     # verified / indicative / unconfirmed badge
-│       └── zones/
-│           ├── NucleusPanel.tsx
-│           ├── CytoplasmPanel.tsx      # Contains the main CellDiagram + InfoPanel
-│           ├── CytoskeletonPanel.tsx
-│           ├── RibosomesPanel.tsx
-│           ├── MitochondriaPanel.tsx
-│           ├── GolgiPanel.tsx
-│           ├── EndoplasmicReticulumPanel.tsx
-│           └── MembranePanel.tsx
+│   ├── explorer/
+│   │   ├── useExplorerFlow.ts       # Core reducer: focus state (hover/click lock), ExplorerView
+│   │   ├── selectors.ts             # Pure lookups: getOrganelle, getSubstrateForOrganelle, etc.
+│   │   ├── navigation/
+│   │   │   ├── CellExplorerLayout.tsx  # Root shell: header, chip bar, sidebar, viewport
+│   │   │   ├── CellMapNav.tsx          # Animated concentric ring zone navigator (SVG)
+│   │   │   ├── ZoneContentViewport.tsx # Renders the active zone's panel
+│   │   │   └── useExplorerNavigation.ts
+│   │   ├── components/
+│   │   │   ├── InfoPanel.tsx
+│   │   │   ├── SubstrateAtlas.tsx
+│   │   │   ├── TriadicFlow.tsx
+│   │   │   └── ...
+│   │   └── zones/
+│   │       ├── NucleusPanel.tsx
+│   │       ├── CytoplasmPanel.tsx
+│   │       └── ... (one panel per zone)
+│   │
+│   └── learning/
+│       ├── useLearningStore.ts      # Zustand epigenome: Hebbian attention weight adaptation
+│       └── useMembraneObserver.ts   # Observation point: fires on organelle/substrate focus changes
 │
 ├── components/
 │   ├── CellDiagram.tsx              # Interactive SVG: 15 organelle shapes, hover/click handlers
@@ -94,22 +100,42 @@ artifacts/cell-os/src/
 ├── pages/
 │   ├── home.tsx                     # Renders CellExplorerLayout (the main app)
 │   ├── philosophy.tsx               # Philosophy / manifesto page
-│   └── substrate.tsx                # Full substrate hardware reference page
+│   ├── substrate.tsx                # Full substrate hardware reference page
+│   ├── metrics.tsx                  # Developer metrics dashboard (hidden surface)
+│   ├── fractal.tsx                  # 12-scale fractal map + tensor compression cascade
+│   └── documents.tsx                # Document secretion page (PDF generator)
 │
 └── lib/
     └── utils.ts                     # cn() Tailwind merge helper
 ```
 
+## Tensor state (live — all counts auto-computed from source arrays)
+
+| Tensor | Count | Space | Density | Health |
+|---|---|---|---|---|
+| Organelle-substrate links | 41 | 15×17 = 255 | 16.1% | green |
+| QI intersections | 36 | 8×3×11 = 264 | 13.6% | amber |
+| Biophoton links | 13 | 15×15 = 225 | 5.8% | amber-high |
+| Substrate nodes | 17 | — | — | **FROZEN** |
+| Organelles | 15 | — | — | **FROZEN** |
+| Fredholm index | −2 | 15 − 17 | — | **HARD CAP** |
+
+**Fredholm cap**: do not add substrate nodes. Adding one pushes the index to −3, violating the documented cap. The only valid evolution paths are: (a) add an organelle to open space, or (b) remove an existing substrate node.
+
 ## Architecture decisions
 
 - **Frontend-only**: all content is static TypeScript constants in `domain/content/`. No API, no database, no runtime fetching.
 - **Three-layer content model**: zone metadata (navigation) → organelle data (metaphor) → substrate nodes (real hardware). Cross-links in `mappings.ts` join the layers; selectors in `selectors.ts` derive views from those links.
-- **Reducer-based focus state**: `useExplorerFlow` uses `useReducer` with a `locked` flag to distinguish hover-preview from click-pin focus. Hover events are suppressed while locked — prevents mouseLeave from wiping a deliberate click selection.
+- **Tensor model**: the three cross-link arrays form rank-2 (`ORGANELLE_SUBSTRATE_LINKS`) and rank-3 (`QI_INTERSECTIONS`) tensors. `computeManifoldMetrics()` in `manifoldMetrics.ts` derives all densities live — never hard-code counts.
+- **Reducer-based focus state**: `useExplorerFlow` uses `useReducer` with a `locked` flag to distinguish hover-preview from click-pin focus. Hover events are suppressed while locked.
+- **Focus model invariant**: the discriminated focus value must never be coerced to the first match of a many-to-many link. See `selectors.ts` — the active organelle and active substrate are independent fields.
 - **Zustand vital store**: `useCellVitalStore` tracks `activeZone` and `signals` (timed pulse bursts). Components subscribe with fine-grained selectors to avoid unnecessary renders.
-- **SVG hand-coded**: `CellDiagram.tsx` is a hand-authored 1000×1000 SVG viewBox with 15 organelle shapes. This keeps each organelle individually focusable, tabbable, and animatable without a canvas or image.
-- **No dynamic Tailwind class interpolation**: all dynamic styles use inline `style={{}}` props or static const maps. Tailwind v4 purges unused classes — interpolated strings don't survive the build.
+- **Epigenome / self-learning layer**: `useLearningStore` implements a Hebbian adapter that increments attention weights on focus events. `useMembraneObserver` is the observation point — fires on every `activeOrganelle` or `activeSubstrate` change.
+- **SVG hand-coded**: `CellDiagram.tsx` is a hand-authored 1000×1000 SVG viewBox with 15 organelle shapes. Individually focusable, tabbable, and animatable without canvas.
+- **No dynamic Tailwind class interpolation**: all dynamic styles use inline `style={{}}` props or static const maps. Tailwind v4 JIT purges interpolated strings — they become invisible to the build.
 - **Harmonic constant 0.7770777**: appears as transition duration (777ms), opacity, and animation seed across all animated elements. Defined once in `constants.ts` as `HARMONIC_CONSTANT`.
-- **Zone remount pattern**: `ZoneContentViewport` uses `key={activeZone}` to remount on zone change, resetting scroll, local state, and triggering the fade-in animation. This is intentional — zone change is a full context switch.
+- **Zone remount pattern**: `ZoneContentViewport` uses `key={activeZone}` to remount on zone change, resetting scroll, local state, and triggering the fade-in animation. Intentional — zone change is a full context switch.
+- **PDF generation**: `/documents` uses jsPDF + jspdf-autotable (browser-native, zero polyfills). `@react-pdf/renderer` was evaluated and skipped due to Vite/ESM incompatibility.
 
 ## Docs
 
@@ -122,6 +148,11 @@ Full developer documentation lives in `artifacts/cell-os/docs/`:
 | `ZONE_AUTHORING.md` | Step-by-step playbook: add a new zone or organelle |
 | `FACT_VERIFICATION.md` | Verification workflow, confidence levels, source requirements |
 | `METAPHOR_MAP.md` | The full biological metaphor → Android/FP5 technical mapping guide |
+| `MANIFOLD_ANALYSIS.md` | Formal tensor analysis: coupling tensor, QI tensor, Fredholm theory |
+| `FRACTAL_MAP.md` | 12-scale fractal invariance map; tensor compression cascade table |
+| `UNIVERSAL_MANIFOLD.md` | P→A→E manifold theory vs. Fairphone 5 architecture comparison |
+| `DEVELOPMENT.md` | Implementation log: open items, Fredholm cap decision, Phase history |
+| `ARCHITECT_REPORT_2026-06-10.md` | Architect audit findings and Phase 1/2/3 roadmap |
 
 ## User preferences
 
@@ -131,8 +162,9 @@ Full developer documentation lives in `artifacts/cell-os/docs/`:
 
 ## Gotchas
 
-- `key={activeZone}` on `ZoneContentViewport`'s `<main>` causes a full remount on zone change. This is intentional (scroll reset + animation). Don't remove it.
+- `key={activeZone}` on `ZoneContentViewport`'s `<main>` causes a full remount on zone change. Intentional (scroll reset + animation). Don't remove it.
 - `useExplorerFlow` must live in `CellExplorerLayout`, not in individual zone panels — focus state must persist across zone navigation.
 - `useSacredSignature` is only wired to `/philosophy` — the sacred pulse only fires on that route.
 - SVG filter IDs must be globally unique in the DOM. `CellDiagram` uses `glow` / `glow-strong`; `CellMapNav` uses `ring-glow-${zoneId}`. Don't reuse these IDs.
-- `clearExpiredSignals` in the vital store always returns a new `signals` object — `CellMapNav` re-renders every 500ms even when no signals are active. This is a minor perf non-issue for now but worth memoising if the map grows.
+- `clearExpiredSignals` in the vital store always returns a new `signals` object — `CellMapNav` re-renders every 500ms even when no signals are active. Minor perf non-issue for now.
+- Biophoton link count (13) is above the documented healthy-range ceiling. Any new biophoton links should replace a low-confidence existing one, not extend the count.
