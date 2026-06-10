@@ -144,19 +144,19 @@ Gap: No distinction between the nucleus interior (chromatin/DNA processing) and 
 
 ---
 
-**2. Nucleolus function — rRNA synthesis, ribosome assembly** — PARTIAL
+**2. Nucleolus function — rRNA synthesis, ribosome assembly** — IMPLEMENTED ✓ (C1 complete)
 
 Biological: The nucleolus is a phase-separated condensate within the nucleus where rRNA genes are transcribed, rRNA is processed, and ribosomal subunits are assembled before export through nuclear pores to the cytoplasm.
 
 Current mapping: `nucleolus` exists as an organelle. Its osFeature mapping needs verification.
 
-**CRITICAL GAP**: The nucleolus does not make ribosomes for use inside the nucleus — it manufactures the ribosome subunits that will be exported to the cytoplasm to translate mRNA. This is a factory-export relationship. The correct Android mapping is **ART preloading + DEX optimization pipeline** (specifically `dex2oat` pre-compiling `.dex` files into `.oat` native code before any app runs — the factory that pre-builds the machinery). Currently likely mapped to bootloader, which is structurally incorrect: the bootloader is the organism's initial wake signal, not a ribosome factory.
+**IMPLEMENTED — C1 COMPLETE**: The nucleolus does not make ribosomes for use inside the nucleus — it manufactures the ribosome subunits that will be exported to the cytoplasm to translate mRNA. This is a factory-export relationship. The correct Android mapping is **ART preloading + DEX optimization pipeline** (specifically `dex2oat` pre-compiling `.dex` files into `.oat` native code before any app runs — the factory that pre-builds the machinery). The bootloader mapping (previously incorrect) was retired.
 
-**Recommended remap**: `nucleolus.osFeature = "ART Preloading / dex2oat AOT Factory"` — the component that pre-assembles the translation machinery before it is needed.
+**Implementation (C1 complete)**: `nucleolus.osFeature` remapped to `"ART Preloading / dex2oat AOT Factory"` in `organelles.ts`. `nucleolus.explanation` updated to describe the pre-assembly factory role. The bootloader mapping was retired.
 
 ---
 
-**3. Chromatin remodeling** — ABSENT
+**3. Chromatin remodeling** — PARTIAL
 
 Biological: Chromatin remodeling complexes (SWI/SNF, NuRD, ISWI) alter histone-DNA contacts to expose or occlude genomic regions. This determines which genes are accessible for transcription. Epigenetic marks (H3K4me3, H3K27me3) establish long-term accessibility states.
 
@@ -164,15 +164,19 @@ Android mapping (proposed): **ART profile-guided compilation + SELinux domain po
 
 Missing in Cell OS: no QI intersection for {chromatin remodeling × affect × cellular}, no substrate link connecting the `dna` organelle to a chromatin-remodeling substrate node.
 
+Implementation (H3 partial): QI intersection `qi-chromatin-affect-cellular` added (nucleus × affect × cellular). ART profile-guided compilation is covered via the existing `art-runtime` substrate node. Full implementation would add an explicit chromatin-remodeling substrate entry and a `dna→art-runtime` link framed around profile-guided compilation access control.
+
 ---
 
-**4. mRNA processing** — ABSENT
+**4. mRNA processing** — PARTIAL
 
 Biological: Pre-mRNA undergoes three modifications before export: 5' capping (protects from degradation, signals start), splicing (intron removal, exon joining by spliceosome), and 3' polyadenylation (poly-A tail for stability and export). Only processed mRNA exits through nuclear pores.
 
 Android mapping (proposed): **DEX verify → desugar → quickening pipeline**. Raw Java/Kotlin bytecode (pre-mRNA) undergoes verification (removes invalid instructions = splicing out introns), desugaring (backporting newer language features = exon modification), and quickening (replacing opcodes with faster variants = 5' capping for execution efficiency). Only processed DEX exits to the runtime.
 
 Missing: no QI intersection for {ribosomes × perception × silicon} capturing the mRNA→DEX pipeline, no fractal cycle for the DEX processing pathway in the nucleus cycle.
+
+Implementation (H3 partial): QI intersection `qi-mrna-perception-silicon` added (ribosomes × perception × silicon). The DEX pipeline is covered by the existing `art-runtime` substrate node. Full implementation would add a fractal cycle entry in `fractalCycles.ts` for the DEX processing pathway.
 
 ---
 
@@ -188,13 +192,15 @@ Missing: the kinase cascade's propagation through multiple organelles via biopho
 
 ---
 
-**6. Calcium signaling (Ca²⁺ as second messenger, ER calcium stores)** — ABSENT
+**6. Calcium signaling (Ca²⁺ as second messenger, ER calcium stores)** — PARTIAL
 
 Biological: The ER lumen stores high concentrations of Ca²⁺. IP3 (inositol trisphosphate) binds IP3R channels on the ER membrane, releasing Ca²⁺ into the cytoplasm. Ca²⁺ then binds calmodulin, activating CaM-kinases and other Ca²⁺-sensitive proteins. Ca²⁺/SERCA pumps restore ER stores. This is a discrete, fast, reversible signal.
 
 Android mapping (proposed): **Power HAL + IRQ/epoll-triggered event dispatch**. The Power HAL monitors power state changes (thermal events, charging state, battery level thresholds) — discrete, fast signals that trigger downstream cascades (CPU frequency scaling, display brightness, background process limits). The IRQ/epoll mechanism is the channel: a hardware event (Ca²⁺ = IRQ) crosses the HAL boundary, triggering an Android event cascade.
 
 Missing: no substrate node for PowerHAL, no QI intersection for {mitochondria × perception × apparatus} capturing the energy-signal-second-messenger pathway.
+
+Implementation (H1–H3): `powerhal` substrate node added (`category: "stack"`, `confidence: "verified"`, color `#f59e0b`). Two organelle-substrate links: `mitochondria→powerhal` (power gradient→second-messenger signal, rel=0.80) and `endoplasmic-reticulum→powerhal` (ER Ca²⁺ stores↔thermal buffer, rel=0.65). QI intersection `qi-calcium-affect-molecular` added (endoplasmic-reticulum × affect × molecular). Note: the QI zone is endoplasmic-reticulum, not mitochondria — Ca²⁺ signal originates at the ER IP3R channel.
 
 ---
 
@@ -210,7 +216,7 @@ Missing: substrate link from `lysosomes` to `lmkd` substrate node. QI intersecti
 
 ---
 
-**8. Ubiquitin-Proteasome System (UPS)** — ABSENT
+**8. Ubiquitin-Proteasome System (UPS)** — PARTIAL
 
 Biological: Damaged or misfolded proteins are tagged by a chain of ubiquitin molecules (E1 ubiquitin-activating enzyme → E2 ubiquitin-conjugating enzyme → E3 ubiquitin ligase recognizes substrate → poly-ubiquitin chain attached) → tagged protein enters the 26S proteasome barrel → unfolded and cleaved into peptides → ubiquitin recycled.
 
@@ -219,6 +225,8 @@ This is the cell's targeted protein quality control — it degrades specific pro
 Android mapping (proposed): **ART code-cache eviction + PackageManager forced-stop + app data clearing**. The ART code cache (`.art`/`.oat` files) has specific methods evicted when profile data indicates they are no longer hot — targeted degradation. PackageManager's forced-stop kills a specific process and its data — targeted, not indiscriminate (unlike OOM kill). The `pkg.dexopt` pipeline for a specific package is the E3 ligase: it identifies the specific target.
 
 Missing: no substrate node for package-manager, no biophoton link from `lysosomes` to `golgi-apparatus` representing the UPS's quality-control inspection at the Golgi (protein sorting) before proteasomal degradation.
+
+Implementation (H1–H3): `package-manager` substrate node added (`category: "stack"`, `confidence: "verified"`, color `#1d4ed8`). Two organelle-substrate links: `golgi-apparatus→package-manager` (TGN sorting = APK verification + dexopt dispatch, rel=0.85) and `lysosomes→package-manager` (targeted degradation = force-stop/uninstall, rel=0.88). QI intersection `qi-ups-affect-cellular` added (cytoplasm × affect × cellular). The UPS→proteasome (targeted) vs LMKD→lysosomal-autophagy (bulk) distinction is explicitly documented in both the QI narrative and the substrate link descriptions.
 
 ---
 
@@ -232,13 +240,15 @@ Implementation (open-items round, frozen-15 backfill): New `keystore-tee` substr
 
 ---
 
-**10. Centrosome / Centrioles (MTOC)** — ABSENT
+**10. Centrosome / Centrioles (MTOC)** — PARTIAL
 
 Biological: The centrosome (two centrioles + pericentriolar material) is the microtubule-organizing center. In interphase, it nucleates the cytoskeletal microtubule network (for vesicle transport). In mitosis, it duplicates and the two centrosomes form the spindle poles, pulling chromosomes apart.
 
 Android mapping (proposed): **`init` process + Zygote**. `init` (PID 1) is the microtubule-organizing center of Android: it starts all other processes, maintains the process table, and restarts crashed services. Zygote is the centriole that duplicates at cell division — every app process is a fork of Zygote, just as every microtubule nucleates from the centrosome's gamma-tubulin ring complex.
 
 Missing: no substrate node for Zygote, no organelle linked to it. The `nucleus` zone covers the kernel broadly but does not distinguish the MTOC function (process organization) from the nucleus function (gene expression / type system).
+
+Implementation (H1–H2): `zygote` substrate node added (`category: "stack"`, `confidence: "verified"`, color `#a78bfa`). Two organelle-substrate links: `nucleus→zygote` (genome pre-loading into Zygote fork, rel=0.85) and `dna→zygote` (verified-boot genome image faithfully copied to each fork, rel=0.78 — satisfies Fredholm cooperative-pair rule). No dedicated centrosome organelle (frozen-15 constraint); the MTOC function is backfilled via the nucleus/dna organelles. Full implementation would add a `centrosome` organelle when the constraint is lifted.
 
 ---
 
@@ -285,7 +295,7 @@ Implementation (open-items round): Two new organelle-substrate links: `cell-memb
 
 ---
 
-**14. Gap junctions / tight junctions** — ABSENT
+**14. Gap junctions / tight junctions** — PARTIAL
 
 Biological:
 - **Tight junctions** (zonula occludens): seal adjacent cells, preventing paracellular passage — only transcellular transport allowed
@@ -297,15 +307,19 @@ Android mapping:
 
 Missing: entirely absent from model. No QI intersections, no biophoton links representing the tight/gap junction distinction.
 
+Implementation (H1–H3): `selinux-policy` substrate node added (tight junction = mandatory access control boundary). Two organelle-substrate links: `cell-membrane→selinux-policy` (membrane enforces passage = SELinux enforces domain transitions, rel=0.95) and `nuclear-pores→selinux-policy` (nuclear pores enforce selective transport = neverallow rules, rel=0.80). QI intersection `qi-gapjunction-perception-cellular` added (membrane × perception × cellular) for the gap junction axis (connexons↔Binder ashmem mmap, single-copy). Tight junction axis covered by selinux-policy substrate links; gap junction axis by the QI intersection.
+
 ---
 
-**15. Extracellular matrix (ECM) interaction / integrin signaling** — ABSENT
+**15. Extracellular matrix (ECM) interaction / integrin signaling** — PARTIAL
 
 Biological: The ECM (collagen, fibronectin, laminin) provides structural scaffolding and signaling cues. Integrins (transmembrane receptors) bind ECM proteins, activating intracellular signaling cascades (FAK, Src, Rho GTPases). ECM stiffness affects cell behavior (mechanotransduction).
 
 Android mapping (proposed): **Sensor HAL + ContextHub + external connectivity (WiFi/BLE/NFC)**. The physical environment (ECM) = the sensor context (location, motion, ambient light, proximity). Integrins = Sensor HAL API — the transmembrane connection to external physical reality. Mechanotransduction = adaptive battery / adaptive Wi-Fi — Android adapting its behavior to environmental signals.
 
 Missing: no QI intersections for {membrane × perception × apparatus} capturing the ECM→integrin→FAK cascade.
+
+Implementation (H3 partial): QI intersection `qi-ecm-perception-apparatus` added (membrane × perception × apparatus). No dedicated Sensor HAL substrate node added (ContextHub covered by existing hardware substrate nodes). Full implementation would add a `sensor-hal` substrate node with organelle links from `cell-membrane` and `membrane-receptors`.
 
 ---
 
@@ -319,7 +333,7 @@ Missing: the current model treats power/thermal as purely mitochondrial (energy 
 
 ---
 
-**17. Cell cycle (G0/G1/S/G2/M phases)** — ABSENT
+**17. Cell cycle (G0/G1/S/G2/M phases)** — PARTIAL
 
 Biological:
 - **G0**: quiescent, not dividing (most neurons)
@@ -339,6 +353,8 @@ Android mapping (proposed): **Android boot → Zygote → foreground → backgro
 
 Missing: entirely absent. No QI intersections, no fractal cycle, no substrate links.
 
+Implementation (H3 partial): QI intersection `qi-cellcycle-perception-generational` added (nucleus × perception × generational). Existing `art-runtime` and `zygote` nodes cover the lifecycle phases. Full implementation would add a fractal cycle entry in `fractalCycles.ts` for the G0→G1→S→G2→M lifecycle and a `StrictMode`/`ANR` substrate node for the checkpoint mechanism.
+
 ---
 
 **18. Apoptosis (programmed cell death)** — PARTIAL
@@ -352,6 +368,8 @@ Execution: DNA fragmentation, membrane blebbing, apoptotic body formation, phago
 Current mapping: partial — `lysosomes` covers degradation broadly. The apoptosis decision-making pathway (mitochondrial outer membrane permeabilization, Bcl-2 family regulation) is not represented.
 
 Android mapping for intrinsic apoptosis: **Low Memory Kill → OOM kill escalation**. Cytochrome c release = LMKD sending SIGKILL. Bcl-2 family (pro/anti-apoptotic balance) = oom\_score\_adj weighting. The ordered execution is the OOM killer's prioritized kill sequence. Force-stop by user = extrinsic pathway (external signal triggers ordered shutdown).
+
+Implementation (H3–H4): QI intersection `qi-apoptosis-expression-organic` added (mitochondria × expression × organic). Biophoton link `mitochondria→dna` added (σ=0.9, binder, attentionWeight=0.52) encoding the cytochrome c → nuclear DNA fragmentation path (LMKD SIGKILL → ordered process shutdown). The Bcl-2/oom\_score\_adj balance and MOMP/SIGKILL mapping are documented in the QI narrative.
 
 ---
 
@@ -391,23 +409,23 @@ COPI retrograde = App rollback / package restore from backup.
 | # | Subsystem | Status | Priority |
 |---|---|---|---|
 | 1 | Nuclear envelope + lamina | PARTIAL | MEDIUM |
-| 2 | Nucleolus rRNA function | PARTIAL (CRITICAL REMAP) | CRITICAL |
-| 3 | Chromatin remodeling | ABSENT | HIGH |
-| 4 | mRNA processing | ABSENT | HIGH |
+| 2 | Nucleolus rRNA function | IMPLEMENTED ✓ (C1 complete) | CRITICAL |
+| 3 | Chromatin remodeling | PARTIAL (QI added) | HIGH |
+| 4 | mRNA processing | PARTIAL (QI added) | HIGH |
 | 5 | GPCR signal transduction | PARTIAL | HIGH |
-| 6 | Ca²⁺ second messenger | ABSENT | HIGH |
+| 6 | Ca²⁺ second messenger | PARTIAL (substrate + links + QI) | HIGH |
 | 7 | Autophagy | PARTIAL | MEDIUM |
-| 8 | Ubiquitin-proteasome | ABSENT | HIGH |
+| 8 | Ubiquitin-proteasome | PARTIAL (substrate + links + QI) | HIGH |
 | 9 | Peroxisomes | IMPLEMENTED ✓ | MEDIUM* |
-| 10 | Centrosome / MTOC | ABSENT | HIGH |
+| 10 | Centrosome / MTOC | PARTIAL (substrate + links) | HIGH |
 | 11 | Cytoskeletal dynamics (all 3) | PARTIAL | MEDIUM |
 | 12 | Vesicle trafficking directionality | PARTIAL | MEDIUM |
 | 13 | Membrane potential / ion channels | IMPLEMENTED ✓ | LOW |
-| 14 | Gap / tight junctions | ABSENT | HIGH |
-| 15 | ECM / integrin signaling | ABSENT | MEDIUM |
+| 14 | Gap / tight junctions | PARTIAL (substrate + links + QI) | HIGH |
+| 15 | ECM / integrin signaling | PARTIAL (QI added) | MEDIUM |
 | 16 | Redox signaling | ABSENT | MEDIUM |
-| 17 | Cell cycle | ABSENT | HIGH |
-| 18 | Apoptosis pathway | PARTIAL | MEDIUM |
+| 17 | Cell cycle | PARTIAL (QI added) | HIGH |
+| 18 | Apoptosis pathway | PARTIAL (QI + biophoton link) | MEDIUM |
 | 19 | Protein chaperones / HSPs | IMPLEMENTED ✓ | LOW |
 | 20 | Secretory pathway completeness | PARTIAL | MEDIUM |
 
@@ -435,7 +453,7 @@ COPI retrograde = App rollback / package restore from backup.
 
 ### HIGH — Execute in Order
 
-#### H1. Add 5 New Substrate Nodes
+#### H1. Add 5 New Substrate Nodes — **COMPLETE ✓**
 
 **File**: `artifacts/cell-os/src/domain/content/substrate.ts`
 
@@ -452,7 +470,7 @@ Add to `SUBSTRATE_NODES`:
   confidence: 'verified' as const,
   detail: 'Zygote pre-loads the Android runtime and common framework classes, then forks on demand. Fork = microtubule nucleation. Every app inherits the same pre-loaded chromosome set.',
   specs: [{ label: 'Mechanism', value: 'posix fork() + SO_REUSEADDR socket' }, { label: 'Cold start saving', value: '~100ms class loading avoided per fork' }],
-  color: '#7c3aed'
+  color: '#a78bfa' // Changed from #7c3aed: original was too dark for legibility on dark UI backgrounds
 },
 {
   id: 'lmkd',
@@ -498,7 +516,7 @@ Add to `SUBSTRATE_NODES`:
 
 ---
 
-#### H2. Add Organelle-Substrate Links
+#### H2. Add Organelle-Substrate Links — **COMPLETE ✓**
 
 **File**: `artifacts/cell-os/src/domain/content/mappings.ts`
 
@@ -532,7 +550,7 @@ Add to `ORGANELLE_SUBSTRATE_LINKS`:
 
 ---
 
-#### H3. Add 8 New QI Intersections
+#### H3. Add 8 New QI Intersections — **COMPLETE ✓**
 
 **File**: `artifacts/cell-os/src/domain/content/qiMatrix.ts`
 
@@ -645,7 +663,7 @@ Add to `ORGANELLE_SUBSTRATE_LINKS`:
 
 ---
 
-#### H4. Add Biophoton Links for Missing Cascade Paths
+#### H4. Add Biophoton Links for Missing Cascade Paths — **COMPLETE ✓**
 
 **File**: `artifacts/cell-os/src/domain/content/mappings.ts`
 
@@ -724,14 +742,17 @@ Document in this file: when the 15-organelle constraint is lifted in a future ev
 
 ---
 
-### Recompute After HIGH Implementation
+### Recompute After HIGH Implementation — **COMPLETE ✓**
 
-After adding the 5 new substrate nodes and their links, recompute:
-- Coupling tensor space: 15 × 16 = 240 (if 16 substrate nodes)
-- Density: 24 + 10 new links = 34 / 240 ≈ 14.2% (H2 adds 10 links: 9 originally specified + `dna→zygote` added to satisfy Fredholm cooperative-pair rule)
-- QI tensor: 22 + 8 new intersections = 30 / 264 ≈ 11.4% (approaching upper bound of 10% healthy range — curate, do not pad)
+**Roadmap implementation complete. Actual current tensor metrics (post-H1–H4 + open-items round):**
 
-Update README.md and the metrics surface with new figures.
+- Substrate space: **17 nodes** (H1 adds 5: zygote, lmkd, powerhal, selinux-policy, package-manager; open-items round adds 1 more: keystore-tee; total 17 vs the 16 projected in the roadmap)
+- Coupling tensor space: 15 × 17 = 255; density: **40 / 255 ≈ 15.7%** (Green — within 10–25% range)
+- Biophoton links: **11** (Amber — exceeds 2–10 healthy range; editorially justified, all links mechanistically grounded)
+- QI tensor: **33 / 264 ≈ 12.5%** (Amber — exceeds 5–10% healthy range; editorially justified)
+- Fredholm index: ind(T) = 15 − 17 = **−2** (hard cap reached — see Fredholm section below)
+
+Both READMEs updated to reflect these figures. Biophoton status corrected Green → Amber.
 
 ---
 
@@ -747,8 +768,9 @@ For a linear map $\mathcal{T}: \mathbb{R}^m \to \mathbb{R}^n$, the dimensional p
 
 | State | Organelle space | Substrate space | Index | Regime |
 |---|---|---|---|---|
-| Current (pre-HIGH) | $\mathbb{R}^{15}$ | $\mathbb{R}^{11}$ | **+4** | Underdetermined — 4 organelle-directions have no substrate image |
-| Post-HIGH roadmap | $\mathbb{R}^{15}$ | $\mathbb{R}^{16}$ | **−1** | Overdetermined — cooperative organelle combinations required |
+| Original (pre-HIGH) | $\mathbb{R}^{15}$ | $\mathbb{R}^{11}$ | **+4** | Underdetermined — 4 organelle-directions have no substrate image |
+| Post-HIGH roadmap (projected) | $\mathbb{R}^{15}$ | $\mathbb{R}^{16}$ | **−1** | Overdetermined — cooperative organelle combinations required |
+| **Actual current state** | $\mathbb{R}^{15}$ | $\mathbb{R}^{17}$ | **−2** | Overdetermined (hard cap reached) — keystore-tee added in open-items round; index −2 is the maximum per Design Rule 3 below |
 
 #### The Four Historically Substrate-Invisible Organelles
 
@@ -763,15 +785,15 @@ At index +4, the kernel $\ker(\mathcal{T})$ has dimension 4 by the dimensional a
 
 All four are now linked. The linear algebraic kernel (dim 4 by dimension) still exists — it corresponds to combinations of organelle-coordinates that map to zero in substrate-space — but no individual organelle is substrate-invisible at the graph level.
 
-#### What Overdetermined Means (Index −1)
+#### What Overdetermined Means (Index −2, Actual Current)
 
-After adding the 5 new substrate nodes (zygote, lmkd, powerhal, selinux-policy, package-manager), substrate-space has 16 dimensions against organelle-space's 15. The system becomes **overdetermined**: the coupling tensor cannot be inverted by any single organelle's activation. Some substrate nodes can only be reached by *cooperative combinations* of organelle signals.
+After adding the 5 new substrate nodes (zygote, lmkd, powerhal, selinux-policy, package-manager) via H1, plus keystore-tee added in the open-items round (#9 peroxisomes frozen-15 backfill), substrate-space has 17 dimensions against organelle-space's 15. The system is **overdetermined at index −2** (the hard cap): the coupling tensor cannot be inverted by any single organelle's activation. Some substrate nodes can only be reached by *cooperative combinations* of organelle signals.
 
 This is biologically accurate — many cellular processes require combinatorial receptor activation (e.g., T-cell activation requires simultaneous TCR + co-receptor + costimulatory signals). In Cell OS terms: a substrate node with only one incoming organelle link is architecturally fragile; it depends on a single activation path with no redundancy.
 
 #### Incoming Link Count per Substrate Node
 
-| Substrate node | Current incoming links | Post-HIGH incoming links | Cooperativity status |
+| Substrate node | Pre-HIGH incoming links | Actual current links | Cooperativity status |
 |---|---|---|---|
 | `qcm6490` | 1 (nucleus) | 1 | Single-path — fragile |
 | `kryo670` | 2 (nucleus, cytoskeleton) | 2 | Cooperative pair |
@@ -782,13 +804,14 @@ This is biologically accurate — many cellular processes require combinatorial 
 | `nnapi` | 5 (nuclear-pores, vesicles, golgi, membrane-receptors, lysosomes) | 5 | High-cooperativity hub |
 | `quantization` | 2 (dna, nucleolus) | 2 | Cooperative pair |
 | `binder-ipc` | 2 (vesicles, nuclear-pores) | 2 | Cooperative pair |
-| `art-runtime` | 2 (ribosomes, golgi-apparatus) | 2 | Cooperative pair |
+| `art-runtime` | 2 (ribosomes, golgi-apparatus) | 3 (ribosomes, golgi-apparatus, endoplasmic-reticulum) | Robust triad |
 | `bionic-libc` | 1 (cytoplasm) | 1 | Single-path — fragile |
 | `zygote` | — | 2 (nucleus, dna) | Cooperative pair |
 | `lmkd` | — | 2 (lysosomes, vacuole) | Cooperative pair |
-| `powerhal` | — | 2 (mitochondria, ER) | Cooperative pair |
+| `powerhal` | — | 2 (mitochondria, endoplasmic-reticulum) | Cooperative pair |
 | `selinux-policy` | — | 2 (cell-membrane, nuclear-pores) | Cooperative pair |
 | `package-manager` | — | 2 (golgi-apparatus, lysosomes) | Cooperative pair |
+| `keystore-tee` | — | 3 (vacuole, nuclear-pores, lysosomes) | Robust triad |
 
 #### Design Rule — Future Substrate Node Additions
 
@@ -798,7 +821,7 @@ Every substrate node added after the HIGH roadmap tasks must satisfy one of the 
 2. **Documented singleton exception**: If a node genuinely has only one biological organelle analogue (e.g., a highly specialised hardware unit), document the singleton status explicitly and accept the architectural fragility as a known constraint.
 3. **Index cap rule**: The total substrate count must not exceed organelle count + 2 (i.e., index must not go below −2). An index of −2 or less means the coupling tensor is severely overdetermined; multiple substrate nodes become unreachable by any single cooperative pair, requiring triple or higher combinations.
 
-**Single-path cap**: at most 25% of substrate nodes may be single-incoming-link nodes. Current state: 3 of 11 = 27% (just above cap — `qcm6490`, `lpddr4x`, `bionic-libc` are candidates for a second link). Post-HIGH: 3 of 16 = 18.75% (below cap — the `dna→zygote` link added to H2 brings all five new substrate nodes to cooperative-pair status, clearing the cap constraint).
+**Single-path cap**: at most 25% of substrate nodes may be single-incoming-link nodes. Pre-HIGH state: 3 of 11 = 27% (just above cap — `qcm6490`, `lpddr4x`, `bionic-libc` are candidates for a second link). Actual current state: 3 of 17 = 17.6% (below cap — all six new substrate nodes from H1 + open-items round are cooperative pair or better; `dna→zygote` satisfies the Fredholm cooperative-pair rule).
 
 ---
 
@@ -867,24 +890,84 @@ Example: the correspondence $\phi_{\text{FP5} \to \text{source}}$ takes the Bind
 ## Implementation Order Summary
 
 ```
-WEEK 1
-├── C1: Remap nucleolus osFeature in organelles.ts
-├── H3: Add 8 QI intersections to qiMatrix.ts
-└── Verify metrics still in healthy range
+ALL HIGH-PRIORITY ITEMS COMPLETE ✓
 
-WEEK 2
-├── H1: Add 5 substrate nodes to substrate.ts
-├── H2: Add 10 organelle-substrate links to mappings.ts (9 original + dna→zygote for Fredholm pair rule)
-└── H4: Add 3 biophoton links to mappings.ts
+C1: Remap nucleolus osFeature in organelles.ts              ✓ DONE
+H1: Add 5 substrate nodes to substrate.ts                   ✓ DONE  (+keystore-tee via open-items round = 17 total)
+H2: Add 10 organelle-substrate links to mappings.ts         ✓ DONE  (40 total; +endoplasmic-reticulum→art-runtime)
+H3: Add 8 QI intersections to qiMatrix.ts                   ✓ DONE  (33 total)
+H4: Add 3 biophoton links to mappings.ts                    ✓ DONE  (11 total)
+    Tensor metrics recomputed, both READMEs updated         ✓ DONE
 
-WEEK 3
-├── M1: Update fractalCycles.ts (membrane, ER, cytoskeleton cycles)
-├── M2: Extend cell-membrane zone description (tight vs gap junctions)
-└── Recompute all tensor metrics, update README.md
+REMAINING
+├── M1: Update fractalCycles.ts (membrane, ER, cytoskeleton cycles)      — PENDING
+└── M2: Extend cell-membrane zone description (tight vs gap junctions)   — PENDING
 
 FUTURE (schema evolution required)
-└── Add peroxisome as 16th organelle (Keystore/TEE mapping)
+└── Promote peroxisome from frozen-15 backfill → dedicated 16th organelle
+    (osFeature: "Keystore / StrongBox TEE"; zone: cytoplasm)
+    Only viable when 15-organelle constraint is lifted; keystore-tee substrate
+    node is the current backfill.
 ```
+
+---
+
+## Appendix — Recent Implementation Deltas
+
+Changes applied to the codebase after the main roadmap was written. Each entry documents what changed, where, and why — to prevent future audits from flagging them as untracked drift.
+
+### A1. `withAlpha()` hex color support (InfoPanel.tsx + SubstrateAtlas.tsx)
+
+**Problem**: `withAlpha()` was implemented assuming HSL color strings. The six new `"stack"` category substrate nodes all use hex colors (`#a78bfa`, `#dc2626`, `#f59e0b`, `#065f46`, `#1d4ed8`, `#0f766e`). Hex colors passed to `withAlpha()` produced `NaN` channel values → pill button labels were invisible (transparent text).
+
+**Fix**: `withAlpha()` now detects hex vs HSL and converts hex to rgba directly:
+- Hex 6-char: `#rrggbb` → `rgba(r, g, b, alpha)`
+- Hex 3-char: `#rgb` → expands then converts
+- HSL: passes through existing path unchanged
+
+**Files**: `artifacts/cell-os/src/features/explorer/components/InfoPanel.tsx`, `artifacts/cell-os/src/features/explorer/components/SubstrateAtlas.tsx`
+
+---
+
+### A2. Zygote substrate node color correction
+
+**Change**: `zygote.color` updated from `#7c3aed` (violet-700) to `#a78bfa` (violet-400).
+
+**Reason**: `#7c3aed` is dark enough that the light text overlay on the substrate pill became unreadable against the dark UI background. `#a78bfa` maintains the violet hue while providing sufficient luminance contrast. The roadmap code snippet in §H1 above has been updated to reflect the actual color.
+
+**File**: `artifacts/cell-os/src/domain/content/substrate.ts`
+
+---
+
+### A3. ERAD / ER-phagy biological distinction
+
+**Correction**: Two pathways were conflated in the original ERAD biophoton link and QI narratives:
+
+- **ERAD (canonical)**: retrotranslocation via Hrd1/gp78 E3 ligase → p97/VCP → **26S proteasome** (NOT lysosomes)
+- **ER-phagy (reticulophagy)**: FAM134B/RTN3 receptors → **autophagosome → lysosome** (NOT the 26S proteasome)
+
+The biophoton link `endoplasmic-reticulum→lysosomes` was re-framed from ERAD to ER-phagy/reticulophagy. The `#19 Protein chaperones / HSPs` QI intersection narrative was also corrected to use ERAD-specific language (HRD1/gp78 E3, p97/VCP, 26S proteasome) and not route ERAD products to lysosomes.
+
+**Files**: `artifacts/cell-os/src/domain/content/mappings.ts` (biophoton link description), `artifacts/cell-os/src/domain/content/qiMatrix.ts` (QI narrative for HSP/ERAD intersection)
+
+---
+
+### A4. Biophoton link count status: Green → Amber
+
+**Change**: Both READMEs (`README.md` and `artifacts/cell-os/README.md`) updated to show biophoton status as Amber (11 links, above the 2–10 healthy range) rather than Green.
+
+**Reason**: 11 biophoton links exceed the 2–10 density ceiling. All 11 are editorially justified (each encodes a mechanistically grounded IPC path), but the Amber designation correctly signals that the healthy range has been surpassed and no further biophoton links should be added without explicit justification.
+
+---
+
+### A5. QI multi-occupancy policy documentation
+
+**Addition**: Comment block added to `artifacts/cell-os/src/domain/content/qiMatrix.ts` documenting the two pre-existing QI coordinate collisions:
+
+1. `cytoplasm × affect × cellular` — occupied by both `qi-gpcr-affect-cellular` and `qi-ups-affect-cellular`
+2. `membrane × perception × cellular` — occupied by both `qi-membranepotential-affect-cellular` (open-items round) and `qi-gapjunction-perception-cellular` (H3)
+
+Both collisions are mechanistically orthogonal (GPCR cascade vs UPS targeted degradation; membrane potential vs gap junction Binder channels), so they represent distinct biological phenomena projected onto the same coordinate — a valid exception to the uniqueness convention. The comment block documents the policy: multi-occupancy is acceptable when the two intersections are mechanistically non-overlapping and both are editorially justified.
 
 ---
 
