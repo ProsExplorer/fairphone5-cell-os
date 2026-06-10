@@ -12,7 +12,7 @@ import type { QiIntersection } from "@/domain/types";
  * This file exports curated intersections — the ones where the three axes
  * illuminate each other most sharply. They are chosen for conceptual coherence
  * and evidence quality, not for their count's sacred geometry.
- * Current count: 30 of 264 (≈ 11.4%). Do not encode product logic around counts.
+ * Current count: 33 of 264 (≈ 12.5%). Do not encode product logic around counts.
  *
  * Architect note: do not encode product logic around counts. If a new scale or
  * zone is added, the tensor grows and the selection criteria remain the same.
@@ -310,7 +310,7 @@ export const QI_INTERSECTIONS: QiIntersection[] = [
   //  endoplasmic-reticulum×affect×silicon) are singly occupied.
 
   // ── Biological Accuracy Roadmap Additions (DEVELOPMENT.md Part 3 H3) ─────────
-  // 8 new intersections; post-add total: 30 of 264 ≈ 11.4%.
+  // 8 new intersections; post-add total: 30 of 264 ≈ 11.4% (total now 33 after open-items round).
   // All field names verified against QiIntersection type in types.ts.
 
   {

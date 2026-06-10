@@ -196,7 +196,7 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
   },
 
   // ── Biological Accuracy Roadmap Additions (DEVELOPMENT.md Part 3 H4) ─────────
-  // 3 new links completing missing cascade paths; post-add total: 9 biophoton links.
+  // 3 new links completing missing cascade paths; post-add total: 11 biophoton links (9 at H4, +2 in open-items round).
   // No 'id' field on BiophotonLink. ipcMechanism values verified against types.ts.
   {
     sourceOrganelleId: "membrane-receptors",

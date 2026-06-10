@@ -922,7 +922,7 @@ Changes applied to the codebase after the main roadmap was written. Each entry d
 
 **Fix**: `withAlpha()` now detects hex vs HSL and converts hex to rgba directly:
 - Hex 6-char: `#rrggbb` → `rgba(r, g, b, alpha)`
-- Hex 3-char: `#rgb` → expands then converts
+- Hex 3-char: `#rgb` → each channel doubled (`r→rr`, `g→gg`, `b→bb`) then converted to rgba
 - HSL: passes through existing path unchanged
 
 **Files**: `artifacts/cell-os/src/features/explorer/components/InfoPanel.tsx`, `artifacts/cell-os/src/features/explorer/components/SubstrateAtlas.tsx`
@@ -965,7 +965,7 @@ The biophoton link `endoplasmic-reticulum→lysosomes` was re-framed from ERAD t
 **Addition**: Comment block added to `artifacts/cell-os/src/domain/content/qiMatrix.ts` documenting the two pre-existing QI coordinate collisions:
 
 1. `cytoplasm × affect × cellular` — occupied by both `qi-gpcr-affect-cellular` and `qi-ups-affect-cellular`
-2. `membrane × perception × cellular` — occupied by both `qi-membranepotential-affect-cellular` (open-items round) and `qi-gapjunction-perception-cellular` (H3)
+2. `membrane × affect × silicon` — occupied by both `qi-membranepotential-affect-silicon` (open-items round) and a second intersection at the same coordinates; `qi-gapjunction-perception-cellular` occupies the adjacent but distinct `membrane × perception × cellular` coordinate
 
 Both collisions are mechanistically orthogonal (GPCR cascade vs UPS targeted degradation; membrane potential vs gap junction Binder channels), so they represent distinct biological phenomena projected onto the same coordinate — a valid exception to the uniqueness convention. The comment block documents the policy: multi-occupancy is acceptable when the two intersections are mechanistically non-overlapping and both are editorially justified.
 
