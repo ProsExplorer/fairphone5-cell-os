@@ -122,6 +122,71 @@ artifacts/cell-os/src/
 
 **Fredholm cap**: do not add substrate nodes. Adding one pushes the index to −3, violating the documented cap. The only valid evolution paths are: (a) add an organelle to open space, or (b) remove an existing substrate node.
 
+## Working with `/documents` (development guide)
+
+Navigate to `/documents` while the dev server is running. The page shows a live manifold state panel (all counts derived from source arrays at render time) and a section selector before generating the PDF.
+
+### How the PDF pipeline works
+
+```
+User clicks "Generate & Download PDF"
+  → handleGenerate() sets generating=true
+  → generateReport(metrics, selectedSections) is called (async)
+      → jsPDF and jspdf-autotable are dynamic-imported (lazy — not in initial bundle)
+      → addSectionHeader() / autoTable() build the document imperatively
+      → doc.save("cell-os-manifold-YYYY-MM-DD.pdf") triggers browser download
+  → generating=false, generated=true (resets after 3s)
+```
+
+`generateReport` receives two arguments:
+- `metrics` — the result of `computeManifoldMetrics()` (computed once via `useMemo` in the page component)
+- `sections` — a `Set<ReportSection>` of the user's checked sections (`"manifold" | "organelles" | "qi" | "biophoton"`)
+
+The function is **not** a React component — it is a plain async function that builds the jsPDF document imperatively and calls `doc.save()`. It lives at module level in `documents.tsx`.
+
+### Export schema allowlist — what goes in, what stays out
+
+| Included | Excluded |
+|---|---|
+| `CELL_MAPPINGS` — organelle names + OS features | Epigenome weights from `useLearningStore` |
+| `ORGANELLE_SUBSTRATE_LINKS` — organelle ID, substrate ID, relevance | Zustand vital store state (`activeZone`, signals) |
+| `QI_INTERSECTIONS` — zone, phase, scale, **title only** (not full narrative) | User session / interaction history |
+| `BIOPHOTON_LINKS` — source, target, σ, IPC, attention weight | Any runtime-computed personalised values |
+| `computeManifoldMetrics()` output — densities, counts, confidence | |
+
+**Rule**: if the data comes from a source array in `domain/content/`, it can be exported. If it comes from a Zustand store or a `useMemo` that reads from one, it cannot.
+
+### Adding a new report section
+
+1. Add a new value to the `ReportSection` union type at the top of `documents.tsx`:
+   ```ts
+   type ReportSection = "manifold" | "organelles" | "qi" | "biophoton" | "your-section";
+   ```
+
+2. Add an entry to the `SECTIONS` constant (glyph, label, color, subtext):
+   ```ts
+   { id: "your-section", label: "Your Section", glyph: "新", color: ACCENT_P }
+   ```
+
+3. Add the corresponding `if (sections.has("your-section")) { ... }` block inside `generateReport`, following the existing pattern. Use `autoTable(doc, { ... })` for tabular data; use `addSectionHeader(title, color)` for the heading.
+
+4. Update the `desc` subtext in the `SECTIONS` entry to show a live count — derive it from the source array, not a hardcoded number.
+
+### jsPDF conventions used in this file
+
+- `doc.setFillColor(...rgb)` / `doc.rect(0, 0, 210, 297, "F")` — full-page background fill (called `fillPage()`)
+- `doc.setFontSize(n)` + `doc.setTextColor(...rgb)` + `doc.text(str, x, y)` — manual text placement
+- `autoTable(doc, { startY: y, ... })` — table; after each call, advance `y` via `(doc as any).lastAutoTable.finalY + 8`
+- Page footer loop: iterate `doc.internal.getNumberOfPages()`, call `doc.setPage(i)`, write footer text at `y=291`
+- Colors are defined as `[r, g, b]` tuples at the top of `generateReport`; reuse them, don't inline new hex values
+
+### Gotchas
+
+- `(doc as any).lastAutoTable.finalY` — jspdf-autotable attaches `lastAutoTable` to the doc object at runtime; TypeScript doesn't know about it, hence the cast. This is the standard pattern.
+- Page overflow: `addSectionHeader` checks `if (y > 250) { doc.addPage(); fillPage(); y = MARGIN; }`. If a table itself overflows, jspdf-autotable handles pagination automatically via its `didDrawPage` hook (not wired here, but built-in).
+- Dynamic import: `jsPDF` and `autoTable` are lazy-loaded inside `generateReport`. This keeps them out of the initial bundle. They will load on first click — subsequent clicks reuse the cached modules.
+- Do not import `jsPDF` at the top of the file with a static `import` — it breaks Vite's tree-shaking and adds ~300 KB to the initial load.
+
 ## Architecture decisions
 
 - **Frontend-only**: all content is static TypeScript constants in `domain/content/`. No API, no database, no runtime fetching.
