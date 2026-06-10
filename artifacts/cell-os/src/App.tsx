@@ -8,6 +8,7 @@ import Philosophy from "@/pages/philosophy";
 import Substrate from "@/pages/substrate";
 import Metrics from "@/pages/metrics";
 import Fractal from "@/pages/fractal";
+import Documents from "@/pages/documents";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/substrate" component={Substrate} />
       <Route path="/metrics" component={Metrics} />
       <Route path="/fractal" component={Fractal} />
+      <Route path="/documents" component={Documents} />
       <Route component={NotFound} />
     </Switch>
   );

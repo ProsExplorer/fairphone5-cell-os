@@ -213,7 +213,7 @@ export type QuantizationLayer = {
  *
  * QI_INTERSECTIONS contains curated high-signal intersections — the ones
  * where the three axes illuminate each other most clearly.
- * Current count: 33 of 264 (≈ 12.5%). Do not encode product logic around counts.
+ * Current count: 36 of 264 (≈ 13.6%). Do not encode product logic around counts.
  */
 export type QiIntersection = {
   id: string;

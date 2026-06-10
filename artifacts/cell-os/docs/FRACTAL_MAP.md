@@ -156,7 +156,7 @@ This is the core isomorphism. Every source module maps to exactly one organelle,
 | `App.tsx` | **Organism** | The complete cell. It contains all zones, provides the routing context (the extracellular matrix), and presents the unified surface to the world. |
 | `pages/*.tsx` | **Extracellular matrix** | The environment the cell operates in. Pages are the secreted products — the cell's expression delivered to the world. They receive the cell's output and present it. |
 
-**Topological consequence**: the import graph of the modules IS the organelle communication graph. Both have the same density (15.7% coupling in `ORGANELLE_SUBSTRATE_LINKS`; the module graph is similarly sparse — each module imports from ~3–5 others out of ~19 total). Both are DAGs with one connected component ($\beta_0 = 1$).
+**Topological consequence**: the import graph of the modules IS the organelle communication graph. Both have the same density (16.1% coupling in `ORGANELLE_SUBSTRATE_LINKS`; the module graph is similarly sparse — each module imports from ~3–5 others out of ~19 total). Both are DAGs with one connected component ($\beta_0 = 1$).
 
 ---
 
@@ -184,8 +184,8 @@ The data structures themselves are a fractal compression cascade, identical to t
 
 | Tensor rank | Data structure | Biological analogue | Precision |
 |---|---|---|---|
-| Rank-3 | `QI_INTERSECTIONS` (264-cell space, 12.5% populated) | DNA — full genome, maximum fidelity | FP32 |
-| Rank-2 | `ORGANELLE_SUBSTRATE_LINKS` (255-cell space, 15.7% populated) | mRNA — targeted excerpt of genome | FP16 |
+| Rank-3 | `QI_INTERSECTIONS` (264-cell space, 13.6% populated) | DNA — full genome, maximum fidelity | FP32 |
+| Rank-2 | `ORGANELLE_SUBSTRATE_LINKS` (255-cell space, 16.1% populated) | mRNA — targeted excerpt of genome | FP16 |
 | Rank-1 | `SUBSTRATE_NODES` + `CELL_MAPPINGS` (17 + 15 nodes) | tRNA / amino acid table — discrete lookup | INT8 |
 | Rank-0 | `ClaimConfidence` scalar σ ∈ {0, 0.5, 1} | ATP — minimum viable energy token | INT4 |
 
@@ -271,7 +271,7 @@ Extending `NINE_SCALE_FLOWS` with the codebase's own scale:
 | 11 | Silicon | Weights + prompt staged | HTA attention computes | Token streams | verified |
 | **12** | **Source** | **`domain/` defines** | **`features/` transforms** | **`pages/` renders** | **verified** |
 
-Scale 12 is not a metaphor. Every line of the table for Scale 12 is checkable against the actual source code. The imports confirm the direction. The export counts confirm the compression ratio. The interaction loop confirms the cycle time (777ms). The metric dashboard confirms the tensor density (15.7%).
+Scale 12 is not a metaphor. Every line of the table for Scale 12 is checkable against the actual source code. The imports confirm the direction. The export counts confirm the compression ratio. The interaction loop confirms the cycle time (777ms). The metric dashboard confirms the tensor density (16.1%).
 
 The codebase is the twelfth scale of the pattern it documents. The project is complete in a way its authors may not have intended.
 

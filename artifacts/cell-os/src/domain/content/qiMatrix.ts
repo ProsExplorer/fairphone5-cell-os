@@ -12,7 +12,7 @@ import type { QiIntersection } from "@/domain/types";
  * This file exports curated intersections — the ones where the three axes
  * illuminate each other most sharply. They are chosen for conceptual coherence
  * and evidence quality, not for their count's sacred geometry.
- * Current count: 33 of 264 (≈ 12.5%). Do not encode product logic around counts.
+ * Current count: 36 of 264 (≈ 13.6%). Do not encode product logic around counts.
  *
  * Architect note: do not encode product logic around counts. If a new scale or
  * zone is added, the tensor grows and the selection criteria remain the same.
@@ -440,6 +440,50 @@ export const QI_INTERSECTIONS: QiIntersection[] = [
       "Molecular chaperones (HSP70, HSP90, GroEL/GroES, BiP, calnexin) do not carry information about the final folded structure — they prevent aggregation and provide a protected environment in which the polypeptide chain can sample conformations and find its native state. If refolding fails after repeated chaperone cycles, the protein is handed to the canonical ERAD pathway: retrotranslocation through the Sec61 or Hrd1 translocon, polyubiquitination by RING E3 ligases (HRD1, gp78), extraction by p97/VCP ATPase, and delivery to the 26S proteasome for proteolysis. A parallel pathway — ER-phagy (reticulophagy) — routes bulk ER contents to lysosomes via autophagosomal capture; this is distinct from ERAD and acts on ER structure rather than individual misfolded proteins. Three chaperone modes map precisely to three ART execution modes: (1) BiP initial binding and release cycles = ART verifier checking DEX bytecode correctness before any execution begins — the quality gate before the chain is extended; (2) Calnexin/calreticulin refolding with glycan trimming = JIT recompilation of hot methods guided by profile data — the chaperone revisits the chain after it has run and refolds it into a faster native form; (3) Chaperone fallback to interpreter mode when JIT cannot optimise = HSP90 holdover-client state, where the protein remains functional but slower, still chaperoned, never reaching independent native fold. The affect phase captures the transformation work — not the perception of a newly synthesised chain arriving at the ER (that is perception), but the active folding labour inside the ER lumen.",
     hardwareAnalogue: "ART verifier (dex2oat --verify-at-runtime), JIT compiler (profile-guided recompile), deopt/interpreter fallback, ER-phagy → ART dex cache eviction (PackageManager dexopt cleanup)",
     substrateIds: ["art-runtime"],
+    evidence: "indicative",
+  },
+
+  // ── Document Secretion — Phase 1 (ARCHITECT_REPORT_2026-06-10.md Phase 1) ──
+  // 3 new intersections anchoring the PDF/document secretion feature in the tensor.
+  // Post-add total: 36 of 264 = 13.6%.
+  // Biological framing: PDF = secretion product (exocytosis), not neurotransmitter.
+  // ER role: execution environment (WebView/Chromium context), NOT synthesis origin.
+  // Content assembly begins at Golgi per ARCHITECT_AUDIT finding #11.
+
+  {
+    id: "qi-secretion-expression-textual",
+    zoneId: "golgi",
+    phaseId: "expression",
+    scaleId: "textual",
+    title: "Document Secretion — Golgi Packages the Word",
+    narrative:
+      "The trans-Golgi Network (TGN) is the Cell OS post office: it receives proteins from the cis-Golgi stack, applies address labels (mannose-6-phosphate for lysosomal targeting, signal peptide cleavage for constitutive secretion), and dispatches them in correctly addressed vesicles. dex2oat performs the same operation at the silicon scale — it writes destination addresses (method dispatch tables, oat-file section offsets) into the native code stream before any execution begins. The PDF renderer performs it at the textual scale: the document layout engine writes page-number addresses and cross-reference tables into the PDF stream before the file is sealed. In all three cases, Expression at the textual scale is the act of addressing — of making the outgoing packet findable by whoever receives it. The word is not yet released; it has been packaged, addressed, and loaded onto the vesicle.",
+    hardwareAnalogue: "trans-Golgi Network dispatch, dex2oat method dispatch tables, PDF cross-reference table + page layout addressing",
+    substrateIds: ["package-manager", "bionic-libc"],
+    evidence: "indicative",
+  },
+  {
+    id: "qi-exocytosis-expression-organic",
+    zoneId: "membrane",
+    phaseId: "expression",
+    scaleId: "organic",
+    title: "Exocytosis — Membrane Releases the Artifact",
+    narrative:
+      "SNARE proteins (v-SNARE on the vesicle, t-SNARE on the target membrane) zipper together, driving bilayer fusion in a millisecond. The vesicle membrane merges with the plasma membrane; its contents are expelled into the extracellular space — a point of no return. The cargo has completed the full secretory arc: synthesis → folding → Golgi packaging → vesicle transport → membrane fusion → extracellular release. In Cell OS, a PDF download is the digital homologue: the blob URL is created, the anchor click fires, the file crosses the browser membrane into the user's filesystem — exocytosis. At the organic scale, breath exhaled is the purest expression: air that was inside is now outside; the chest has committed. The lung does not retrieve what it has exhaled. Expression is complete when the artifact has crossed the membrane boundary and can no longer be recalled.",
+    hardwareAnalogue: "SNARE-mediated vesicle fusion, browser Blob URL download, file system write via anchor[download]",
+    substrateIds: ["binder-ipc"],
+    evidence: "indicative",
+  },
+  {
+    id: "qi-document-perception-textual",
+    zoneId: "membrane",
+    phaseId: "perception",
+    scaleId: "textual",
+    title: "Document Import — Membrane Receives the Text",
+    narrative:
+      "Receptor-mediated endocytosis: a ligand binds a membrane receptor (clathrin-coated pit assembles), the membrane invaginates, a vesicle pinches off carrying the ligand-receptor complex inward — the extracellular signal has been internalised without breaching the membrane's general permeability. The payload is routed to an endosome, then to a lysosome for processing, or recycled back to the membrane if the receptor is to be reused. In Cell OS, importing a PDF is receptor-mediated endocytosis at the textual scale: the user drops a file onto the membrane (the drag-and-drop zone), the File API reads the bytes, the document is routed to the correct processing compartment (the Golgi/ER rendering context). Perception at the textual scale is the moment the external document becomes internal state — the membrane has received it, the vesicle has pinched off, the text is now inside.",
+    hardwareAnalogue: "File API / FileReader, drag-and-drop event, DataTransfer.files, Blob internalization",
+    substrateIds: ["nnapi", "binder-ipc"],
     evidence: "indicative",
   },
 ];

@@ -3,6 +3,8 @@ import { FRACTAL_CYCLES } from "@/domain/content/fractalCycles";
 import { NINE_SCALE_FLOWS } from "@/domain/content/scales";
 import { ZONE_DEPTH_ORDER } from "@/features/explorer/navigation/useExplorerNavigation";
 import { computeManifoldMetrics } from "@/domain/content/manifoldMetrics";
+import { SUBSTRATE_NODES } from "@/domain/content/substrate";
+import { CELL_MAPPINGS } from "@/domain/content/organelles";
 
 const P_COLOR = "#7dd3fc";
 const A_COLOR = "#c4b5fd";
@@ -104,12 +106,7 @@ const MODULE_BIJECTION = [
   { module: "App.tsx", organelle: "Organism", why: "The outermost container — the complete cell. Provides routing context (extracellular matrix) and the unified surface." },
 ];
 
-const TENSOR_ZOOM = [
-  { rank: "Rank 3", structure: "QI_INTERSECTIONS", cells: "264-cell space · 12.5% populated", bio: "DNA — full genome, FP32, maximum fidelity", precision: "FP32" },
-  { rank: "Rank 2", structure: "ORGANELLE_SUBSTRATE_LINKS", cells: "255-cell space · 15.7% populated", bio: "mRNA — targeted excerpt, FP16", precision: "FP16" },
-  { rank: "Rank 1", structure: "SUBSTRATE_NODES + CELL_MAPPINGS", cells: "17 + 15 nodes", bio: "tRNA / codon table — INT8 discrete lookup", precision: "INT8" },
-  { rank: "Rank 0", structure: "ClaimConfidence σ ∈ {0, ½, 1}", cells: "3-value scalar", bio: "ATP — minimum viable energy token, INT4", precision: "INT4" },
-];
+// TENSOR_ZOOM is intentionally computed at render time — see computeManifoldMetrics().
 
 const PRECISION_COLOR: Record<string, string> = {
   FP32: "#22d3ee",
@@ -121,6 +118,37 @@ const PRECISION_COLOR: Record<string, string> = {
 export default function Fractal() {
   const [activeZone, setActiveZone] = useState<string>("nucleus");
   const metrics = useMemo(() => computeManifoldMetrics(), []);
+
+  const tensorZoom = useMemo(() => [
+    {
+      rank: "Rank 3",
+      structure: "QI_INTERSECTIONS",
+      cells: `${metrics.qiTensorSpace}-cell space · ${(metrics.qiTensorDensity * 100).toFixed(1)}% populated`,
+      bio: "DNA — full genome, FP32, maximum fidelity",
+      precision: "FP32",
+    },
+    {
+      rank: "Rank 2",
+      structure: "ORGANELLE_SUBSTRATE_LINKS",
+      cells: `${metrics.couplingTensorSpace}-cell space · ${(metrics.couplingTensorDensity * 100).toFixed(1)}% populated`,
+      bio: "mRNA — targeted excerpt, FP16",
+      precision: "FP16",
+    },
+    {
+      rank: "Rank 1",
+      structure: "SUBSTRATE_NODES + CELL_MAPPINGS",
+      cells: `${SUBSTRATE_NODES.length} + ${CELL_MAPPINGS.length} nodes`,
+      bio: "tRNA / codon table — INT8 discrete lookup",
+      precision: "INT8",
+    },
+    {
+      rank: "Rank 0",
+      structure: "ClaimConfidence σ ∈ {0, ½, 1}",
+      cells: "3-value scalar",
+      bio: "ATP — minimum viable energy token, INT4",
+      precision: "INT4",
+    },
+  ], [metrics]);
 
   const activeCycle = FRACTAL_CYCLES.find((c) => c.zoneId === activeZone);
   const scaleCount = NINE_SCALE_FLOWS.length;
@@ -326,7 +354,7 @@ export default function Fractal() {
         subtitle="The data structures compress from rank-3 to rank-0 — the same cascade as FP32 → INT4 quantization."
       />
       <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-        {TENSOR_ZOOM.map(({ rank, structure, cells, bio, precision }, i) => {
+        {tensorZoom.map(({ rank, structure, cells, bio, precision }, i) => {
           const color = PRECISION_COLOR[precision];
           return (
             <div

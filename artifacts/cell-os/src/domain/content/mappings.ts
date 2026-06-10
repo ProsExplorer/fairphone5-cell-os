@@ -142,7 +142,12 @@ export const ORGANELLE_SUBSTRATE_LINKS: OrganelleSubstrateLink[] = [
 
   // #19 Protein chaperones / HSPs → ART Runtime
   // ER is where post-translational folding occurs; ART verify+JIT+deopt is the Android chaperone.
-  { organelleId: "endoplasmic-reticulum", substrateId: "art-runtime", description: "The rough ER is the site of post-translational protein folding: BiP/HSP70 binds nascent chains, calnexin/calreticulin monitor glycosylation state, and ERAD (ER-Associated Degradation) routes irreparably misfolded proteins for destruction. ART is the Android chaperone: the verifier checks DEX bytecode correctness before execution (BiP quality gate), the JIT recompiles hot methods when profile data shows suboptimal folding (calnexin-guided refolding), and the interpreter fallback handles code that cannot be optimised (chaperone-assisted slow fold). The deopt path is ERAD — irreparably unoptimisable code is routed back to interpretation.", relevance: 0.84 }
+  { organelleId: "endoplasmic-reticulum", substrateId: "art-runtime", description: "The rough ER is the site of post-translational protein folding: BiP/HSP70 binds nascent chains, calnexin/calreticulin monitor glycosylation state, and ERAD (ER-Associated Degradation) routes irreparably misfolded proteins for destruction. ART is the Android chaperone: the verifier checks DEX bytecode correctness before execution (BiP quality gate), the JIT recompiles hot methods when profile data shows suboptimal folding (calnexin-guided refolding), and the interpreter fallback handles code that cannot be optimised (chaperone-assisted slow fold). The deopt path is ERAD — irreparably unoptimisable code is routed back to interpretation.", relevance: 0.84 },
+
+  // ── Document Secretion substrate link (ARCHITECT_REPORT_2026-06-10.md Phase 1) ──
+  // golgi-apparatus → bionic-libc (the only genuinely new link; vesicles→binder-ipc already exists).
+  // Post-add total: 41 links (41/255 = 16.1%).
+  { organelleId: "golgi-apparatus", substrateId: "bionic-libc", description: "Golgi cisternae process cargo sequentially through cis→medial→trans stacks, each adding or trimming modifications in a defined order. jemalloc (Bionic's slab allocator) manages sequential heap frames in the same assembly-line pattern — each slab is a cisterna, each allocation a cargo unit addressed and dispatched to the correct memory region. Document assembly (the PDF blob construction) runs entirely on the heap: every page object, font descriptor, and cross-reference table is a jemalloc allocation that the Golgi assembles before the vesicle is sealed.", relevance: 0.77 }
 ];
 
 /**
@@ -277,6 +282,39 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
     attentionWeight: 0.49,
     ipcMechanism: "ordered-broadcast",
     couplingSigma: 0.6
+  },
+
+  // ── Secretory pathway completion (ARCHITECT_REPORT_2026-06-10.md Phase 1) ──
+  // Two biophoton links completing the ER→Golgi→vesicle→membrane arc.
+  // Post-add total: 13 biophoton links (5.8% of 225 directed pairs — amber-high).
+  // Both are cross-zone links (ER-zone → golgi-zone; golgi-zone → membrane-zone).
+
+  // COPII vesicle budding: rough ER synthesises → COPII coat assembles → vesicle buds toward Golgi.
+  // The ER→Golgi biophoton link already exists (Golgi processing cadence).
+  // This adds the parallel ER→vesicle direct budding path (bypasses cis-Golgi in some cargo routes).
+  {
+    sourceOrganelleId: "endoplasmic-reticulum",
+    targetOrganelleId: "vesicles",
+    description: "COPII vesicle budding from the rough ER: Sec23/Sec24 cargo-adaptor complex captures transmembrane cargo, Sec13/Sec31 outer coat polymerises, vesicle buds from the ER exit site (ERES). The ER does not wait for the Golgi — COPII budding is a direct ER→vesicle path for certain cargo (collagen, large secretory proteins). In Android: ART dex2oat emits compiled method stubs directly into memory-mapped vesicles (shared-memory segments) without routing through the full PackageManager pipeline, for pre-compiled boot-image methods.",
+    rateRange: "2–30 ph/cm²/s",
+    confidence: "indicative",
+    attentionWeight: 0.55,
+    ipcMechanism: "ordered-broadcast",
+    couplingSigma: 0.6
+  },
+
+  // SNARE-mediated vesicle docking: v-SNARE (VAMP/synaptobrevin) on secretory vesicle zippers
+  // with t-SNARE (syntaxin + SNAP-25) on plasma membrane → bilayer fusion → exocytosis.
+  // Directed, point-to-point: the vesicle knows its destination (σ=0.7, messenger).
+  {
+    sourceOrganelleId: "vesicles",
+    targetOrganelleId: "cell-membrane",
+    description: "SNARE-mediated secretory vesicle docking and fusion with the plasma membrane: v-SNARE (VAMP2/synaptobrevin) on the vesicle zippers with t-SNARE complex (syntaxin-1 + SNAP-25) on the plasma membrane, driving lipid bilayer merger in milliseconds. Calcium-triggered (synaptotagmin Ca²⁺ sensor). This is the final exocytosis step — the vesicle membrane becomes part of the plasma membrane, and its contents are released extracellularly. In Android: a Binder transaction delivers a completed result buffer to the requesting process — the data crosses the process membrane boundary in a single messenger call, one write, one read, no intermediate copy.",
+    rateRange: "5–80 ph/cm²/s",
+    confidence: "indicative",
+    attentionWeight: 0.65,
+    ipcMechanism: "messenger",
+    couplingSigma: 0.7
   }
 ];
 
