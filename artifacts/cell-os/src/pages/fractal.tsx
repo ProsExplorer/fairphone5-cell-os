@@ -105,9 +105,9 @@ const MODULE_BIJECTION = [
 ];
 
 const TENSOR_ZOOM = [
-  { rank: "Rank 3", structure: "QI_INTERSECTIONS", cells: "264-cell space · 6.8% populated", bio: "DNA — full genome, FP32, maximum fidelity", precision: "FP32" },
-  { rank: "Rank 2", structure: "ORGANELLE_SUBSTRATE_LINKS", cells: "120-cell space · 15.8% populated", bio: "mRNA — targeted excerpt, FP16", precision: "FP16" },
-  { rank: "Rank 1", structure: "SUBSTRATE_NODES + CELL_MAPPINGS", cells: "8 + 15 nodes", bio: "tRNA / codon table — INT8 discrete lookup", precision: "INT8" },
+  { rank: "Rank 3", structure: "QI_INTERSECTIONS", cells: "264-cell space · 12.5% populated", bio: "DNA — full genome, FP32, maximum fidelity", precision: "FP32" },
+  { rank: "Rank 2", structure: "ORGANELLE_SUBSTRATE_LINKS", cells: "255-cell space · 15.7% populated", bio: "mRNA — targeted excerpt, FP16", precision: "FP16" },
+  { rank: "Rank 1", structure: "SUBSTRATE_NODES + CELL_MAPPINGS", cells: "17 + 15 nodes", bio: "tRNA / codon table — INT8 discrete lookup", precision: "INT8" },
   { rank: "Rank 0", structure: "ClaimConfidence σ ∈ {0, ½, 1}", cells: "3-value scalar", bio: "ATP — minimum viable energy token, INT4", precision: "INT4" },
 ];
 

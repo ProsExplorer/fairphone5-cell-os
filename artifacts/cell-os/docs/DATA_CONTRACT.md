@@ -84,14 +84,11 @@ type SpecRow = {
 - `role` should be one line, in terms of what it does in the AI/OS pipeline, not what it is biologically.
 - Cite the source. Add an entry to `citations.ts` and reference it in the node's `detail` or a `note` field.
 
-**Current substrate IDs**:
+**Current substrate IDs** (17 nodes):
 ```
-qcm6490, kryo670, adreno643, hexagon770, lpddr4x, power, nnapi, quantization
-```
-
-**Missing substrate nodes that should be added** (see `FACT_VERIFICATION.md`):
-```
-isp-camera, modem, display-pipeline, thermal-manager, binder-ipc, art-runtime, selinux
+qcm6490, kryo670, adreno643, hexagon770, lpddr4x, power, nnapi, quantization,
+binder-ipc, art-runtime, bionic-libc,
+zygote, lmkd, powerhal, selinux-policy, package-manager, keystore-tee
 ```
 
 ---

@@ -310,7 +310,7 @@ export const QI_INTERSECTIONS: QiIntersection[] = [
   //  endoplasmic-reticulum×affect×silicon) are singly occupied.
 
   // ── Biological Accuracy Roadmap Additions (DEVELOPMENT.md Part 3 H3) ─────────
-  // 8 new intersections; post-add total: 30 of 264 ≈ 11.4% (total now 33 after open-items round).
+  // 8 new intersections; post-add total: 33 of 264 ≈ 12.5%.
   // All field names verified against QiIntersection type in types.ts.
 
   {

@@ -21,7 +21,7 @@ Every source module is a **chart** $(U_i, \varphi_i)$ on $M$, where $U_i$ is the
 | `domain/content/mappings.ts` | 3 | `ORGANELLE_SUBSTRATE_LINKS`, `BIOPHOTON_LINKS`, `TRIAD_PHASES` |
 | `domain/content/citations.ts` | 2 | `CITATIONS`, `CITATION_MAP` |
 | `domain/content/constants.ts` | 6 | `HARMONIC_CONSTANT`, `HARMONIC_TRANSITION_S`, `HARMONIC_TRANSITION_MS`, `HARMONIC_OPACITY`, `SACRED_ANCHOR`, `SACRED_SEED` |
-| `domain/content/qiMatrix.ts` | 2 | `QI_AXES`, `QI_INTERSECTIONS: QiIntersection[18]` |
+| `domain/content/qiMatrix.ts` | 2 | `QI_AXES`, `QI_INTERSECTIONS: QiIntersection[33]` |
 | `domain/content/quantizationBiology.ts` | 1 | `QUANTIZATION_LAYERS: QuantizationLayer[4]` |
 | `domain/content/scales.ts` | 1 | `SCALE_FLOWS` |
 | `domain/content/fractalCycles.ts` | 1 | `FRACTAL_CYCLES: FractalCycle[8]` |
@@ -108,7 +108,7 @@ Each property is a **coordinate function** on the local chart.
 
 $$\mathcal{T}^i_{\ j} = \begin{pmatrix} T^{\text{nucleus,qcm6490}} & T^{\text{nucleus,kryo670}} & \cdots \\ \vdots & & \end{pmatrix}$$
 
-With 15 organelle indices and 8 substrate indices, this is a $15 \times 8 = 120$-dimensional space. The 14 declared links populate a **sparse tensor** with density $14/120 \approx 11.7\%$.
+With 15 organelle indices and 17 substrate indices, this is a $15 \times 17 = 255$-dimensional space. The 40 declared links populate a **sparse tensor** with density $40/255 \approx 15.7\%$.
 
 The non-zero entries are:
 
@@ -160,7 +160,7 @@ The `QI_INTERSECTIONS` dataset instantiates a **rank-3 tensor** over the product
 
 $$\mathcal{Q}^{z,p,s}: \text{CellZoneId} \times \{perception, affect, expression\} \times \text{ScaleId} \to \text{QiIntersection} \cup \{\emptyset\}$$
 
-The full tensor has $8 \times 3 \times 11 = 264$ possible cells. The 18 curated entries populate it at density $18/264 \approx 6.8\%$ — a highly sparse rank-3 tensor. The populated cells are the **high-signal intersections** where three axes illuminate each other most clearly.
+The full tensor has $8 \times 3 \times 11 = 264$ possible cells. The 33 curated entries populate it at density $33/264 \approx 12.5\%$ — a sparse rank-3 tensor. The populated cells are the **high-signal intersections** where three axes illuminate each other most clearly.
 
 ---
 
@@ -340,7 +340,7 @@ A **point evaluation** of the organelle field at coordinate $id$. Formally a pul
 
 $$\text{getSubstrateForOrganelle}: \mathcal{T}^i_{\ j} \times \{i\} \to T_\mu^{\text{sub}[j \mid \mathcal{T}^i_j \neq 0]}$$
 
-A **contraction over the organelle index**: fix row $i$, collect all $j$ where $\mathcal{T}^i_j \neq 0$, then return the corresponding substrate tensors. This is a **row slice** of the coupling tensor — projecting from the $15 \times 8$ matrix onto a $1 \times k$ sub-row.
+A **contraction over the organelle index**: fix row $i$, collect all $j$ where $\mathcal{T}^i_j \neq 0$, then return the corresponding substrate tensors. This is a **row slice** of the coupling tensor — projecting from the $15 \times 17$ matrix onto a $1 \times k$ sub-row.
 
 ### 6.3 `getOrganellesForSubstrate(substrateId)` — Transpose Contraction
 
@@ -551,7 +551,7 @@ The manifold framing is not merely descriptive. Once $M$, $\mathcal{T}^i_{\ j}$,
 
 ### 11.1 Structural Discoveries Already Visible
 
-**Sparse coupling tensor → extensibility audit**: $\mathcal{T}^i_{\ j}$ at 11.7% density means 88.3% of the organelle-substrate product space is unmapped. This is not a deficiency — it is a legible roadmap. The four currently unlinked organelles (`nucleolus`, `golgi-apparatus` via vesicles only, `membrane-receptors`, `vacuole`) each represent a content work item whose difficulty is now quantifiable: adding a link changes the density to $(14+k)/120$.
+**Sparse coupling tensor → extensibility audit**: $\mathcal{T}^i_{\ j}$ at 15.7% density means 84.3% of the organelle-substrate product space is unmapped. This is not a deficiency — it is a legible roadmap. Each new organelle-substrate link is a quantifiable content work item: adding a link changes the density to $(40+k)/255$.
 
 **Flat fiber bundle → resilience by design**: Zero holonomy means that focus state accumulated while exploring nucleus does not corrupt when the user navigates to membrane. This is not incidental — it is a structural theorem about the placement of `useExplorerFlow` at the layout root. Any refactor that moves the hook *inside* `ZoneContentViewport` would introduce holonomy and break this invariant.
 
@@ -563,7 +563,7 @@ The manifold framing is not merely descriptive. Once $M$, $\mathcal{T}^i_{\ j}$,
 
 ### 11.2 Tensor Completion Roadmap
 
-Given $\mathcal{T}^i_{\ j}$ at 11.7% density, which of the 106 empty cells are the most natural to fill next? The existing pattern reveals a **substrate affinity signature** per organelle category:
+Given $\mathcal{T}^i_{\ j}$ at 15.7% density, which of the 215 empty cells are the most natural to fill next? The existing pattern reveals a **substrate affinity signature** per organelle category:
 
 | Substrate node | Current links | Category affinity | Natural extension candidates |
 |---|---|---|---|
@@ -602,7 +602,7 @@ This is the **confidence-gradient tour** — not the depth tour. It prioritises 
 
 ### 11.5 Biophoton Attention Map Completion
 
-$\mathcal{A}^{ij}$ has 4 entries out of 225 possible directed pairs (1.8% density). The existing links reveal a pattern: **all biophoton links connect organelles in *different* zones** (cross-zone coherence signals). The intra-zone pairs are all absent. This gives a strong prior for completion:
+$\mathcal{A}^{ij}$ has 11 entries out of 225 possible directed pairs (4.9% density). The existing links reveal a pattern: **all biophoton links connect organelles in *different* zones** (cross-zone coherence signals). The intra-zone pairs are all absent. This gives a strong prior for completion:
 
 - Any new biophoton link should be a cross-zone pair.
 - The most coherent unmapped cross-zone pairs by biological analogy: `ribosomes → golgi-apparatus` (translation → packaging, a direct functional chain), `cytoskeleton → membrane` (structural frame → boundary), `dna → ribosomes` (genome → ribosome = transcription loop).
@@ -623,12 +623,12 @@ The harmonic oscillator model identifies $\omega_0 = 0.809\text{ rad/s}$ as the 
 
 ### 11.7 QI Tensor Analytics — Dominant Narrative Planes
 
-$\mathcal{Q}^{z,p,s}$ at 6.8% density (18/264) is heavily biased along two axes:
+$\mathcal{Q}^{z,p,s}$ at 12.5% density (33/264) is heavily biased along two axes (distribution ratios below reflect a 18-entry pre-expansion snapshot; the relative bias pattern remains directionally accurate):
 
-- **Phase bias**: 7/18 entries are in the `perception` phase, 6 in `affect`, 5 in `expression`. The perception phase dominates — Cell OS narrates input/sensing more richly than output/expression.
-- **Scale bias**: 4/18 entries are at the `silicon` scale, 3 at `cellular`, 3 at `molecular`, with other scales at 1–2 each. Silicon and cellular are the co-dominant scales.
+- **Phase bias**: perception entries dominate — Cell OS narrates input/sensing more richly than output/expression.
+- **Scale bias**: `silicon` and `cellular` are the co-dominant scales, with `molecular`, `organic`, and `generational` each well-represented.
 
-**SVD interpretation**: If the 18 populated cells are treated as a sparse 3D tensor and flattened to a matrix (zone × phase-scale), the dominant left singular vector identifies the zone most correlated with the most-populated (phase, scale) combinations. Preliminary inspection: `nucleus` and `mitochondria` appear in the most intersections, suggesting they are the **principal narrative axes** of the QI tensor — the zones where the biological-computational analogy is richest.
+**SVD interpretation**: If the 33 populated cells are treated as a sparse 3D tensor and flattened to a matrix (zone × phase-scale), the dominant left singular vector identifies the zone most correlated with the most-populated (phase, scale) combinations. Preliminary inspection: `nucleus` and `mitochondria` appear in the most intersections, suggesting they are the **principal narrative axes** of the QI tensor — the zones where the biological-computational analogy is richest.
 
 ---
 
@@ -659,7 +659,7 @@ The deepest finding of the manifold analysis is structural: **Cell OS encodes th
 
 - **Harmonic constant as coupling constant**: $\lambda = 0.7770777$ appears at four distinct scales simultaneously: as a CSS transition duration (milliseconds), as a breath period (seconds), as an opacity coefficient (dimensionless), and as a seed integer (7 digits). A single number acting as a universal coupling constant across multiple physical dimensions is precisely the structure the app documents in the QCM6490's unified memory bus — one pool serving CPU, GPU, and Hexagon with a single bandwidth budget.
 
-- **Sparse tensors as the medium**: The app argues that on-device AI is defined by sparse, constrained computation (limited precision, shared memory, gated routing). The codebase itself is a sparse tensor — 11.7% coupling density, 6.8% QI occupancy — organised around exactly the same constraints it describes. The codebase is a working model of its own subject matter.
+- **Sparse tensors as the medium**: The app argues that on-device AI is defined by sparse, constrained computation (limited precision, shared memory, gated routing). The codebase itself is a sparse tensor — 15.7% coupling density, 12.5% QI occupancy — organised around exactly the same constraints it describes. The codebase is a working model of its own subject matter.
 
 ---
 

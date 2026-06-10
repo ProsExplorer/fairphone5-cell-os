@@ -34,7 +34,7 @@ The transition maps $\varphi_j \circ \varphi_i^{-1}$ between any two paradigms (
 
 $\mathcal{C}$ is modelled here as a structured space of computable transformations — functions $f: I \to O$ where $I$ is an information domain and $O$ is an information codomain. The "smooth structure" language below is interpretive: it provides precise vocabulary for reasoning about language relationships, but should not be read as a claim that computable functions form a smooth finite-dimensional manifold in the strict differential-geometric sense. What is claimed is weaker and more defensible: the manifold metaphor is *locally accurate* — within any one language, the coordinate/chart vocabulary correctly describes module boundaries, import dependencies, and type fiber structures.
 
-> **Metric note**: §5 cites the Cell OS coupling tensor density as **15.8%** (19 active links / 120 possible organelle pairs, from `manifoldMetrics.ts`, current code). `MANIFOLD_ANALYSIS.md §2.3` states 11.7% (14/120), reflecting the pre-tensor-completion state documented in that analysis. Both figures are accurate for their respective snapshots; this document uses the live figure.
+> **Metric note**: §5 cites the Cell OS coupling tensor density as **15.7%** (40 active links / 255 possible organelle-substrate pairs = 15 × 17, from `manifoldMetrics.ts`, current code). `MANIFOLD_ANALYSIS.md §2.3` states 11.7% (14/120), reflecting the pre-tensor-completion state documented in that analysis. Both figures are accurate for their respective snapshots; this document uses the live figure.
 
 Three manifold-like properties are claimed for $\mathcal{C}$ (each holding approximately, as an interpretive model):
 
@@ -229,7 +229,7 @@ The Cell OS manifold uses a four-rank tensor decomposition (`MANIFOLD_ANALYSIS.m
 | Tensor rank | Cell OS object | Type system analogue | Language examples |
 |---|---|---|---|
 | **Rank 0** | `ClaimConfidence` scalar σ ∈ {0, ½, 1} | Literal value — a single measurement at a point | `42`, `true`, `"hello"` in any language |
-| **Rank 1** | `SUBSTRATE_NODES` (8 nodes) or `CELL_MAPPINGS` (15) — each a typed record | Simple type — a function from field name to value | `int`, `string`, `struct Point {x: f32, y: f32}` |
+| **Rank 1** | `SUBSTRATE_NODES` (17 nodes) or `CELL_MAPPINGS` (15) — each a typed record | Simple type — a function from field name to value | `int`, `string`, `struct Point {x: f32, y: f32}` |
 | **Rank 2** | `ORGANELLE_SUBSTRATE_LINKS` — a coupling between two node sets | Generic / parametric type — a function from types to types | `List<T>`, `Map<K,V>`, `Result<T,E>`, `Maybe a` |
 | **Rank 3** | `QI_INTERSECTIONS` — zone × phase × scale tensor | Dependent type — a type that depends on a value | `Vec n T` (Idris), `Array.t` with length proof (Coq), `Fin n` |
 
@@ -244,7 +244,7 @@ Languages that have progressed further up this hierarchy (Haskell's typeclasses 
 
 ### 5.1 The Coupling Density as Type Complexity
 
-The Cell OS coupling tensor has density 15.8% (`manifoldMetrics.ts`). This metric has a direct analogue in type systems:
+The Cell OS coupling tensor has density 15.7% (`manifoldMetrics.ts`). This metric has a direct analogue in type systems:
 
 - **Under-coupled** (< 10%): too few type constraints — the language permits programs that violate the domain invariants. Equivalent to using `any` everywhere in TypeScript, or `void*` in C.
 - **Healthy coupling** (10–25%): the type system constrains the space of valid programs to the domain's actual invariants. TypeScript with strict mode, Rust's ownership system.

@@ -812,7 +812,7 @@ This is biologically accurate — many cellular processes require combinatorial 
 | Substrate node | Pre-HIGH incoming links | Actual current links | Cooperativity status |
 |---|---|---|---|
 | `qcm6490` | 1 (nucleus) | 1 | Single-path — fragile |
-| `kryo670` | 2 (nucleus, cytoskeleton) | 2 | Cooperative pair |
+| `kryo670` | 2 (nucleus, cytoskeleton) | 4 (nucleus, cytoskeleton, cell-membrane, membrane-receptors) | Robust quad |
 | `adreno643` | 2 (cytoskeleton, ER) | 2 | Cooperative pair |
 | `hexagon770` | 3 (ribosomes, mitochondria, nucleolus) | 3 | Robust triad |
 | `power` | 3 (mitochondria, cell-membrane, vacuole) | 3 | Robust triad |
@@ -981,10 +981,10 @@ The biophoton link `endoplasmic-reticulum→lysosomes` was re-framed from ERAD t
 
 **Addition**: Comment block added to `artifacts/cell-os/src/domain/content/qiMatrix.ts` documenting the two pre-existing QI coordinate collisions:
 
-1. `cytoplasm × affect × cellular` — occupied by both `qi-gpcr-affect-cellular` and `qi-ups-affect-cellular`
-2. `membrane × affect × silicon` — occupied by both `qi-membranepotential-affect-silicon` (open-items round) and a second intersection at the same coordinates; `qi-gapjunction-perception-cellular` occupies the adjacent but distinct `membrane × perception × cellular` coordinate
+1. `cytoplasm × affect × cellular` — occupied by both `qi-gpcr-affect-cellular` (GPCR/cAMP kinase cascade) and `qi-ups-affect-cellular` (ubiquitin-proteasome / PackageManager targeted degradation). Both IDs are present in `QI_INTERSECTIONS`; they share the same tensor coordinate.
+2. `membrane × perception × cellular` — occupied by `qi-gapjunction-perception-cellular` (connexin-43 gap junction / Binder shared-memory channel). This coordinate has a single occupant and is **not** a collision; it is listed here because the adjacent coordinate `membrane × affect × silicon` (`qi-membranepotential-affect-silicon`) was added in the open-items round and the two are sometimes confused — they are distinct coordinates with distinct IDs.
 
-Both collisions are mechanistically orthogonal (GPCR cascade vs UPS targeted degradation; membrane potential vs gap junction Binder channels), so they represent distinct biological phenomena projected onto the same coordinate — a valid exception to the uniqueness convention. The comment block documents the policy: multi-occupancy is acceptable when the two intersections are mechanistically non-overlapping and both are editorially justified.
+Both multi-occupancy cases are mechanistically orthogonal (GPCR cascade vs UPS targeted degradation; membrane potential vs gap junction Binder channels), so they represent distinct biological phenomena projected onto the same coordinate — a valid exception to the uniqueness convention. The comment block documents the policy: multi-occupancy is acceptable when the two intersections are mechanistically non-overlapping and both are editorially justified.
 
 ---
 
