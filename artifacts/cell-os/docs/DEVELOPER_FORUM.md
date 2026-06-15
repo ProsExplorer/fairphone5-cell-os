@@ -184,12 +184,12 @@ The classical eukaryotic secretory pathway is the clearest demonstration of the 
 | Biological stage | Molecular players | Android equivalent | σ |
 |---|---|---|---|
 | **ER synthesis** | Ribosome + SRP + Sec61 translocon | ART JIT hot-path compilation | — |
-| **Chaperone quality gate** | BiP (GRP78), calnexin, PDI | ART verifier: type-checks every DEX class before native emit | — |
+| **Chaperone quality gate** | BiP, calnexin | ART verifier: type-checks every DEX class before native emit | — |
 | **ERAD** | Sec61 retrotranslocation → 26S proteasome | ART deopt → interpreter fallback | — |
 | **COPII budding** | Sar1-GTP + Sec23/24 (inner) + Sec13/31 (outer) | dex2oat emits compiled stubs into shared-memory segments for boot-image methods | 0.6 |
-| **Golgi cis→medial→trans** | N-glycan trimming → O-glycan → sialylation | dex2oat sequential refinement; jemalloc slab allocator (each slab = one cisterna) | 0.6 |
-| **TGN dispatch** | Mannose-6-phosphate labelling; constitutive vs. regulated sort | PackageManager: APK verify → dexopt → install dispatch | 0.6 |
-| **SNARE exocytosis** | v-SNARE VAMP2 + t-SNARE syntaxin-1/SNAP-25 + Ca²⁺/synaptotagmin | Binder transaction: result buffer crosses process membrane, 1 write / 1 read / 0 copies | 0.7 |
+| **Golgi cis→medial→trans** | N-glycan trimming → O-glycan → sialylation | dex2oat sequential refinement; jemalloc slab allocator (each slab = one cisterna) | — |
+| **TGN dispatch** | Mannose-6-phosphate labelling; constitutive vs. regulated sort | PackageManager: APK verify → dexopt → install dispatch | — |
+| **SNARE exocytosis** | v-SNARE VAMP2 + t-SNARE syntaxin-1 + SNAP-25 complex + Ca²⁺/synaptotagmin | Binder transactions (messenger-tier coupling): result buffer crosses process membrane via mmap, 1 write / 1 read / 0 copies | 0.7 |
 | **Extracellular release** | Vesicle membrane merges with plasma membrane — point of no return | `doc.save()` → Blob URL → anchor[download] → filesystem | — |
 | **Endocytosis** (Phase 2) | Clathrin/AP2/dynamin; receptor-mediated internalisation | File API drag-drop → `FileReader` → parse → route to Golgi/ER render context | — |
 
@@ -206,7 +206,7 @@ const { default: jsPDF }     = await import("jspdf");
 const { default: autoTable } = await import("jspdf-autotable");
 
 // ER Exit Site: cargo concentrated before budding
-const metrics = computeManifoldMetrics();
+const metrics = useMemo(() => computeManifoldMetrics(), []);
 
 // Stage 3 — Golgi: cisternae open in sequence; each addSectionHeader = new cisterna
 //   signature: addSectionHeader(title: string, color: [R, G, B]) — no doc/y args
@@ -366,7 +366,7 @@ TypeScript:     strict throughout; no `any` except the jspdf runtime patch
 |---|---|---|
 | Organelle IDs | 15 frozen IDs | `src/domain/content/organelles.ts` |
 | Zone IDs | 8 frozen `CellZoneId` values | `src/domain/types.ts` |
-| Scale IDs | 11 frozen scale IDs | `src/domain/types.ts` |
+| Scale IDs | 11 frozen scale IDs | `src/domain/content/qiMatrix.ts` (QI_AXES.scales) |
 | Substrate node IDs | 17 frozen IDs | `src/domain/content/substrate.ts` |
 | Fredholm index | −2 (hard cap) | Derived: 15 − 17 |
 | QI tensor space | 264 cells | 8 × 3 × 11 |
