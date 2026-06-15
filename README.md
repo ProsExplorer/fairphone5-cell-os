@@ -515,6 +515,24 @@ Three QI intersections anchor this surface biologically: `qi-secretion-expressio
 
 The secretory pathway is the organism's primary expression arc. It runs from ribosomal synthesis through quality control, Golgi addressing, vesicle transport, and membrane fusion to extracellular release. It is the biological substrate of `/documents`, the canonical model for every output feature in Cell OS, and the architectural pattern a developer must understand to extend or build on the expression side of the manifold.
 
+### Index
+
+- [A) The Biological Pathway — Molecular Detail](#a-the-biological-pathway--molecular-detail)
+- [B) P→A→E Structural Mapping](#b-pae-structural-mapping)
+- [C) Tensor Encoding](#c-tensor-encoding)
+  - [Coupling Tensor — Substrate Links](#coupling-tensor--substrate-links-mathcalt_i_-j)
+  - [Attention Tensor — Biophoton Links](#attention-tensor--biophoton-links-mathcalaij)
+  - [QI Tensor — Intersections](#qi-tensor--intersections-mathcalqzps)
+- [D) The `/documents` Page as Secretory Pathway Instantiation](#d-the-documents-page-as-secretory-pathway-instantiation)
+- [E) Development Manual — Extending the Secretory Pathway](#e-development-manual--extending-the-secretory-pathway)
+  - [E1) Adding a New Secretory-Pathway QI Intersection](#e1-adding-a-new-secretory-pathway-qi-intersection)
+  - [E2) Adding a New Biophoton Link Along the Pathway](#e2-adding-a-new-biophoton-link-along-the-pathway)
+  - [E3) Adding a New Substrate Link](#e3-adding-a-new-substrate-link)
+  - [E4) Building a New Feature That Follows the Secretory Pathway Pattern](#e4-building-a-new-feature-that-follows-the-secretory-pathway-pattern)
+  - [E5) Phase 2 — The Endocytosis Import Path](#e5-phase-2--the-endocytosis-import-path)
+  - [E6) Constraints and Invariants](#e6-constraints-and-invariants)
+  - [E7) Verification — How to Confirm Biological Grounding](#e7-verification--how-to-confirm-biological-grounding)
+
 ### A) The Biological Pathway — Molecular Detail
 
 The classical eukaryotic secretory pathway has five sequential stages. Each is a complete P→A→E triple at its own scale; together they form the macro-triple that every output feature in Cell OS instantiates.
@@ -527,9 +545,9 @@ Inside the lumen, molecular chaperones BiP (GRP78) and calnexin/calreticulin enf
 
 **Stage 2 — COPII Vesicle Budding (ER → cis-Golgi)**
 
-Correctly folded cargo concentrates at ER Exit Sites (ERES). The small GTPase Sar1-GTP initiates coat assembly by recruiting the inner COPII layer: Sec23/Sec24 heterodimer. Sec24 acts as cargo adaptor — it binds cytoplasmic sorting signals (di-acidic DXE motifs, Phe-based FYVE signals) on transmembrane cargo receptors. The outer COPII cage (Sec13/Sec31 heterotetramers) polymerises around the inner layer, deforming the ER membrane into a bud that pinches off as a transport vesicle.
+Correctly folded cargo concentrates at ER Exit Sites (ERES). The small GTPase Sar1-GTP initiates coat assembly by recruiting the inner COPII layer: Sec23/Sec24 heterodimer. Sec24 acts as cargo adaptor — it binds canonical ER-export signals (di-acidic DxE and di-hydrophobic ΦxΦ motifs) on transmembrane cargo receptors. The outer COPII cage (Sec13/Sec31 heterotetramers) polymerises around the inner layer, deforming the ER membrane into a bud that pinches off as a transport vesicle.
 
-The ER does not require Golgi participation for budding. For certain bulky cargo (procollagens, large secretory glycoproteins), COPII vesicles bud directly — bypassing the cis-Golgi and proceeding straight to post-ER compartments. This direct ER→vesicle path is the COPII fast lane.
+The ER does not require Golgi participation for budding. For certain bulky cargo (procollagens, large secretory glycoproteins), specialised ER-exit carriers — including TANGO1-dependent pathways — alter trafficking kinetics and carrier geometry. All secretory cargo still transits the Golgi stack for processing and addressing; the ER→vesicle biophoton link encodes the COPII budding step itself, not a Golgi bypass.
 
 **Stage 3 — Golgi Processing (cis → medial → trans cisternae)**
 
@@ -588,6 +606,7 @@ Entries in `ORGANELLE_SUBSTRATE_LINKS` (`mappings.ts`) that encode secretory-pat
 | Organelle | Substrate | Relevance | Biological basis |
 |---|---|---|---|
 | `ribosomes` | `art-runtime` | 0.99 | ART JIT synthesis = ribosomal translation; every method body is a polypeptide |
+| `endoplasmic-reticulum` | `art-runtime` | 0.84 | BiP/calnexin chaperone quality gate + ERAD retrotranslocation routing = ART verifier type-check + JIT recompile + interpreter fallback deopt path |
 | `vesicles` | `binder-ipc` | high | Vesicles carry cargo as discrete addressed packets; Binder Parcels are the Android vesicle — typed, addressed, single-copy mmap |
 | `vesicles` | `nnapi` | — | Vesicle-mediated signal routing; NNAPI dispatches inference requests as discrete addressed packets |
 | `golgi-apparatus` | `art-runtime` | 0.88 | dex2oat writes hardware destination annotations = Golgi writes glycan address codes |
@@ -603,18 +622,19 @@ Entries in `BIOPHOTON_LINKS` (`mappings.ts`) that encode inter-organelle signall
 |---|---|---|---|---|
 | `ribosomes → golgi-apparatus` | 0.62 | 0.7 | Messenger | Translation pulses entrain Golgi packaging cadence; ART JIT hot paths → dex2oat .oat dispatch flow |
 | `endoplasmic-reticulum → golgi-apparatus` | 0.16 | 0.6 | Ordered broadcast | ER→Golgi vesicle trafficking biophoton bursts; cisternae-to-cisternae procession (σ=0.6 = sequential, priority-chained) |
+| `endoplasmic-reticulum → lysosomes` | 0.49 | 0.6 | Ordered broadcast | ER-phagy (reticulophagy): FAM134B/RTN3 receptors flag ER fragments for autophagosomal capture → bulk lysosomal degradation; distinct from ERAD (single-protein proteasome routing) |
 | `endoplasmic-reticulum → vesicles` | 0.55 | 0.6 | Ordered broadcast | COPII budding (Sec23/24/13/31); direct ER→vesicle fast lane for large cargo; ART dex2oat boot-image stubs |
 | `golgi-apparatus → lysosomes` | 0.44 | 0.6 | Ordered broadcast | TGN misfolded-protein routing (mannose-6-phosphate → lysosomes); APK failure → PackageManager forced-uninstall |
 | `vesicles → cell-membrane` | 0.65 | 0.7 | Messenger | SNARE-mediated exocytosis (VAMP2 + syntaxin-1 + SNAP-25, Ca²⁺/synaptotagmin); Binder result-buffer delivery |
 
-The five pathway links span three zones: ribosomes (cytoskeleton-adjacent), ER (ER zone), Golgi/vesicles (Golgi zone), and cell-membrane (membrane zone). The σ values are not arbitrary — σ=0.6 (ordered broadcast) corresponds to the sequential, one-direction procession through the cisternae; σ=0.7 (messenger) corresponds to point-to-point vesicle docking where the vesicle knows its target.
+The five pathway links span four zones: ribosomes (cytoskeleton-adjacent zone), endoplasmic-reticulum (ER zone), golgi-apparatus and vesicles (Golgi zone), and cell-membrane (membrane zone). The σ values are not arbitrary — σ=0.6 (ordered broadcast) corresponds to the sequential, one-direction procession through the cisternae; σ=0.7 (messenger) corresponds to point-to-point vesicle docking where the vesicle knows its target.
 
 #### QI Tensor — Intersections ($\mathcal{Q}^{z,p,s}$)
 
 Three entries in `QI_INTERSECTIONS` (`qiMatrix.ts`) anchor the secretory pathway in the rank-3 tensor:
 
 **`qi-secretion-expression-textual`** — `golgi × expression × textual` — weight 0.8
-> *"Document Secretion — Golgi Packages the Word"* — The TGN applies address labels (mannose-6-phosphate, signal peptide cleavage) and dispatches vesicles. dex2oat writes method dispatch tables and .oat section offsets into the native code stream before execution. The PDF renderer writes page-number addresses and cross-reference tables into the PDF stream before sealing. Expression at the textual scale is the act of addressing: making the outgoing packet findable by its receiver. The word is packaged, addressed, and loaded onto the vesicle. It has not yet been released.
+> *"Document Secretion — Golgi Packages the Word"* — The TGN applies address labels (mannose-6-phosphate for lysosomal routing; constitutive vs. regulated-secretion sort decisions) and dispatches vesicles. (Signal peptide cleavage occurs earlier — co-translationally in the ER lumen via signal peptidase, not at the TGN.) dex2oat writes method dispatch tables and .oat section offsets into the native code stream before execution. The PDF renderer writes page-number addresses and cross-reference tables into the PDF stream before sealing. Expression at the textual scale is the act of addressing: making the outgoing packet findable by its receiver. The word is packaged, addressed, and loaded onto the vesicle. It has not yet been released.
 
 **`qi-exocytosis-expression-organic`** — `membrane × expression × organic` — weight 0.9
 > *"Exocytosis — Membrane Releases the Artifact"* — SNARE proteins zipper together, driving bilayer fusion in a millisecond. The cargo has completed the full secretory arc: synthesis → folding → Golgi packaging → vesicle transport → membrane fusion → extracellular release. In Cell OS, `doc.save()` is this step: the Blob URL is created, the anchor click fires, the file crosses the browser membrane into the user's filesystem. Expression is complete when the artifact has crossed the membrane boundary and can no longer be recalled. The lung does not retrieve what it has exhaled.
@@ -670,15 +690,15 @@ Every new output feature in Cell OS should be grounded in the secretory pathway.
 ```ts
 {
   id: "qi-<biological-event>-<phase>-<scale>",
-  zone: "<zone-id>",          // one of the 8 frozen zone IDs
-  phase: "<phase>",           // "perception" | "affect" | "expression"
-  scale: "<scale>",           // one of the 11 frozen scale IDs
-  weight: 0.7,                // editorial — how precisely does the biology illuminate the OS?
+  zoneId: "<zone-id>",          // one of the 8 frozen CellZoneId values
+  phaseId: "<phase>",           // "perception" | "affect" | "expression"
+  scaleId: "<scale>",           // one of the 11 frozen scale IDs
+  evidence: "verified",         // "verified" | "indicative" | "unconfirmed"
   title: "<Short title — Golgi-style: 'Event — What It Means'>",
   narrative: `Full narrative. State the biology precisely first (molecule names, mechanism).
               Then state the Android analogue. Then state what this teaches about the scale axis.
               Use the qi-exocytosis-expression-organic narrative as a length/precision model.`,
-  hardwareAnalogue: "brief hardware reference string",
+  hardwareAnalogue: "brief hardware reference string",  // optional
 }
 ```
 
@@ -705,11 +725,12 @@ Every new output feature in Cell OS should be grounded in the secretory pathway.
 {
   sourceOrganelleId: "<id>",
   targetOrganelleId: "<id>",
-  rateRange: [min, max],     // ph/cm²/s — sets proxy weight = midpoint / 100
-  attentionWeight: 0.XX,     // explicit override if you have a precise value
-  couplingSigma: 0.X,        // 0.4=unordered, 0.6=ordered, 0.7=messenger, 0.9=binder-direct
-  ipcMechanism: "Ordered broadcast",  // must match sigma tier
+  rateRange: "min–max ph/cm²/s",    // string — measured emission rate range
+  confidence: "indicative",          // "verified" | "indicative" | "unconfirmed" (required)
   description: "Biological mechanism. Android analogue. Why this sigma value.",
+  attentionWeight: 0.XX,             // optional — explicit override if known precisely
+  couplingSigma: 0.X,                // optional — 0.4=unordered, 0.6=ordered, 0.7=messenger, 0.9=binder-direct
+  ipcMechanism: "ordered-broadcast", // optional — "binder"|"messenger"|"ordered-broadcast"|"unordered-broadcast"
 }
 ```
 
