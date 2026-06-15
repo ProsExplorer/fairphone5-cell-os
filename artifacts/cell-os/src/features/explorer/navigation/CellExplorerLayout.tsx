@@ -167,7 +167,7 @@ export function CellExplorerLayout() {
 
       {/* ── MOBILE PAGE LINKS ───────────────────────────────────────────────── */}
       <div className="md:hidden flex-shrink-0 border-b border-white/5 bg-background/60 backdrop-blur-xl z-30">
-        <div className="flex gap-1 px-3 py-1.5">
+        <div className="flex gap-1 px-3 py-1.5 overflow-x-auto">
           {[
             { href: "/philosophy", glyph: "核", label: "Philosophy", color: "rgba(34,211,238,0.6)" },
             { href: "/substrate",  glyph: "硅", label: "Substrate",  color: "rgba(251,191,36,0.6)" },
@@ -177,12 +177,21 @@ export function CellExplorerLayout() {
             <Link
               key={href}
               href={href}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-white/8 text-[9px] font-mono tracking-widest uppercase text-muted-foreground/40 hover:text-muted-foreground/75 transition-colors"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-white/8 text-[9px] font-mono tracking-widest uppercase text-muted-foreground/40 hover:text-muted-foreground/75 transition-colors shrink-0"
             >
               <span style={{ color }}>{glyph}</span>
               {label}
             </Link>
           ))}
+          <a
+            href="secretory-diagram.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-white/8 text-[9px] font-mono tracking-widest uppercase text-muted-foreground/40 hover:text-muted-foreground/75 transition-colors shrink-0"
+          >
+            <span style={{ color: "rgba(244,114,182,0.6)" }}>泌</span>
+            Secretory
+          </a>
         </div>
       </div>
 
