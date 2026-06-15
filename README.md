@@ -511,6 +511,323 @@ Three QI intersections anchor this surface biologically: `qi-secretion-expressio
 
 ---
 
+## The Cell Secretory Pathway
+
+The secretory pathway is the organism's primary expression arc. It runs from ribosomal synthesis through quality control, Golgi addressing, vesicle transport, and membrane fusion to extracellular release. It is the biological substrate of `/documents`, the canonical model for every output feature in Cell OS, and the architectural pattern a developer must understand to extend or build on the expression side of the manifold.
+
+### A) The Biological Pathway — Molecular Detail
+
+The classical eukaryotic secretory pathway has five sequential stages. Each is a complete P→A→E triple at its own scale; together they form the macro-triple that every output feature in Cell OS instantiates.
+
+**Stage 1 — Synthesis at the Rough ER**
+
+The signal recognition particle (SRP) captures the signal peptide of a nascent polypeptide as it emerges from the ribosome. SRP pauses translation and escorts the ribosome to the SRP receptor on the rough ER membrane. Translation resumes through the translocon (Sec61 channel) directly into the ER lumen. The ribosome never releases the growing chain into the cytosol — the cargo enters the secretory pathway at the moment of synthesis.
+
+Inside the lumen, molecular chaperones BiP (GRP78) and calnexin/calreticulin enforce folding quality. Disulphide bonds are isomerised by PDI. Misfolded proteins are retained by chaperone binding and eventually retrotranslocated through the Sec61 channel back into the cytosol for ubiquitination and 26S proteasome degradation — this is ERAD (ER-Associated Degradation). Only correctly folded, properly disulphide-bonded cargo is permitted to advance.
+
+**Stage 2 — COPII Vesicle Budding (ER → cis-Golgi)**
+
+Correctly folded cargo concentrates at ER Exit Sites (ERES). The small GTPase Sar1-GTP initiates coat assembly by recruiting the inner COPII layer: Sec23/Sec24 heterodimer. Sec24 acts as cargo adaptor — it binds cytoplasmic sorting signals (di-acidic DXE motifs, Phe-based FYVE signals) on transmembrane cargo receptors. The outer COPII cage (Sec13/Sec31 heterotetramers) polymerises around the inner layer, deforming the ER membrane into a bud that pinches off as a transport vesicle.
+
+The ER does not require Golgi participation for budding. For certain bulky cargo (procollagens, large secretory glycoproteins), COPII vesicles bud directly — bypassing the cis-Golgi and proceeding straight to post-ER compartments. This direct ER→vesicle path is the COPII fast lane.
+
+**Stage 3 — Golgi Processing (cis → medial → trans cisternae)**
+
+COPII vesicles shed their coat and fuse with the cis-Golgi. Cargo transits through the Golgi stack via cisternae maturation — each cisterna is a processing chamber adding or trimming modifications in a fixed sequence:
+
+- **cis-Golgi**: phosphorylation of mannose residues (mannose-6-phosphate tag for lysosomal targeting); initial N-glycan trimming
+- **medial-Golgi**: removal of mannose residues; addition of GlcNAc, galactose; O-glycosylation begins
+- **trans-Golgi**: final sialylation and fucosylation; sulphation of proteoglycans; GPI-anchor attachment
+- **trans-Golgi Network (TGN)**: sorting and dispatch. The TGN is the post office. It reads the address labels written through the cisternae and routes cargo into one of three vesicle populations: secretory vesicles (constitutive pathway, default), regulated secretory granules (stored until signal triggers release), or clathrin-coated vesicles (mannose-6-phosphate receptor → lysosomes).
+
+**Stage 4 — SNARE-Mediated Exocytosis (vesicle → plasma membrane)**
+
+Secretory vesicles travel along microtubules to the plasma membrane. Tethering complexes (exocyst complex, CAPS) capture the vesicle and bring it close to its target site. Then SNARE proteins execute fusion:
+
+- v-SNARE (VAMP2/synaptobrevin) on the vesicle
+- t-SNARE complex (syntaxin-1 + SNAP-25) on the plasma membrane
+
+The four SNARE helices zip together from N-terminus to C-terminus, pulling the two membranes together. The energy released by SNARE zippering overcomes the bilayer repulsion and drives lipid merger. The trigger is calcium: the Ca²⁺ sensor synaptotagmin-1 detects the local Ca²⁺ influx and releases the SNARE complex from its inhibitory clamp.
+
+Fusion is a point of no return. The vesicle membrane becomes part of the plasma membrane. Luminal cargo is expelled into the extracellular space. The organelle is dissolved into the boundary.
+
+**Stage 5 (Reverse) — Clathrin-Mediated Endocytosis (Phase 2)**
+
+The reverse pathway. A ligand binds its membrane receptor. The receptor's cytoplasmic tail recruits adaptor protein AP2. Clathrin triskelions polymerise into a lattice around the receptor-ligand complex, deforming the membrane inward. Dynamin GTPase pinches the clathrin-coated vesicle off the plasma membrane. The vesicle uncoats (Hsc70/auxilin), then fuses with the early endosome. Cargo either routes to the late endosome → lysosome (degradation) or is recycled back to the membrane in recycling endosomes (receptor re-use).
+
+This reverse arc is anchored in the tensor as `qi-document-perception-textual` but is not yet implemented in code. See Section E for the Phase 2 plan.
+
+---
+
+### B) P→A→E Structural Mapping
+
+The secretory pathway is a P→A→E triple at every scale of resolution. The triple does not appear once — it nests recursively. Each stage below is itself a complete P→A→E sub-cycle.
+
+| Scale | P — Perception (boundary inward) | A — Affect (internal transformation) | E — Expression (boundary outward) | Biological step | Android / Cell OS analogue |
+|---|---|---|---|---|---|
+| **Molecular** | Signal peptide captured by SRP | Chaperone folding (BiP, calnexin, PDI) | Correctly folded cargo released to ERES | ER quality control | ART verifier: bytecode enters → type-checked → verified class released to dex2oat |
+| **Molecular** | COPII cargo adaptor (Sec24) binds signal | Coat polymerisation (Sec13/Sec31) | Vesicle buds and sheds coat at cis-Golgi | COPII budding | dex2oat emits compiled stubs into shared-memory segments for boot-image methods |
+| **Cellular** | Cargo enters cis-Golgi from vesicle | Sequential cisternae modification (N-glycan → O-glycan → address labels) | TGN dispatches addressed vesicles | Golgi processing | dex2oat writes .oat/.odex destination offsets; jemalloc assembles PDF heap objects |
+| **Cellular** | Secretory vesicle tethers at plasma membrane | SNARE zippering (v-SNARE + t-SNARE, Ca²⁺ trigger) | Bilayer fusion; cargo expelled | Exocytosis | Binder transaction: result buffer crosses process membrane (1 write, 1 read, no copy) |
+| **Silicon** | jsPDF dynamic import on first click | `generateReport()` assembles sections sequentially | `doc.save()` triggers browser download | /documents page | COPII on demand; cisternae = section blocks; exocytosis = Blob URL anchor click |
+| **Textual** | User clicks "Generate & Download PDF" | Golgi (TGN) addresses and seals the document | File crosses browser membrane → filesystem | /documents P→A→E | — |
+| **Organic** | Inhale: air crosses membrane boundary inward | Alveolar gas exchange | Exhale: CO₂ crosses membrane outward | Breath | `qi-exocytosis-expression-organic`: breath exhaled is the purest exocytosis |
+
+The SNARE zippering itself is a P→A→E triple at the nanometre scale: N-terminal SNARE motif alignment [P] → progressive helical zippering from N to C [A] → C-terminal fusion pore opening [E]. The recursion is not approximate — it is exact.
+
+---
+
+### C) Tensor Encoding
+
+All three Cell OS tensors touch the secretory pathway. Together they encode the full arc from ER synthesis to membrane release.
+
+#### Coupling Tensor — Substrate Links ($\mathcal{T}^i_{\ j}$)
+
+Entries in `ORGANELLE_SUBSTRATE_LINKS` (`mappings.ts`) that encode secretory-pathway organelle–substrate relationships:
+
+| Organelle | Substrate | Relevance | Biological basis |
+|---|---|---|---|
+| `ribosomes` | `art-runtime` | 0.99 | ART JIT synthesis = ribosomal translation; every method body is a polypeptide |
+| `vesicles` | `binder-ipc` | high | Vesicles carry cargo as discrete addressed packets; Binder Parcels are the Android vesicle — typed, addressed, single-copy mmap |
+| `vesicles` | `nnapi` | — | Vesicle-mediated signal routing; NNAPI dispatches inference requests as discrete addressed packets |
+| `golgi-apparatus` | `art-runtime` | 0.88 | dex2oat writes hardware destination annotations = Golgi writes glycan address codes |
+| `golgi-apparatus` | `package-manager` | 0.85 | PackageManager (APK verify → dexopt → install) = trans-Golgi Network final dispatch |
+| `golgi-apparatus` | `bionic-libc` | 0.77 | jemalloc slab allocator = cisternae assembly-line; PDF heap assembly runs entirely on this |
+| `golgi-apparatus` | `nnapi` | — | Golgi signal routing → NNAPI dispatch |
+
+#### Attention Tensor — Biophoton Links ($\mathcal{A}^{ij}$)
+
+Entries in `BIOPHOTON_LINKS` (`mappings.ts`) that encode inter-organelle signalling along the secretory arc. Listed in pathway order:
+
+| Link $(i→j)$ | $w_{ij}$ | $\sigma$ | IPC analogue | Encodes |
+|---|---|---|---|---|
+| `ribosomes → golgi-apparatus` | 0.62 | 0.7 | Messenger | Translation pulses entrain Golgi packaging cadence; ART JIT hot paths → dex2oat .oat dispatch flow |
+| `endoplasmic-reticulum → golgi-apparatus` | 0.16 | 0.6 | Ordered broadcast | ER→Golgi vesicle trafficking biophoton bursts; cisternae-to-cisternae procession (σ=0.6 = sequential, priority-chained) |
+| `endoplasmic-reticulum → vesicles` | 0.55 | 0.6 | Ordered broadcast | COPII budding (Sec23/24/13/31); direct ER→vesicle fast lane for large cargo; ART dex2oat boot-image stubs |
+| `golgi-apparatus → lysosomes` | 0.44 | 0.6 | Ordered broadcast | TGN misfolded-protein routing (mannose-6-phosphate → lysosomes); APK failure → PackageManager forced-uninstall |
+| `vesicles → cell-membrane` | 0.65 | 0.7 | Messenger | SNARE-mediated exocytosis (VAMP2 + syntaxin-1 + SNAP-25, Ca²⁺/synaptotagmin); Binder result-buffer delivery |
+
+The five pathway links span three zones: ribosomes (cytoskeleton-adjacent), ER (ER zone), Golgi/vesicles (Golgi zone), and cell-membrane (membrane zone). The σ values are not arbitrary — σ=0.6 (ordered broadcast) corresponds to the sequential, one-direction procession through the cisternae; σ=0.7 (messenger) corresponds to point-to-point vesicle docking where the vesicle knows its target.
+
+#### QI Tensor — Intersections ($\mathcal{Q}^{z,p,s}$)
+
+Three entries in `QI_INTERSECTIONS` (`qiMatrix.ts`) anchor the secretory pathway in the rank-3 tensor:
+
+**`qi-secretion-expression-textual`** — `golgi × expression × textual` — weight 0.8
+> *"Document Secretion — Golgi Packages the Word"* — The TGN applies address labels (mannose-6-phosphate, signal peptide cleavage) and dispatches vesicles. dex2oat writes method dispatch tables and .oat section offsets into the native code stream before execution. The PDF renderer writes page-number addresses and cross-reference tables into the PDF stream before sealing. Expression at the textual scale is the act of addressing: making the outgoing packet findable by its receiver. The word is packaged, addressed, and loaded onto the vesicle. It has not yet been released.
+
+**`qi-exocytosis-expression-organic`** — `membrane × expression × organic` — weight 0.9
+> *"Exocytosis — Membrane Releases the Artifact"* — SNARE proteins zipper together, driving bilayer fusion in a millisecond. The cargo has completed the full secretory arc: synthesis → folding → Golgi packaging → vesicle transport → membrane fusion → extracellular release. In Cell OS, `doc.save()` is this step: the Blob URL is created, the anchor click fires, the file crosses the browser membrane into the user's filesystem. Expression is complete when the artifact has crossed the membrane boundary and can no longer be recalled. The lung does not retrieve what it has exhaled.
+
+**`qi-document-perception-textual`** — `membrane × perception × textual` — weight 0.7
+> *"Document as Receptor — Membrane Receives the Word"* — Receptor-mediated endocytosis: ligand binds receptor, clathrin-coated pit assembles, membrane invaginates, vesicle pinches off inward. In Cell OS, importing a PDF is endocytosis at the textual scale: the user drops a file onto the membrane (drag-and-drop zone), the File API reads the bytes, the document routes to the Golgi/ER rendering context. Perception is the moment the external document becomes internal state. This intersection anchors Phase 2.
+
+---
+
+### D) The `/documents` Page as Secretory Pathway Instantiation
+
+`src/pages/documents.tsx` does not *use* the secretory pathway metaphorically. It *is* the secretory pathway, instantiated in React + jsPDF. Every function corresponds to a biological stage:
+
+```
+BIOLOGICAL STAGE                   CELL OS CODE EQUIVALENT
+─────────────────────────────────  ────────────────────────────────────────────────────
+Signal peptide → SRP capture       User click → handleGenerate() fires
+ER lumen / chaperone fold check    sections.size > 0 guard (ERAD: discard empty cargo)
+COPII coat assembly on demand      await import("jspdf") + await import("jspdf-autotable")
+                                   (lazy — coat assembles only when cargo is ready)
+ER Exit Site concentration         metrics = useMemo(() => computeManifoldMetrics(), [])
+                                   (cargo concentrated before budding begins)
+cis-Golgi entry                    new jsPDF({ orientation: "portrait", format: "a4" })
+Cisternae sequential processing    addSectionHeader() + autoTable() per section block
+  cis:    manifold metrics         § Manifold Metrics
+  medial: organelle map            § Organelle Mapping (+ substrate sub-table)
+  trans:  QI intersections         § QI Intersections (titles only — addressed labels)
+  TGN:    biophoton attention map  § Biophoton Attention Map (final dispatch table)
+TGN address writing                doc.text(timestamp + counts, x, y) in header block
+                                   (addresses written before the vesicle is sealed)
+SNARE zippering — Ca²⁺ trigger     doc.save("cell-os-manifold-YYYY-MM-DD.pdf")
+Membrane fusion — point of no ret  Blob URL created, anchor[download] fires
+Extracellular release              File lands in user filesystem — irretrievable
+```
+
+The `y`-cursor in `generateReport()` is the ribosome reading frame — it advances linearly through the document, never retreats. `addSectionHeader()` with its `y > 250` page-break guard is the cisternae overflow checkpoint: if the current cisterna is full, open a new chamber (`doc.addPage()`) and continue. The footer loop (iterating all pages to write page numbers) is the TGN retro-labelling pass — running after all content is placed, not before.
+
+**The `(doc as any).lastAutoTable.finalY` pattern** is the signalling cascade between Golgi stages: each cisterna reports its ending position to the next cisterna. The cast exists because jspdf-autotable attaches `lastAutoTable` at runtime — TypeScript cannot see it, exactly as a downstream cisterna cannot see the upstream modification machinery, only its output.
+
+---
+
+### E) Development Manual — Extending the Secretory Pathway
+
+Every new output feature in Cell OS should be grounded in the secretory pathway. The rules below ensure biological validity and tensor consistency.
+
+#### E1) Adding a New Secretory-Pathway QI Intersection
+
+**Biological rule**: the new intersection must correspond to a real molecular event in the secretory arc at a specific zone × phase × scale coordinate that is not yet occupied.
+
+**Step 1 — Choose coordinates**. The three existing intersections occupy: `golgi × expression × textual`, `membrane × expression × organic`, `membrane × perception × textual`. Before adding, check that your target cell `(zone, phase, scale)` is empty by scanning `QI_INTERSECTIONS` in `qiMatrix.ts`.
+
+**Step 2 — Write the intersection** in `qiMatrix.ts`, following the existing pattern:
+```ts
+{
+  id: "qi-<biological-event>-<phase>-<scale>",
+  zone: "<zone-id>",          // one of the 8 frozen zone IDs
+  phase: "<phase>",           // "perception" | "affect" | "expression"
+  scale: "<scale>",           // one of the 11 frozen scale IDs
+  weight: 0.7,                // editorial — how precisely does the biology illuminate the OS?
+  title: "<Short title — Golgi-style: 'Event — What It Means'>",
+  narrative: `Full narrative. State the biology precisely first (molecule names, mechanism).
+              Then state the Android analogue. Then state what this teaches about the scale axis.
+              Use the qi-exocytosis-expression-organic narrative as a length/precision model.`,
+  hardwareAnalogue: "brief hardware reference string",
+}
+```
+
+**Step 3 — Update the count comment** at the top of `qiMatrix.ts`:
+```ts
+// QI_INTERSECTIONS: N cells populated (N/264 = X.X% density)
+```
+
+**Step 4 — Update all README and documentation count references** (`36 → 37`, `13.6% → N%`). Use `grep -r "36 curated\|13\.6%"` to find all occurrences.
+
+**Concrete example — adding `qi-eres-perception-molecular`** (`endoplasmic-reticulum × perception × molecular`):
+- Biology: Sec24 cargo-receptor recognition at the ER Exit Site — the moment a transmembrane receptor is captured by the COPII inner coat
+- Android: ART verifier reads the method descriptor table — each method signature is the cargo signal being checked
+- This encodes: Perception at the molecular scale is recognition, not entry. The cargo hasn't moved yet; it has been seen.
+
+#### E2) Adding a New Biophoton Link Along the Pathway
+
+**Biological rule**: the link must encode a real inter-organelle signalling relationship that exists in the secretory arc. Add only if the biological cascade is mechanistically distinct from existing links.
+
+**Step 1 — Check the space**. The current pathway links cover: ribosomes→Golgi, ER→Golgi, ER→vesicles, Golgi→lysosomes, vesicles→membrane. Gaps: nucleus→ER (ribosome biogenesis signal), membrane→ER (calcium ER refilling via SERCA pump), vesicles→Golgi (retrograde COPI pathway).
+
+**Step 2 — Add to `BIOPHOTON_LINKS`** in `mappings.ts`:
+```ts
+{
+  sourceOrganelleId: "<id>",
+  targetOrganelleId: "<id>",
+  rateRange: [min, max],     // ph/cm²/s — sets proxy weight = midpoint / 100
+  attentionWeight: 0.XX,     // explicit override if you have a precise value
+  couplingSigma: 0.X,        // 0.4=unordered, 0.6=ordered, 0.7=messenger, 0.9=binder-direct
+  ipcMechanism: "Ordered broadcast",  // must match sigma tier
+  description: "Biological mechanism. Android analogue. Why this sigma value.",
+}
+```
+
+**Step 3 — Update the count comment** at the top of the `BIOPHOTON_LINKS` block and all README references (`13 → 14`, `5.8% → N%`).
+
+**Concrete example — adding `nucleus → endoplasmic-reticulum`** (ribosome biogenesis signalling):
+- Biology: nucleolar rRNA export → ribosome assembly at the ER membrane — the signal that precedes rough ER activation
+- σ=0.7 (Messenger): point-to-point, nuclear-to-ER zone, non-broadcast
+- Android: kernel module loading signal from the system server → ART classloader initialisation
+
+#### E3) Adding a New Substrate Link
+
+**Biological rule**: the organelle and substrate must be mechanistically coupled — a real interaction, not a metaphor.
+
+**Fredholm cap constraint**: the current index = 15 organelles − 17 substrate nodes = −2. This is the **hard cap**. Do not add new substrate nodes. You may add new `ORGANELLE_SUBSTRATE_LINKS` entries (links) to existing nodes; only node additions are capped.
+
+**Fredholm cooperative-pair rule**: if a new substrate node is ever added (requiring a code-review exception), it must receive links from at least two organelles forming a functional cooperative pair. A node with a single link is underdetermined in the tensor — there is no diagonal to resolve its position.
+
+**Step 1 — Add to `ORGANELLE_SUBSTRATE_LINKS`** in `mappings.ts`:
+```ts
+{
+  organelleId: "<frozen-organelle-id>",
+  substrateId: "<existing-substrate-id>",   // must already exist in SUBSTRATE_NODES
+  description: "Biological coupling mechanism. Android instantiation.",
+  relevance: 0.XX,   // 0.0–1.0; how tightly coupled is the biology to the substrate?
+}
+```
+
+**Concrete example — adding `vesicles → zygote`** (vesicle-mediated cargo delivery to daughter cells):
+- Biology: after cell division, Golgi vesicles deliver membrane proteins to the new daughter-cell surface
+- Android: Zygote fork delivers pre-loaded shared libraries to new processes via copy-on-write memory segments — the vesicle IS the copy-on-write page
+- relevance: 0.71
+
+#### E4) Building a New Feature That Follows the Secretory Pathway Pattern
+
+Any new output feature in Cell OS — a "Share" button, an export to clipboard, a webhook emission — should follow the same five-stage structure as `/documents`:
+
+```
+Stage 1 — Ribosome (synthesis):    collect + validate source data before touching output
+Stage 2 — COPII (budding):         lazy-load the output library (dynamic import)
+Stage 3 — Golgi (processing):      assemble the payload imperatively, stage by stage
+Stage 4 — Exocytosis (release):    single irreversible boundary crossing — one call
+Stage 5 — Membrane (display):      update UI state (generated=true, reset after delay)
+```
+
+**Invariants for all secretory-pathway features**:
+1. **No synchronous imports** of the output library. COPII coat assembles on demand. Dynamic `import()` only.
+2. **Allowlist discipline**: only static `domain/content/` arrays and `computeManifoldMetrics()` output may be exported. No Zustand store state, no epigenome weights, no session data.
+3. **Single release point**: one `doc.save()` / `navigator.clipboard.writeText()` / `fetch(url)` — not scattered across the function. The SNARE zipper fires once.
+4. **Irreversibility acknowledgement in UI**: after release, `generated=true` with a reset timer. The lung does not retrieve what it exhaled.
+
+**Worked example — "Copy Manifold Summary to Clipboard"** (new `/documents` section):
+```ts
+// Stage 1 — Ribosomes: synthesise cargo
+const summary = [
+  `Cell OS Manifold · ${new Date().toISOString().slice(0,10)}`,
+  `Coupling: ${metrics.couplingTensorLinks} links · ${(metrics.couplingTensorDensity*100).toFixed(1)}%`,
+  `QI: ${metrics.qiTensorLinks} intersections · ${(metrics.qiTensorDensity*100).toFixed(1)}%`,
+  `Biophoton: ${metrics.biophotonLinks} links · ${(metrics.biophotonCoverage*100).toFixed(1)}%`,
+  `Fredholm index: −2`,
+].join("\n");
+
+// Stage 2 — COPII: no library needed (Clipboard API is native)
+
+// Stage 3 — Golgi: address the cargo (summary already addressed above)
+
+// Stage 4 — Exocytosis: single irreversible release
+await navigator.clipboard.writeText(summary);
+
+// Stage 5 — Membrane: acknowledge
+setCopied(true);
+setTimeout(() => setCopied(false), 3000);
+```
+
+#### E5) Phase 2 — The Endocytosis Import Path
+
+The reverse arc is anchored in the tensor (`qi-document-perception-textual`, `membrane × perception × textual`) but is not yet implemented. It is the most important open extension point on the perception side of the manifold.
+
+**What the biology requires**:
+- A drag-and-drop receptor zone (membrane-receptors — the clathrin-coated pit)
+- File API reads the bytes (receptor-mediated internalisation)
+- Document routing to a processing compartment (early endosome = parse; Golgi/ER = render; lysosome = discard)
+- Receptor recycling (the drag zone reactivates after processing)
+
+**What needs to be built** (four touch points):
+1. **`src/pages/documents.tsx`** — add a drop zone component below the section selector. On `onDrop`, call `FileReader.readAsText()` or `readAsArrayBuffer()`. Route the result to a `parseIncoming()` function.
+2. **`src/domain/content/qiMatrix.ts`** — `qi-document-perception-textual` already exists and encodes the full narrative. No tensor addition needed for Phase 2.
+3. **`src/features/learning/useMembraneObserver.ts`** — this is the sole gatekeeper of store writes. If the imported document updates the epigenome (e.g., marks an organelle as visited), the write must pass through `useMembraneObserver`, not be written directly.
+4. **The lysosome path** — if the imported document is malformed or unrecognised, it must be routed to lysosomes (discarded silently, error state set in UI). Do not surface raw parse errors to the user — the lysosome degrades without complaint.
+
+**What must not be imported**: session state from another user's Cell OS instance, epigenome weights from an external file, or any data that would overwrite the static genome (`domain/content/`). The genome is frozen. The endosome routes inward-facing; it does not overwrite the nucleus.
+
+#### E6) Constraints and Invariants
+
+| Constraint | Rule | Consequence of violation |
+|---|---|---|
+| **15 organelle IDs** | Frozen. No additions, no renames. | All QI intersections, biophoton links, substrate links, and the Hebbian adapter become misaligned |
+| **8 zone IDs** | Frozen. The QI tensor first dimension is pinned. | QI density denominator (264) changes; all density metrics shift |
+| **17 substrate nodes** | Fredholm cap at −2. No additions. | Index shifts to −3, breaking the documented cap |
+| **Fredholm cooperative-pair rule** | Any new substrate node (exception required) needs ≥2 organelle links from a functional pair | Single-link node is underdetermined; tensor column has no diagonal resolution |
+| **`domain/content/` is pure data** | No logic, no API calls, no runtime computation in these files | The static genome principle is broken; the epigenome can no longer be cleanly separated |
+| **`useMembraneObserver` is the sole store writer** | No other component may call `recordVisit()` or equivalent | The membrane loses selectivity; any component becomes a pathway entry point |
+| **Dynamic import for heavy libraries** | jsPDF, any future output library: `await import(...)` inside the generator function, never static | Initial bundle inflates by ~300 KB per library; Vite tree-shaking cannot recover it |
+
+#### E7) Verification — How to Confirm Biological Grounding
+
+Before committing any new secretory-pathway feature, apply this checklist:
+
+- [ ] **The biological mechanism has a name.** You can state: "This encodes [named biological process] in [named organism/organelle]." Generic metaphors ("it's like a factory") do not qualify.
+- [ ] **The molecular players are identified.** For an ER-related addition: which chaperone? BiP? Calnexin? For a SNARE addition: which v-SNARE/t-SNARE pair?
+- [ ] **The Android analogue is specific.** Not "Android IPC" — which specific IPC mechanism, which σ tier, why?
+- [ ] **The tensor coordinates are non-degenerate.** The QI cell `(zone, phase, scale)` is not already occupied. The biophoton link `(source, target)` is not already encoded.
+- [ ] **The Fredholm invariants are satisfied.** No new substrate nodes. If adding substrate links, the target node already exists.
+- [ ] **The count comments and README figures have been updated.** Run: `grep -r "36 curated\|13\.6%\|13 links\|5\.8%" README.md artifacts/cell-os/README.md` — all occurrences must reflect the new counts.
+- [ ] **The allowlist discipline is maintained.** Nothing from Zustand stores enters the export.
+
+---
+
 ## Lineage
 
 Cell OS descends from a specific corpus, and the descent is direct, not analogical:
