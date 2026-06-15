@@ -12,6 +12,36 @@ uri = "file://artifacts/cell-os/public/organic-texture.png"
 type = "image"
 title = "Abstract organic texture"
 
+[[generated]]
+id = "VB2Tzvl5L7NypEs71r5P3"
+uri = "file://attached_assets/cell-os-forum-01-overview.png"
+type = "image"
+title = "cell-os-forum-overview"
+
+[[generated]]
+id = "U4Nty8oWaLlmo_6RohYjF"
+uri = "file://attached_assets/cell-os-forum-02-qi-tensor.png"
+type = "image"
+title = "cell-os-qi-tensor"
+
+[[generated]]
+id = "taKW1n1p-hKbISE_WXA9Z"
+uri = "file://attached_assets/cell-os-forum-03-secretory-pathway.png"
+type = "image"
+title = "cell-os-secretory-pathway"
+
+[[generated]]
+id = "DZj0sgPZMOGyf7gjWC0oS"
+uri = "file://attached_assets/cell-os-forum-04-android-evolution.png"
+type = "image"
+title = "cell-os-android-evolution"
+
+[[generated]]
+id = "Enj0dtNDYWeX1nOR-1yzs"
+uri = "file://attached_assets/cell-os-forum-05-fp5-organism.png"
+type = "image"
+title = "cell-os-fp5-organism"
+
 [[outputs]]
 id = "Kv_ems9u439riFEhtqTl0"
 uri = "file://research/fairphone-cell-os-native-code.md"
@@ -29,3 +59,33 @@ id = "myjB0S8q7pa3AdTcKifdR"
 uri = "file://DEVELOPMENT.md"
 type = "text"
 title = "DEVELOPMENT.md — Cellular Accuracy Roadmap (Unabridged)"
+
+[[outputs]]
+id = "mkVy9H917_sMWhOdxzSDk"
+uri = "file://attached_assets/cell-os-forum-01-overview.png"
+type = "image"
+title = "1 — Cell as Circuit Board (Overview)"
+
+[[outputs]]
+id = "_adWFNQAxMEr0dniuQb3k"
+uri = "file://attached_assets/cell-os-forum-02-qi-tensor.png"
+type = "image"
+title = "2 — QI Tensor Field (264 cells, 36 populated)"
+
+[[outputs]]
+id = "NJRf9brYk-zuuCzfvfUic"
+uri = "file://attached_assets/cell-os-forum-03-secretory-pathway.png"
+type = "image"
+title = "3 — Secretory Pathway as Android Call Flow"
+
+[[outputs]]
+id = "hs6VhNE1ddpKkOvP9aB1K"
+uri = "file://attached_assets/cell-os-forum-04-android-evolution.png"
+type = "image"
+title = "4 — Android Evolution as Cellular Evolutionary Tree"
+
+[[outputs]]
+id = "Amq7T3vPSbKyquWsttI1j"
+uri = "file://attached_assets/cell-os-forum-05-fp5-organism.png"
+type = "image"
+title = "5 — Fairphone 5 with Biological Organelle Internals"
