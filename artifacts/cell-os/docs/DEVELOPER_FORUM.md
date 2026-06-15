@@ -175,7 +175,7 @@ The current index at −2 is published on the `/metrics` surface. It renders amb
 
 ## 5. The Secretory Pathway — Translation Layer in Action
 
-![The Secretory Pathway as Android System Call Flow](../../../attached_assets/cell-os-forum-03-secretory-pathway.png)
+![The Secretory Pathway as Android System Call Flow](../../../attached_assets/cell-os-forum-03-secretory-pathway.jpg)
 
 The classical eukaryotic secretory pathway is the clearest demonstration of the translation layer. Every biological stage has a precise Android equivalent, and the entire arc is instantiated in `src/pages/documents.tsx`.
 

@@ -89,3 +89,9 @@ id = "Amq7T3vPSbKyquWsttI1j"
 uri = "file://attached_assets/cell-os-forum-05-fp5-organism.png"
 type = "image"
 title = "5 — Fairphone 5 with Biological Organelle Internals"
+
+[[outputs]]
+id = "E4Gu-TofK3NuNiFL-LQ8C"
+uri = "file://attached_assets/cell-os-forum-03-secretory-pathway.jpg"
+type = "image"
+title = "Secretory Pathway — Corrected SVG diagram (all labels source-verified)"
