@@ -58,9 +58,9 @@ The QI tensor encodes this across three axes:
 
 | Axis | Dimension | Values |
 |---|---|---|
-| **Zone** (`z`) | 8 | nucleus, mitochondria, ribosomes, endoplasmic-reticulum, golgi, membrane, cytoskeleton, vacuole |
+| **Zone** (`z`) | 8 | nucleus, cytoplasm, cytoskeleton, ribosomes, mitochondria, golgi, endoplasmic-reticulum, membrane |
 | **Phase** (`p`) | 3 | perception, affect, expression |
-| **Scale** (`s`) | 11 | quantum, molecular, cellular, organic, textual, silicon, temporal, ecological, cosmological, social, mathematical |
+| **Scale** (`s`) | 11 | symbolic, quantum, molecular, cellular, organic, apparatus, textual, generational, relational, cosmic, silicon |
 
 Total tensor space: **8 × 3 × 11 = 264 cells**.
 
@@ -95,8 +95,8 @@ Each link couples a biological organelle to an Android/FP5 substrate component w
 | `golgi-apparatus` | `package-manager` | 0.85 | PackageManager (APK verify → dexopt → install) = trans-Golgi Network final dispatch. |
 | `golgi-apparatus` | `art-runtime` | 0.88 | dex2oat writes hardware-destination offsets = Golgi writes glycan address codes. |
 | `endoplasmic-reticulum` | `art-runtime` | 0.84 | BiP/calnexin quality gate + ERAD = ART verifier + JIT recompile + deopt/interpreter fallback. |
-| `cell-membrane` | `selinux` | high | SELinux Type Enforcement rules = tight junction paracellular seal. |
-| `mitochondria` | `powerhal` | 0.9 | PowerHAL thermal governor = mitochondrial electron transport chain throttling. |
+| `cell-membrane` | `selinux-policy` | 0.95 | SELinux Type Enforcement rules = tight junction paracellular seal. |
+| `mitochondria` | `powerhal` | 0.80 | PowerHAL thermal governor = mitochondrial electron transport chain throttling. |
 
 The full 41-link table is browsable on the `/substrate` surface.
 
@@ -119,7 +119,7 @@ The five secretory-pathway links in pathway order:
 | Link | $w$ | σ | IPC | Encodes |
 |---|---|---|---|---|
 | ribosomes → golgi | 0.62 | 0.7 | Messenger | mRNA-to-vesicle coherence; ART JIT→dex2oat dispatch |
-| ER → golgi | 0.16 | 0.6 | Ordered broadcast | ER→Golgi vesicle budding procession |
+| ER → golgi | *(derived)* | 0.6 | Ordered broadcast | ER→Golgi vesicle budding procession |
 | ER → lysosomes | 0.49 | 0.6 | Ordered broadcast | ER-phagy (FAM134B/RTN3 → autophagosome → bulk lysosomal degradation) |
 | ER → vesicles | 0.55 | 0.6 | Ordered broadcast | COPII budding (Sec23/Sec24 + Sec13/Sec31 + Sar1-GTP) |
 | vesicles → membrane | 0.65 | 0.7 | Messenger | SNARE exocytosis (VAMP2 + syntaxin-1 + SNAP-25, Ca²⁺/synaptotagmin) |
@@ -198,33 +198,32 @@ The classical eukaryotic secretory pathway is the clearest demonstration of the 
 ```ts
 // src/pages/documents.tsx — every line maps to a biological stage
 
-// Stage 1 — Ribosome: signal peptide detected → translation begins
-const handleGenerate = async () => {
-  if (sections.size === 0) return;              // ERAD: discard empty cargo immediately
+// Stage 1 — Ribosome: signal peptide detected, but no cargo → ERAD immediately
+if (sections.size === 0) return;
 
-  // Stage 2 — COPII coat assembly (on demand — lazy, like Sar1-GTP):
-  const { jsPDF } = await import("jspdf");
-  await import("jspdf-autotable");
+// Stage 2 — COPII coat assembly: lazy dynamic import (Sar1-GTP fires on demand)
+const { default: jsPDF }     = await import("jspdf");
+const { default: autoTable } = await import("jspdf-autotable");
 
-  // ER Exit Site: cargo concentrated before budding
-  const metrics = computeManifoldMetrics();
+// ER Exit Site: cargo concentrated before budding
+const metrics = computeManifoldMetrics();
 
-  // Stage 3 — Golgi: new cisterna opened
-  const doc = new jsPDF({ orientation: "portrait", format: "a4" });
+// Stage 3 — Golgi: cisternae open in sequence; each addSectionHeader = new cisterna
+//   signature: addSectionHeader(title: string, color: [R, G, B]) — no doc/y args
+//   y cursor advances internally (the ribosome reading frame never retreats)
+const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-  // Cisternae sequential processing (cis → medial → trans → TGN):
-  addSectionHeader(doc, "§ Manifold Metrics", y);        // cis
-  addSectionHeader(doc, "§ Organelle Mapping", y);       // medial
-  addSectionHeader(doc, "§ QI Intersections", y);        // trans (address labels)
-  addSectionHeader(doc, "§ Biophoton Attention Map", y); // TGN dispatch table
+addSectionHeader("§1  Manifold Health Metrics",         COL_P);   // cis
+addSectionHeader("§2  Organelle → OS Feature Mapping",  COL_A);   // medial
+addSectionHeader("§3  QI Tensor Intersections",         COL_G);   // trans (address labels)
+addSectionHeader("§4  Biophoton Attention Map",         COL_E);   // TGN dispatch table
 
-  // TGN: address written before vesicle is sealed
-  doc.text(`Generated: ${new Date().toISOString()}`, 14, 14);
+// lastAutoTable.finalY cast bridges cisternae — each chamber reports its exit to the next:
+y = (doc as any).lastAutoTable.finalY + 8;
 
-  // Stage 4 — SNARE exocytosis: single irreversible release
-  doc.save(`cell-os-manifold-${date}.pdf`);              // point of no return
-  // File crosses browser membrane → filesystem. Cannot be recalled.
-};
+// Stage 4 — SNARE exocytosis: single irreversible release
+doc.save(`cell-os-manifold-${dateStr}.pdf`);   // point of no return
+// File crosses the browser membrane → filesystem. Cannot be recalled.
 ```
 
 The `y`-cursor is the ribosome reading frame — it advances linearly and never retreats. The `lastAutoTable.finalY` cast (`(doc as any).lastAutoTable.finalY`) is the inter-cisternae signalling cascade: each chamber reports its exit position to the next.
@@ -281,11 +280,11 @@ recordVisit(organelleId, dwellMs);  // the only legal write path
 
 This mirrors receptor-mediated endocytosis: a ligand (user interaction) binds the receptor (UI event handler), which triggers the clathrin-coated pit assembly (`useMembraneObserver`), which routes the signal inward to the endosome (Zustand store). The membrane is selective — only interactions that pass through the observer gate modify the epigenome.
 
-### What the Epigenome Does Not Do
+### What the Epigenome Does and Does Not Do
 
-- It does not persist across sessions (the genome is eternal; the epigenome is seasonal)
-- It does not modify any value in `src/domain/content/` (the genome is read-only)
-- It does not export to the PDF (the secretory pathway exports only the static genome — session state is not a secretory product)
+- It **persists across sessions** via `localStorage` (key: `cell-os-epigenome-v1`, managed by Zustand `persist` middleware) — the epigenome carries forward what you have explored
+- It does not modify any value in `src/domain/content/` (the genome is read-only — the epigenome is layered on top, never inside)
+- It does not export to the PDF (the secretory pathway exports only the static genome — session weights are not a secretory product)
 
 ---
 
@@ -322,7 +321,7 @@ This is the connexin-43 gap junction: two process membranes aligned, aqueous cha
 
 ### Android 13 — FP5 Launch: The Cell Reaches Maturity
 
-The Fairphone 5 launched on Android 13 (AIDL-native mandatory from API 31). SELinux Type Enforcement rules become the paracellular seal — no cross-domain passage is permitted unless an explicit LSM hook grants it. Every inter-process boundary is now mediated.
+The Fairphone 5 launched on Android 13 (AIDL-native mandatory from API 33). SELinux Type Enforcement rules become the paracellular seal — no cross-domain passage is permitted unless an explicit LSM hook grants it. Every inter-process boundary is now mediated.
 
 This is the Cell OS reference hardware. Android 13 on FP5 is the cell in its mature, homeostatic form. The membrane is complete. The Fredholm index is fixed at −2. The organism is closed.
 
@@ -354,7 +353,7 @@ Two concrete future milestones are anchored in the tensor:
 ```
 Runtime:        React 18 + Vite 5 (pnpm monorepo workspace)
 Styling:        Tailwind CSS v4 (JIT — see invariant below)
-Routing:        wouter (lightweight, hash-based for SPA)
+Routing:        wouter (lightweight, path-based with base-path prefix for SPA)
 UI components:  shadcn/ui
 State:          Zustand (epigenome tensors only; genome is static)
 PDF export:     jsPDF + jspdf-autotable (dynamic import — COPII pattern)
