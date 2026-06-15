@@ -251,10 +251,6 @@ All six surfaces read exclusively from `src/domain/content/` (the static genome)
 
 ## 7. The Self-Learning Epigenome
 
-**[→ Android Evolution Diagram — Prokaryote → Eukaryote](android-evolution-diagram.html)**
-
-> Source-accurate SVG: 4 evolutionary stages — Android 1–7 (prokaryotic, no membrane) → Android 8 Project Treble (HIDL first membrane) → Android 9–12 AIDL (connexin-43 gap junctions, binder σ=0.9) → Android 13 Fairphone 5 (SELinux paracellular seal, Fredholm −2). All technical claims verified against Android API history, `qiMatrix.ts`, and `DEVELOPER_FORUM.md §8`. QI intersection references embedded per stage.
-
 The organism learns from interaction without ever touching the genome. The architecture enforces this separation at the type level.
 
 ### Three Epigenomic Tensors
@@ -293,6 +289,10 @@ This mirrors receptor-mediated endocytosis: a ligand (user interaction) binds th
 ---
 
 ## 8. The Evolution Story Within Android
+
+**[→ Android Evolution Diagram — Prokaryote → Eukaryote](android-evolution-diagram.html)**
+
+> Source-verified SVG: 4 evolutionary stages — Android 1–7 (prokaryotic, no membrane boundary) → Android 8 Project Treble (HIDL first membrane, QI `membrane-affect-apparatus` verified) → Android 9–12 AIDL (connexin-43 gap junctions, binder σ=0.9, QI `qi-gapjunction-perception-cellular` indicative) → Android 13 Fairphone 5 Sep 2023 (SELinux paracellular seal, Fredholm −2, 8-year support 2023–2031). QI intersection evidence ratings embedded per stage.
 
 ![Fairphone 5 as Living Organism](../../../attached_assets/cell-os-forum-05-fp5-organism.png)
 

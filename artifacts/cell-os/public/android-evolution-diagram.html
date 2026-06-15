@@ -68,10 +68,10 @@ const STAGES = [
     color: '#f59e0b',
     pores: 0,
     bullets: [
-      '/system and /vendor share address space \u2014 no partition wall exists',
+      'Vendor HAL drivers link directly against /system libraries \u2014 no stable ABI boundary',
       'OTA updates to /system reliably break vendor HAL driver binaries',
       'Binder IPC exists but no inter-partition domain enforcement policy',
-      'SELinux unenforced at /system\u2194/vendor boundary \u2014 no tight junction',
+      'SELinux exists but enforces no boundary at the /system\u2194/vendor interface level',
       'Coupling: untyped, unversioned, unstable organelle\u2013substrate contracts',
     ],
     qi: null,
@@ -102,7 +102,7 @@ const STAGES = [
     color: '#34d399',
     pores: 6,
     bullets: [
-      'AIDL native replaces HIDL for all new HAL interface definitions',
+      'AIDL native begins replacing HIDL for new HAL interfaces (mandatory only from API 33)',
       'ashmem + memfd: zero-copy shared memory channel (no exocytosis overhead)',
       'Binder \u03c3=0.9 tier: 1 kernel write / 1 process read / 0 intermediate copies',
       'VNDK (Vendor NDK) freezes cross-partition ABI at binary level',
@@ -113,8 +113,8 @@ const STAGES = [
   {
     y: 205,
     title: 'MATURE EUKARYOTE',
-    sub:   'Android 13  \xb7  API 33  \xb7  Fairphone 5  \xb7  2022',
-    android: 'Android 13  \xb7  API 33  \xb7  2022  \xb7  Fairphone 5',
+    sub:   'Android 13  \xb7  API 33  \xb7  Fairphone 5  \xb7  Sep 2023',
+    android: 'Android 13  \xb7  API 33  \xb7  Fairphone 5  \xb7  Sep 2023',
     bio:   'SELinux paracellular seal \xb7 Fredholm index \u22122 \xb7 closed system',
     color: '#818cf8',
     pores: 8,
@@ -123,7 +123,7 @@ const STAGES = [
       'AIDL mandatory for all new HAL interfaces (no new HIDL from API 33+)',
       'SELinux Type Enforcement = tight junction paracellular seal (no bypass)',
       'Fredholm index: 15 organelles \u2212 17 substrate nodes = \u22122 (topological cap)',
-      '8-year SW support 2022\u20132030 \xb7 QCM6490 10+ yr industrial lifecycle',
+      '8-year SW support 2023\u20132031 \xb7 QCM6490 10+ yr industrial lifecycle',
     ],
     qi: 'QI: membrane-affect-apparatus \xb7 membrane-affect-generational \xb7 membrane-perception-cellular',
     fpBadge: true,
@@ -296,7 +296,7 @@ for (const s of STAGES) {
       stroke: color, 'stroke-width': '1.2', 'stroke-opacity': '0.78' });
     mk(dg, 'text', { x: CX, y: by + 16, 'text-anchor': 'middle',
       'font-size': '11', 'font-weight': 'bold', 'font-family': MONO,
-      fill: color, 'letter-spacing': '2.5' }, 'FAIRPHONE  5  \xb7  2022');
+      fill: color, 'letter-spacing': '2.5' }, 'FAIRPHONE  5  \xb7  Sep  2023');
   }
 }
 
