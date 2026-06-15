@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1600">
+<title>Cell OS — Android Evolution: Prokaryote → Eukaryote</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:#020817;width:1600px;height:900px;overflow:hidden;
+       font-family:'SF Mono','Fira Code','Consolas',monospace;}
+  svg{display:block;}
+</style>
+</head>
+<body>
+<svg id="svg" width="1600" height="900" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <radialGradient id="bg" cx="50%" cy="50%" r="70%">
+    <stop offset="0%"   stop-color="#0d1729"/>
+    <stop offset="100%" stop-color="#020817"/>
+  </radialGradient>
+  <!-- Timeline gradient: purple (top/mature) → amber (bottom/prokaryotic) -->
+  <linearGradient id="tl-grad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%"   stop-color="#818cf8"/>
+    <stop offset="38%"  stop-color="#34d399"/>
+    <stop offset="65%"  stop-color="#22d3ee"/>
+    <stop offset="100%" stop-color="#f59e0b"/>
+  </linearGradient>
+</defs>
+<rect width="1600" height="900" fill="url(#bg)"/>
+</svg>
+
+<script>
+const NS  = 'http://www.w3.org/2000/svg';
+const svg = document.getElementById('svg');
+const MONO = "'SF Mono','Fira Code','Consolas',monospace";
+
+// ── DOM helpers ───────────────────────────────────────────────────────────────
+function mk(par, tag, attrs, text) {
+  const n = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs || {})) n.setAttribute(k, v);
+  if (text != null) n.textContent = text;
+  par.appendChild(n);
+  return n;
+}
+const e   = (tag, attrs, text) => mk(svg, tag, attrs, text);
+const grp = (par = svg, attrs = {}) => {
+  const n = document.createElementNS(NS, 'g');
+  for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+  par.appendChild(n);
+  return n;
+};
+
+// ── Layout constants ──────────────────────────────────────────────────────────
+const CX   = 680;           // disc center-x
+const RX   = 162, RY = 32; // disc ellipse radii
+const TL   = 130;           // timeline x
+const CX_R = 882, CW = 658; // right cards: left edge + width
+
+// ── Stage data (source: DEVELOPER_FORUM.md §8 + qiMatrix.ts) ─────────────────
+// Ordered: index 0 = bottom (prokaryotic, y=775), index 3 = top (FP5, y=205)
+const STAGES = [
+  {
+    y: 775,
+    title: 'PROKARYOTIC',
+    sub:   'Pre-Android 8  \xb7  No membrane boundary  \xb7  2008\u20132017',
+    android: 'Android 1\u20137  \xb7  API 1\u201325  \xb7  2008\u20132017',
+    bio:   'No compartmentalization \u2014 /system and /vendor intermixed',
+    color: '#f59e0b',
+    pores: 0,
+    bullets: [
+      '/system and /vendor share address space \u2014 no partition wall exists',
+      'OTA updates to /system reliably break vendor HAL driver binaries',
+      'Binder IPC exists but no inter-partition domain enforcement policy',
+      'SELinux unenforced at /system\u2194/vendor boundary \u2014 no tight junction',
+      'Coupling: untyped, unversioned, unstable organelle\u2013substrate contracts',
+    ],
+    qi: null,
+  },
+  {
+    y: 585,
+    title: 'FIRST MEMBRANE',
+    sub:   'Android 8.0  \xb7  Project Treble  \xb7  August 2017',
+    android: 'Android 8.0  \xb7  API 26  \xb7  August 2017',
+    bio:   'Plasma membrane forms \xb7 prokaryote \u2192 eukaryote',
+    color: '#22d3ee',
+    pores: 4,
+    bullets: [
+      'Project Treble: /system \u2194 /vendor hard partition (build-system enforced)',
+      'HIDL \u2014 Hardware Interface Definition Language: typed HAL contracts',
+      'HAL processes isolated in separate vendor SELinux domains',
+      'OTA to /system no longer requires vendor HAL recompilation',
+      'Selective permeability: only HIDL-typed, versioned calls cross the wall',
+    ],
+    qi: 'QI ref: membrane-affect-apparatus \u2014 evidence: verified \xb7 Project Treble IS the membrane principle',
+  },
+  {
+    y: 395,
+    title: 'GAP JUNCTIONS  \xb7  AIDL',
+    sub:   'Android 9\u201312  \xb7  AIDL evolution  \xb7  2018\u20132021',
+    android: 'Android 9\u201312  \xb7  API 28\u201331  \xb7  2018\u20132021',
+    bio:   'Connexin-43 channels \xb7 binder ashmem \u03c3\u00a0=\u00a00.9',
+    color: '#34d399',
+    pores: 6,
+    bullets: [
+      'AIDL native replaces HIDL for all new HAL interface definitions',
+      'ashmem + memfd: zero-copy shared memory channel (no exocytosis overhead)',
+      'Binder \u03c3=0.9 tier: 1 kernel write / 1 process read / 0 intermediate copies',
+      'VNDK (Vendor NDK) freezes cross-partition ABI at binary level',
+      'Biology: connexon alignment \u2192 aqueous channel \u2192 σ=0.9 direct pass-through',
+    ],
+    qi: 'QI ref: qi-gapjunction-perception-cellular \u2014 evidence: indicative \xb7 Binder mmap = connexin-43',
+  },
+  {
+    y: 205,
+    title: 'MATURE EUKARYOTE',
+    sub:   'Android 13  \xb7  API 33  \xb7  Fairphone 5  \xb7  2022',
+    android: 'Android 13  \xb7  API 33  \xb7  2022  \xb7  Fairphone 5',
+    bio:   'SELinux paracellular seal \xb7 Fredholm index \u22122 \xb7 closed system',
+    color: '#818cf8',
+    pores: 8,
+    bullets: [
+      'QCM6490: Kryo 670 \xb7 Hexagon 770 HTA \xb7 Adreno 643 GPU \xb7 LPDDR4x',
+      'AIDL mandatory for all new HAL interfaces (no new HIDL from API 33+)',
+      'SELinux Type Enforcement = tight junction paracellular seal (no bypass)',
+      'Fredholm index: 15 organelles \u2212 17 substrate nodes = \u22122 (topological cap)',
+      '8-year SW support 2022\u20132030 \xb7 QCM6490 10+ yr industrial lifecycle',
+    ],
+    qi: 'QI: membrane-affect-apparatus \xb7 membrane-affect-generational \xb7 membrane-perception-cellular',
+    fpBadge: true,
+  },
+];
+
+// ── Star field ────────────────────────────────────────────────────────────────
+{
+  const sg = grp();
+  for (let i = 0; i < 120; i++) {
+    const x  = (Math.abs(Math.sin(i * 73.13 + 1.4)) * 1592) | 0;
+    const y  = (Math.abs(Math.sin(i * 41.71 + 2.7))  * 892)  | 0;
+    const r  = +(Math.abs(Math.sin(i * 137.5)) * 1.6 + 0.3).toFixed(1);
+    const op = +(Math.abs(Math.sin(i * 97.3))  * 0.45 + 0.07).toFixed(2);
+    mk(sg, 'circle', { cx: x, cy: y, r, fill: '#fff', opacity: op });
+  }
+}
+
+// ── Timeline (gradient rect + ticks) ─────────────────────────────────────────
+{
+  const tg  = grp();
+  const yTop = STAGES[STAGES.length - 1].y; // 205 (FP5, visually top)
+  const yBot = STAGES[0].y;                  // 775 (prokaryotic, visually bottom)
+
+  // Thin rect so linearGradient bounding-box works (no degenerate width)
+  mk(tg, 'rect', {
+    x: TL - 1.2, y: yTop, width: 2.4, height: yBot - yTop,
+    fill: 'url(#tl-grad)', rx: '1', opacity: '0.88',
+  });
+
+  for (const s of STAGES) {
+    mk(tg, 'line', { x1: TL - 9, y1: s.y, x2: TL + 9, y2: s.y,
+      stroke: s.color, 'stroke-width': '2' });
+    mk(tg, 'circle', { cx: TL, cy: s.y, r: 5.5, fill: s.color, opacity: '0.92' });
+    // API label to the right of the tick
+    const parts = s.android.split('\xb7');
+    mk(tg, 'text', { x: TL + 18, y: s.y - 5, 'font-size': '8.5',
+      'font-family': MONO, fill: s.color, opacity: '0.75' },
+      parts[1]?.trim() || '');
+    mk(tg, 'text', { x: TL + 18, y: s.y + 11, 'font-size': '8',
+      'font-family': MONO, fill: s.color, opacity: '0.45' },
+      parts[2]?.trim() || '');
+  }
+
+  // Rotated axis label
+  const tmid = (yTop + yBot) / 2;
+  mk(tg, 'text', {
+    x: TL - 42, y: tmid, 'text-anchor': 'middle',
+    'font-size': '9', 'font-family': MONO, fill: '#1e3a5f', 'letter-spacing': '2',
+    transform: `rotate(-90,${TL - 42},${tmid})`,
+  }, 'ANDROID  API  LEVEL');
+}
+
+// ── Dashed connectors (TL → disc left, disc right → card) ────────────────────
+{
+  const cg = grp();
+  for (const s of STAGES) {
+    mk(cg, 'line', { x1: TL + 2, y1: s.y, x2: CX - RX - 2, y2: s.y,
+      stroke: s.color, 'stroke-width': '0.8',
+      'stroke-opacity': '0.28', 'stroke-dasharray': '3,8' });
+    mk(cg, 'line', { x1: CX + RX + 2, y1: s.y, x2: CX_R - 4, y2: s.y,
+      stroke: s.color, 'stroke-width': '0.8',
+      'stroke-opacity': '0.28', 'stroke-dasharray': '3,8' });
+  }
+}
+
+// ── Vertical tubes connecting adjacent disc pairs ─────────────────────────────
+// STAGES[0]=y775, [1]=y585, [2]=y395, [3]=y205
+// Tube upper = STAGES[i+1].y (smaller y = higher on screen)
+// Tube lower = STAGES[i].y
+{
+  const tg = grp();
+  for (let i = 0; i < STAGES.length - 1; i++) {
+    const upper = STAGES[i + 1], lower = STAGES[i];
+    const tt = upper.y + RY + 3, tb = lower.y - RY - 3;
+    if (tb <= tt) continue;
+    for (const [dx, w, op] of [[-16, 1.2, 0.20], [0, 1.8, 0.28], [16, 1.2, 0.20]]) {
+      mk(tg, 'line', { x1: CX + dx, y1: tt, x2: CX + dx, y2: tb,
+        stroke: upper.color, 'stroke-width': w, 'stroke-opacity': op });
+    }
+    // Faint fill between tubes
+    mk(tg, 'rect', { x: CX - 17, y: tt, width: 34, height: tb - tt,
+      fill: upper.color, 'fill-opacity': '0.025' });
+  }
+}
+
+// ── Cell disc cross-sections ──────────────────────────────────────────────────
+for (const s of STAGES) {
+  const { y: cy, color, pores, title, sub, fpBadge } = s;
+  const dg    = grp();
+  const isProk = pores === 0;
+
+  // Glow halos (multi-layer)
+  mk(dg, 'ellipse', { cx: CX, cy, rx: RX + 26, ry: RY + 14,
+    fill: 'none', stroke: color, 'stroke-width': '24', 'stroke-opacity': '0.04' });
+  mk(dg, 'ellipse', { cx: CX, cy, rx: RX + 13, ry: RY + 7,
+    fill: 'none', stroke: color, 'stroke-width': '10', 'stroke-opacity': '0.09' });
+
+  // Drop shadow (depth illusion)
+  mk(dg, 'ellipse', { cx: CX, cy: cy + 9, rx: RX - 3, ry: RY - 5,
+    fill: '#000', 'fill-opacity': '0.42' });
+
+  // Main disc body
+  const dAttr = {
+    cx: CX, cy, rx: RX, ry: RY,
+    fill: color, 'fill-opacity': isProk ? '0.05' : '0.09',
+    stroke: color, 'stroke-width': isProk ? '1.2' : '2',
+    'stroke-opacity': isProk ? '0.42' : '0.84',
+  };
+  if (isProk) dAttr['stroke-dasharray'] = '7,4';
+  mk(dg, 'ellipse', dAttr);
+
+  // Inner concentric ring
+  mk(dg, 'ellipse', { cx: CX, cy, rx: RX * 0.58, ry: RY * 0.58,
+    fill: 'none', stroke: color, 'stroke-width': '0.9', 'stroke-opacity': '0.28' });
+
+  // Top-surface highlight (3-D illusion)
+  mk(dg, 'ellipse', { cx: CX, cy: cy - RY * 0.3, rx: RX * 0.60, ry: RY * 0.30,
+    fill: 'white', 'fill-opacity': '0.045' });
+
+  // Central nucleus node
+  mk(dg, 'circle', { cx: CX, cy, r: 7.5,
+    fill: color, 'fill-opacity': '0.20',
+    stroke: color, 'stroke-width': '1.2', 'stroke-opacity': '0.50' });
+  mk(dg, 'circle', { cx: CX, cy, r: 3, fill: 'white', 'fill-opacity': '0.78' });
+
+  // Prokaryote only: disordered internal connection mesh (no pores)
+  if (isProk) {
+    const pts = [
+      [CX - 84, cy - 11], [CX + 70, cy + 10], [CX - 42, cy + 14],
+      [CX + 92, cy - 8],  [CX + 20, cy - 13], [CX - 58, cy + 7],
+      [CX + 44, cy - 9],
+    ];
+    for (let i = 0; i < pts.length; i++) {
+      for (let j = i + 2; j < pts.length; j += 2) {
+        const [x1, y1] = pts[i], [x2, y2] = pts[j];
+        mk(dg, 'line', { x1, y1, x2, y2,
+          stroke: color, 'stroke-width': '0.7',
+          'stroke-opacity': '0.14', 'stroke-dasharray': '2,5' });
+      }
+      mk(dg, 'circle', { cx: pts[i][0], cy: pts[i][1], r: 3,
+        fill: color, 'fill-opacity': '0.22' });
+    }
+  }
+
+  // Pore / receptor channels around the disc rim
+  for (let i = 0; i < pores; i++) {
+    const ang = (2 * Math.PI * i / pores) - Math.PI / 2;
+    const px = CX + RX * Math.cos(ang);
+    const py = cy  + RY * Math.sin(ang);
+    mk(dg, 'circle', { cx: px, cy: py, r: 9,   fill: color, 'fill-opacity': '0.12' });
+    mk(dg, 'circle', { cx: px, cy: py, r: 5.5, fill: color, 'fill-opacity': '0.45' });
+    mk(dg, 'circle', { cx: px, cy: py, r: 2.5, fill: 'white', 'fill-opacity': '0.88' });
+    mk(dg, 'line', { x1: CX, y1: cy, x2: px, y2: py,
+      stroke: color, 'stroke-width': '0.55', 'stroke-opacity': '0.17' });
+  }
+
+  // Stage label below disc
+  mk(dg, 'text', { x: CX, y: cy + RY + 21, 'text-anchor': 'middle',
+    'font-size': '12', 'font-weight': 'bold', 'font-family': MONO,
+    fill: color, 'letter-spacing': '2.5', opacity: '0.95' }, title);
+  mk(dg, 'text', { x: CX, y: cy + RY + 37, 'text-anchor': 'middle',
+    'font-size': '8.5', 'font-family': MONO, fill: color, opacity: '0.46' }, sub);
+
+  // FP5 badge above the mature eukaryote disc
+  if (fpBadge) {
+    const bw = 154, bh = 24, bx = CX - bw / 2, by = cy - RY - 38;
+    mk(dg, 'rect', { x: bx, y: by, width: bw, height: bh, rx: 5,
+      fill: color, 'fill-opacity': '0.12',
+      stroke: color, 'stroke-width': '1.2', 'stroke-opacity': '0.78' });
+    mk(dg, 'text', { x: CX, y: by + 16, 'text-anchor': 'middle',
+      'font-size': '11', 'font-weight': 'bold', 'font-family': MONO,
+      fill: color, 'letter-spacing': '2.5' }, 'FAIRPHONE  5  \xb7  2022');
+  }
+}
+
+// ── Right detail cards ────────────────────────────────────────────────────────
+for (const s of STAGES) {
+  const { y: cy, color, android, bio, bullets, qi } = s;
+  const CH = 152, cardY = cy - CH / 2;
+  const cg = grp();
+
+  // Card background
+  mk(cg, 'rect', { x: CX_R, y: cardY, width: CW, height: CH, rx: 5,
+    fill: '#070e1c', stroke: color, 'stroke-width': '0.8', 'stroke-opacity': '0.2' });
+  // Left accent bar
+  mk(cg, 'rect', { x: CX_R, y: cardY, width: 3, height: CH, rx: 2, fill: color });
+
+  // Android version
+  mk(cg, 'text', { x: CX_R + 12, y: cardY + 16,
+    'font-size': '9', 'font-family': MONO, fill: color, 'letter-spacing': '0.8' },
+    android);
+  // Biological term
+  mk(cg, 'text', { x: CX_R + 12, y: cardY + 32,
+    'font-size': '11', 'font-weight': 'bold', 'font-family': MONO, fill: '#e2e8f0' },
+    bio);
+  // Divider
+  mk(cg, 'line', { x1: CX_R + 12, y1: cardY + 39, x2: CX_R + CW - 12, y2: cardY + 39,
+    stroke: color, 'stroke-width': '0.6', 'stroke-opacity': '0.2' });
+
+  // 5 technical bullets
+  for (let i = 0; i < 5; i++) {
+    mk(cg, 'text', { x: CX_R + 12, y: cardY + 53 + i * 18,
+      'font-size': '9.5', 'font-family': MONO, fill: '#4a5568' },
+      '\u2022  ' + (bullets[i] || ''));
+  }
+
+  // QI intersection reference
+  if (qi) {
+    mk(cg, 'text', { x: CX_R + 12, y: cardY + CH - 8,
+      'font-size': '8', 'font-family': MONO, fill: color, opacity: '0.42' }, qi);
+  }
+}
+
+// ── Road-ahead note (between title separator and FP5 badge) ──────────────────
+{
+  const rg = grp();
+  mk(rg, 'text', { x: CX, y: 83, 'text-anchor': 'middle',
+    'font-size': '9', 'font-family': MONO, fill: '#2d3a52', 'letter-spacing': '2' },
+    'ROAD AHEAD  \xb7  Android 14\u201316  \xb7  Homeostasis  \xb7  2023+');
+  mk(rg, 'text', { x: CX, y: 99, 'text-anchor': 'middle',
+    'font-size': '8.5', 'font-family': MONO, fill: '#1e2d44' },
+    'GGML-QNN OpenCL (Adreno 643) \xb7 Phase 2 Endocytosis (qi-document-perception-textual)');
+  mk(rg, 'line', { x1: CX - 220, y1: 107, x2: CX + 220, y2: 107,
+    stroke: '#1e2d44', 'stroke-width': '0.8', 'stroke-dasharray': '3,6' });
+}
+
+// ── Title + subtitle + separator ─────────────────────────────────────────────
+e('text', { x: 800, y: 34, 'text-anchor': 'middle', 'font-family': MONO,
+  'font-size': '21', 'font-weight': 'bold', fill: '#e2e8f0', 'letter-spacing': '2' },
+  'CELL OS \u2014 ANDROID EVOLUTION: PROKARYOTE \u2192 EUKARYOTE');
+e('text', { x: 800, y: 56, 'text-anchor': 'middle', 'font-family': MONO,
+  'font-size': '11', fill: '#475569' },
+  'Biological cell membrane theory applied to Android architecture \xb7 Fairphone 5 (QCM6490 \xb7 Kryo 670 \xb7 Hexagon 770 HTA \xb7 Adreno 643)');
+e('line', { x1: 160, y1: 65, x2: 1440, y2: 65, stroke: '#1e293b', 'stroke-width': '0.8' });
+
+// ── Legend ────────────────────────────────────────────────────────────────────
+{
+  const ly = 870;
+  [
+    { c: '#f59e0b', l: 'Prokaryotic \xb7 no membrane boundary' },
+    { c: '#22d3ee', l: 'First membrane \xb7 Project Treble HIDL' },
+    { c: '#34d399', l: 'Gap junctions \xb7 AIDL \xb7 binder \u03c3=0.9' },
+    { c: '#818cf8', l: 'Mature eukaryote \xb7 SELinux TE \xb7 FP5 \xb7 Fredholm \u22122' },
+  ].forEach(({ c, l }, i) => {
+    const x = 165 + i * 345;
+    e('circle', { cx: x, cy: ly, r: 5, fill: c, opacity: '0.88' });
+    e('text', { x: x + 12, y: ly + 4, 'font-size': '9.5', 'font-family': MONO, fill: '#475569' }, l);
+  });
+}
+
+// ── Source footer ─────────────────────────────────────────────────────────────
+e('text', { x: 1580, y: 890, 'text-anchor': 'end', 'font-family': MONO,
+  'font-size': '8.5', fill: '#1e3a5f' },
+  'source: DEVELOPER_FORUM.md \xb7 qiMatrix.ts \xb7 QI_INTERSECTIONS \xb7 AOSP Android API history');
+</script>
+</body>
+</html>

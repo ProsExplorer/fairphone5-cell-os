@@ -201,6 +201,15 @@ export function CellExplorerLayout() {
             <span style={{ color: "rgba(56,189,248,0.6)" }}>氣</span>
             QI Tensor
           </a>
+          <a
+            href="android-evolution-diagram.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-white/8 text-[9px] font-mono tracking-widest uppercase text-muted-foreground/40 hover:text-muted-foreground/75 transition-colors shrink-0"
+          >
+            <span style={{ color: "rgba(129,140,248,0.6)" }}>演</span>
+            Evolution
+          </a>
         </div>
       </div>
 

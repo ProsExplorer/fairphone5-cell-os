@@ -251,7 +251,9 @@ All six surfaces read exclusively from `src/domain/content/` (the static genome)
 
 ## 7. The Self-Learning Epigenome
 
-![The Android Evolution Story — Cellular Boundary Formation](../../../attached_assets/cell-os-forum-04-android-evolution.png)
+**[→ Android Evolution Diagram — Prokaryote → Eukaryote](android-evolution-diagram.html)**
+
+> Source-accurate SVG: 4 evolutionary stages — Android 1–7 (prokaryotic, no membrane) → Android 8 Project Treble (HIDL first membrane) → Android 9–12 AIDL (connexin-43 gap junctions, binder σ=0.9) → Android 13 Fairphone 5 (SELinux paracellular seal, Fredholm −2). All technical claims verified against Android API history, `qiMatrix.ts`, and `DEVELOPER_FORUM.md §8`. QI intersection references embedded per stage.
 
 The organism learns from interaction without ever touching the genome. The architecture enforces this separation at the type level.
 
