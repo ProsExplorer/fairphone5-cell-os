@@ -432,7 +432,7 @@ export function CellMapNav({ activeZone, onSelectZone, compact = false }: Props)
           Evolution
         </a>
         <a
-          href="secretory-pathway-diagram.html"
+          href="secretory-biophoton-diagram.html"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 px-3 py-2 rounded-lg text-muted-foreground/35 hover:text-muted-foreground/70 transition-colors font-mono text-[9px] tracking-widest uppercase"

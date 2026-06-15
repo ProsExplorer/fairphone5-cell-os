@@ -177,7 +177,7 @@ The current index at −2 is published on the `/metrics` surface. It renders amb
 
 ## 5. The Secretory Pathway — Translation Layer in Action
 
-**[→ Secretory Pathway Diagram — P→A→E at the Textual Scale](secretory-pathway-diagram.html)**
+**[→ Secretory Pathway — Biophoton / QI Map](secretory-biophoton-diagram.html)**
 
 > Source-verified SVG: Rough ER (Ribosome + SRP + Sec61, `endoplasmic-reticulum → art-runtime` 0.84) → COPII vesicles (Sar1-GTP + Sec23/24 + Sec13/31, σ=0.6, `await import("jspdf")` line 37) → Golgi cisternae §1–§4 (`addSectionHeader` COL_P/COL_A/COL_A/COL_G/COL_E, 5 calls including §2b, `golgi-apparatus → art-runtime` 0.88 / `bionic-libc` 0.77 / `package-manager` 0.85) → SNARE exocytosis (VAMP2 + syntaxin-1 + SNAP-25 + Ca²⁺/synaptotagmin, σ=0.7, `vesicles → binder-ipc`) → Membrane release (`const filename = \`…\`; doc.save(filename)` lines 208–209, point of no return). Endocytosis return loop via `qi-document-perception-textual`. All 5 biophoton σ values, 4 substrate relevance scores, and 5 QI intersection IDs sourced directly from `mappings.ts` and `qiMatrix.ts`. Two architect-verified corrections applied: ERAD gate (`selected.size`, not `sections.size`) and `doc.save` two-line form.
 

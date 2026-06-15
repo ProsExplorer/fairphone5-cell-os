@@ -211,7 +211,7 @@ export function CellExplorerLayout() {
             Evolution
           </a>
           <a
-            href="secretory-pathway-diagram.html"
+            href="secretory-biophoton-diagram.html"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-white/8 text-[9px] font-mono tracking-widest uppercase text-muted-foreground/40 hover:text-muted-foreground/75 transition-colors shrink-0"
