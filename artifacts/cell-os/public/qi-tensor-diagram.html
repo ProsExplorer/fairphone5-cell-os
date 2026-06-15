@@ -250,34 +250,80 @@ const LG = grp({'font-family':"'SF Mono','Fira Code','Consolas',monospace"});
   }
 }
 
-// ZONE DEPTH AXIS — diagonal arrow along the back-left spine of the grid
-//   from membrane (z=7, front) at bottom to nucleus (z=0, back) at top
+// ZONE LABELS — fixed panel, top-left of canvas
+// Each of the 8 zones listed nucleus→membrane with depth badge and bezier
+// connector running from the right edge of each row to its grid anchor pos(0,z,0).
 {
-  const front = ZONE_ANCHOR[7]; // membrane, front
-  const back  = ZONE_ANCHOR[0]; // nucleus, back
-  // Dashed spine line offset slightly left of the anchors
-  const ox=-14, oy=0;
-  inGrp(LG,'line',{
-    x1:front.x+ox,y1:front.y+oy,
-    x2:back.x+ox, y2:back.y+oy,
-    stroke:'#334155','stroke-width':'1.2','stroke-dasharray':'3,5',
+  const PX = 10;    // panel left x
+  const PY = 102;   // panel top y (sits below the density bar)
+  const RH = 21;    // row height px
+  const PW = 202;   // panel width
+
+  // Panel background card
+  inGrp(LG,'rect',{
+    x:PX-2, y:PY-2, width:PW, height:8*RH+14,
+    rx:5, fill:'#060f1e', stroke:'#1e293b', 'stroke-width':'0.8', opacity:'0.9'
   });
-  // Arrowhead at nucleus end
-  inGrp(LG,'polygon',{
-    points:`${back.x+ox},${back.y+oy-7} ${back.x+ox-5},${back.y+oy+3} ${back.x+ox+5},${back.y+oy+3}`,
-    fill:'#334155',
-  });
-  // "DEPTH" label along the spine, centered, rotated
-  const mx=(front.x+back.x)/2+ox-16, my=(front.y+back.y)/2;
-  const angleDeg=Math.atan2(back.y-front.y,back.x-front.x)*180/Math.PI;
+  // Panel header
   inGrp(LG,'text',{
-    x:mx, y:my,
-    'text-anchor':'middle','font-size':'9',fill:'#334155','letter-spacing':'2',
-    transform:`rotate(${angleDeg.toFixed(1)},${mx},${my})`,
-  },'ZONE DEPTH');
-  // Endpoint zone labels on the spine — membrane (front) and nucleus (back)
-  inGrp(LG,'text',{x:front.x+ox-6,y:front.y+12,'text-anchor':'middle','font-size':'9',fill:ZONES[7].color,opacity:'0.5'},'膜');
-  inGrp(LG,'text',{x:back.x+ox-6, y:back.y-7, 'text-anchor':'middle','font-size':'9',fill:ZONES[0].color,opacity:'0.5'},'核');
+    x:PX+4, y:PY+11,
+    'font-size':'9', fill:'#475569', 'letter-spacing':'3',
+  },'ZONE AXIS  (depth  →)');
+  // Header divider
+  inGrp(LG,'line',{
+    x1:PX, y1:PY+16, x2:PX+PW-4, y2:PY+16,
+    stroke:'#1e293b','stroke-width':'0.8',
+  });
+
+  for (let z=0; z<8; z++) {
+    const zone  = ZONES[z];
+    const rowY  = PY + 18 + z * RH;          // top of this row
+    const textY = rowY + RH - 7;             // text baseline
+    const anchor = ZONE_ANCHOR[z];            // pos(0, z, 0) in grid coords
+    const d = 7 - z;                          // depth: nucleus=7, membrane=0
+
+    // Colored left-edge bar for this row
+    inGrp(LG,'rect',{
+      x:PX-2, y:rowY+2, width:3, height:RH-4,
+      rx:1, fill:zone.color, opacity:'0.55',
+    });
+
+    // Glyph
+    inGrp(LG,'text',{
+      x:PX+8, y:textY,
+      'font-size':'13','font-weight':'bold', fill:zone.color, opacity:'0.95',
+    }, zone.glyph);
+
+    // Zone name
+    inGrp(LG,'text',{
+      x:PX+26, y:textY,
+      'font-size':'10.5', fill:zone.color, opacity:'0.85',
+    }, zone.name);
+
+    // Depth badge: small "d7" .. "d0" at right of panel
+    inGrp(LG,'text',{
+      x:PX+PW-8, y:textY,
+      'text-anchor':'end','font-size':'9', fill:zone.color, opacity:'0.38',
+    }, `d${d}`);
+
+    // Connector: bezier from right edge of row → grid anchor
+    const fromX = PX + PW + 2;
+    const fromY = rowY + RH / 2;
+    // Curve right then down to anchor; control point proportional to distance
+    const dx = anchor.x - fromX;
+    const dy = anchor.y - fromY;
+    const cp1x = fromX + dx * 0.45;
+    const cp1y = fromY;
+    const cp2x = anchor.x - 12;
+    const cp2y = anchor.y + (dy > 0 ? -8 : 8);
+    inGrp(LG,'path',{
+      d:`M${fromX},${fromY} C${cp1x},${cp1y} ${cp2x},${cp2y} ${anchor.x - 4},${anchor.y}`,
+      stroke:zone.color,'stroke-width':'0.75','stroke-opacity':'0.28',
+      fill:'none','stroke-dasharray':'3,5',
+    });
+    // Dot at grid anchor endpoint
+    inGrp(LG,'circle',{cx:anchor.x-2,cy:anchor.y,r:2.2,fill:zone.color,opacity:'0.4'});
+  }
 }
 
 // ── TITLE & HEADER ────────────────────────────────────────────────────────────
