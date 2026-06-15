@@ -413,6 +413,15 @@ export function CellMapNav({ activeZone, onSelectZone, compact = false }: Props)
           <span style={{ color: "rgba(244,114,182,0.5)" }}>泌</span>
           Secretory Map
         </a>
+        <a
+          href="qi-tensor-diagram.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-muted-foreground/35 hover:text-muted-foreground/70 transition-colors font-mono text-[9px] tracking-widest uppercase"
+        >
+          <span style={{ color: "rgba(56,189,248,0.5)" }}>氣</span>
+          QI Tensor
+        </a>
       </div>
     </aside>
   );

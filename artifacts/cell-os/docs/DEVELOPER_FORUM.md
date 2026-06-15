@@ -38,7 +38,9 @@ Cell OS makes this mapping explicit, navigable, and computationally grounded. It
 
 ## 2. The Universal Translation Layer — P→A→E
 
-![The QI Tensor Field — 36 Populated Cells](../../../attached_assets/cell-os-forum-02-qi-tensor.png)
+[![The QI Tensor Field — 36 Populated Cells, 13.6% density](qi-tensor-diagram.html)](qi-tensor-diagram.html)
+
+> **Interactive diagram** — source-verified SVG: 8 zones × 3 phases × 11 scales = 264 cells · 36 populated · 33 unique coordinates · 3 multi-occupied. All intersection coordinates read from `src/domain/content/qiMatrix.ts QI_INTERSECTIONS`. Open `qi-tensor-diagram.html` for the full interactive view.
 
 The translation layer is a single operator: **Perception → Affect → Expression**.
 

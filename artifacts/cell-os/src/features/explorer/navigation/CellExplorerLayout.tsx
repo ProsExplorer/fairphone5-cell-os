@@ -192,6 +192,15 @@ export function CellExplorerLayout() {
             <span style={{ color: "rgba(244,114,182,0.6)" }}>泌</span>
             Secretory
           </a>
+          <a
+            href="qi-tensor-diagram.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-white/8 text-[9px] font-mono tracking-widest uppercase text-muted-foreground/40 hover:text-muted-foreground/75 transition-colors shrink-0"
+          >
+            <span style={{ color: "rgba(56,189,248,0.6)" }}>氣</span>
+            QI Tensor
+          </a>
         </div>
       </div>
 
