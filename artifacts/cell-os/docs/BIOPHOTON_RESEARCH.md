@@ -549,3 +549,123 @@ Popp's coherence claim — that biophoton emission is quantum phase-coherent —
 ---
 
 *Document generated June 16, 2026. All sources verified open-access or publicly citable. Research depth: Deep (12 sub-tasks, 4 batches, 0 timeouts, 34 sources, 25+ Tier 1). Intended for use as a Cell OS development manual.*
+
+---
+
+## §13 — Architect Cross-Correlation Audit: Cell OS Implementation vs. Research (June 16, 2026)
+
+> **Verdict: FAIL** — the code has useful biophoton scaffolding, but it is not biologically aligned to this document's canonical pathway graph, evidence tiers, or quantum-scale coverage.
+
+### Overall Alignment Score
+
+**~45/100 (partial structural alignment, weak biological fidelity).**
+
+---
+
+### D1 — Pathway Mapping (P1–P7 vs. 13 BIOPHOTON_LINKS)
+
+- **P1 (Mito→Nucleus, σ0.75, indicative):** only partial (`mitochondria→dna`; `mitochondria→nuclear-pores`), plus a **direction inversion** (`nucleus→mitochondria`, σ0.9). **Gap: HIGH.**
+- **P2 (ER↔Mito, σ0.55):** **missing.** HIGH.
+- **P3 (Cell→Cell broadcast, verified, σ0.80):** **missing entirely.** HIGH.
+- **P4 (Nucleus→Cytoplasm, speculative, σ0.35):** **missing.** HIGH.
+- **P5 (Microtubule waveguide routing, σ0.60):** **missing.** HIGH.
+- **P6 (Membrane→Organelle, σ0.55):** partially represented (`cell-membrane→nucleus`) but over-weighted (σ0.9). MEDIUM.
+- **P7 (Mito→Mito lateral sync, σ0.65):** **missing.** HIGH.
+- Surplus/non-canonical links (e.g., `nucleus→ribosomes`, `ER→vesicles`, `vesicles→membrane`) are not mapped to the P1–P7 evidence table. MEDIUM.
+
+---
+
+### D2 — Organelle Emission Profile Coverage
+
+- `organelles.ts` does **not encode emission profiles** for mitochondria / nucleus (DNA) / ER / Golgi / peroxisome analog; content remains mostly OS-metaphor text. HIGH.
+- Peroxisome is only indirectly folded into lysosome text (frozen-15 constraint), not represented as an explicit emitter profile. MEDIUM.
+- ID mismatch: QI zones use `golgi`, `membrane`; organelles use `golgi-apparatus`, `cell-membrane`. Only 6 of 15 IDs overlap exactly. MEDIUM.
+
+---
+
+### D3 — σ Weight Calibration Audit
+
+- **Over-confident:** `nucleus→mitochondria` σ0.9 (indicative tier), `mitochondria→dna` σ0.9 (indicative), `cell-membrane→nucleus` σ0.9 (indicative); all `unconfirmed` links at σ0.6–0.9 (too high vs. speculative band σ0.30–0.50). HIGH.
+- **Under-confident:** `mitochondria→nuclear-pores` σ0.4 (below indicative floor of 0.50). MEDIUM.
+- **Missing σ:** none.
+
+---
+
+### D4 — Type / Schema Gaps
+
+- `confidence` is structurally close to `evidenceLevel`, but the enum is wrong for research semantics: `"unconfirmed"` should be `"speculative"`. MEDIUM.
+- `wavelengthBand` field is **missing** from the `BiophotonLink` type entirely. HIGH.
+- `rateRange` currently mixes rate values; it is not a substitute for spectral annotation. MEDIUM.
+
+---
+
+### D5 — QI Tensor Biophoton Coverage
+
+- Missing required quantum-scale intersections: `mitochondria×perception×quantum`, `nucleus×affect×quantum`, `membrane×expression×quantum`. HIGH.
+- The existing `nucleus-perception-quantum` entry discusses tautomeric error floor but does not reference UPE / biophoton coherence signaling explicitly. MEDIUM.
+
+---
+
+### D6 — IPC Analogue Fidelity
+
+- Binder (σ0.9) is a valid analogue concept but is **overused** for non-verified pathways.
+- Verified bystander effect / P3 broadcast route (`unordered-broadcast`) is **absent** from the link set.
+- No explicit P5 microtubule→Binder-thread-pool analogue is represented.
+
+---
+
+### D7 — Direction Audit
+
+- `nucleus→mitochondria` is a genuine **inversion** of research P1 retrograde signaling (`mitochondria→nucleus`). This is the highest-severity single error in the current dataset. **Severity: HIGH.**
+
+---
+
+### Double Diamond Summary
+
+#### DISCOVER — Strongest Existing Alignments (Top 3)
+
+1. **`mitochondria→dna` link exists** — correct direction, partially maps to P1 retrograde pathway.
+2. **`confidence` field** — structurally equivalent to the research's `evidenceLevel`; requires only enum value rename, not a field redesign.
+3. **IPC mechanism concept** — the Binder / broadcast analogy is biologically sound; σ weighting and pathway coverage are the problems, not the conceptual framework.
+
+#### DEFINE — Critical Gaps (Top 5, Prioritised)
+
+1. **Direction inversion on P1** — `nucleus→mitochondria` at σ0.9 contradicts the retrograde signaling direction. Highest biological accuracy impact.
+2. **Five of seven canonical pathways absent** — P2, P3, P4, P5, P7 have no representation in `BIOPHOTON_LINKS`.
+3. **`wavelengthBand` field missing from type schema** — spectral identity is a primary observable in UPE research; its absence means no downstream spectral rendering or filtering is possible.
+4. **σ values systematically over-confident** — indicative-tier links at σ0.9 misrepresent the biological certainty gradient.
+5. **Three quantum-scale QI intersections absent** — the quantum phase is where biophoton coherence effects are strongest; the tensor is under-populated at the most important scale.
+
+#### DEVELOP — Specific Implementable Fixes
+
+| Gap | Exact fix | Type |
+|---|---|---|
+| P1 direction inversion | Flip `sourceOrganelleId`/`targetOrganelleId` on `nucleus→mitochondria` link; set σ to 0.65 | Data |
+| P2 missing | Add link: `er → mitochondria`, σ0.55, ipc `messenger`, confidence `indicative`, wavelengthBand `red` | Data |
+| P3 missing | Add link: `cell-membrane → cell-membrane`, σ0.80, ipc `unordered-broadcast`, confidence `verified`, wavelengthBand `blue-green` | Data |
+| P4 missing | Add link: `nucleus → cytoplasm`, σ0.35, ipc `ordered-broadcast`, confidence `speculative`, wavelengthBand `UV` | Data |
+| P5 missing | Add link: `cytoskeleton → mitochondria`, σ0.60, ipc `binder`, confidence `indicative`, wavelengthBand `NIR` | Data |
+| P7 missing | Add link: `mitochondria → mitochondria`, σ0.65, ipc `binder`, confidence `indicative`, wavelengthBand `red` | Data |
+| σ over-confidence | Recalibrate all indicative links to σ≤0.75; all speculative links to σ≤0.50 | Data |
+| `wavelengthBand` absent | Add `wavelengthBand: "UV" \| "blue-green" \| "red" \| "NIR" \| "deep-NIR"` to `BiophotonLink` type; populate all 13 links | Schema + Data |
+| `"unconfirmed"` enum value | Rename to `"speculative"` in `ClaimConfidence` type and all call sites | Schema + Data |
+| Missing QI intersections | Add `mitochondria×perception×quantum`, `nucleus×affect×quantum`, `membrane×expression×quantum` entries to `QI_INTERSECTIONS` | Data |
+
+---
+
+### Conviction & Effort Matrix
+
+| Gap | Biological impact | Effort | Change type | Fix summary |
+|---|---|---|---|---|
+| P1 direction inversion | HIGH | TRIVIAL | Data | Swap source/target IDs, lower σ |
+| 5 missing pathways (P2–P5, P7) | HIGH | SMALL | Data | Add 5 new BiophotonLink entries |
+| `wavelengthBand` field | HIGH | MEDIUM | Schema + Data | New type field + populate all 13 links |
+| σ recalibration | HIGH | SMALL | Data | Adjust numeric values on existing links |
+| `"unconfirmed"` → `"speculative"` | MEDIUM | SMALL | Schema + Data | Enum rename + find/replace usages |
+| 3 missing QI intersections | HIGH | SMALL | Data | 3 new QI_INTERSECTION entries |
+| Organelle emission metadata | MEDIUM | MEDIUM | Data | Add λ / rate / evidence fields to organelle descriptions |
+| ID mismatch (golgi/membrane) | MEDIUM | SMALL | Data | Align QI zone IDs to organelle IDs or vice-versa (pick one canonical set) |
+
+---
+
+*Audit performed by architect subagent, June 16, 2026. Responsibility: evaluate_task. Security findings: none.*
