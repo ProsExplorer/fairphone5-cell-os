@@ -13,11 +13,12 @@
 3. [The Three-Tensor Field](#3-the-three-tensor-field)
 4. [The Fredholm Index — Why the System Is Closed](#4-the-fredholm-index--why-the-system-is-closed)
 5. [The Secretory Pathway — Translation Layer in Action](#5-the-secretory-pathway--translation-layer-in-action)
-6. [What Developers Can Do Today — Six Surfaces](#6-what-developers-can-do-today--six-surfaces)
-7. [The Self-Learning Epigenome](#7-the-self-learning-epigenome)
-8. [The Evolution Story Within Android](#8-the-evolution-story-within-android)
-9. [Technical Stack and Invariants](#9-technical-stack-and-invariants)
-10. [How to Contribute — The Extension Protocol](#10-how-to-contribute--the-extension-protocol)
+6. [The Biophoton Secretory Diagram — Reading the Second Map](#5b-the-biophoton-secretory-diagram--reading-the-second-map)
+7. [What Developers Can Do Today — Six Surfaces](#6-what-developers-can-do-today--six-surfaces)
+8. [The Self-Learning Epigenome](#7-the-self-learning-epigenome)
+9. [The Evolution Story Within Android](#8-the-evolution-story-within-android)
+10. [Technical Stack and Invariants](#9-technical-stack-and-invariants)
+11. [How to Contribute — The Extension Protocol](#10-how-to-contribute--the-extension-protocol)
 
 ---
 
@@ -231,6 +232,146 @@ doc.save(`cell-os-manifold-${dateStr}.pdf`);   // point of no return
 ```
 
 The `y`-cursor is the ribosome reading frame — it advances linearly and never retreats. The `lastAutoTable.finalY` cast (`(doc as any).lastAutoTable.finalY`) is the inter-cisternae signalling cascade: each chamber reports its exit position to the next.
+
+---
+
+## 5b. The Biophoton Secretory Diagram — Reading the Second Map
+
+**[→ Biophoton Secretory](secretory-biophoton-diagram.html)** is a standalone SVG reference page (`/secretory-biophoton-diagram.html`) that complements §5 (secretory narrative/code) and the QI Tensor map by showing one source-annotated, stage-anchored view of secretory flow + biophoton links + QI dots. It is architecturally distinct from the original Secretory diagram because it overlays IPC/σ and QI evidence layers directly onto the stage geometry.
+
+### Canvas Layout
+
+- SVG canvas: `W=1600`, `H=1000`
+- Main flow axis: `FY=380` (`M 80 380 L 1540 380`)
+- Phase bands:
+
+| Band | Phase | x-range |
+|---|---|---|
+| P | Perception | `x=60–620` |
+| A | Affect | `x=622–940` |
+| E | Expression | `x=942–1555` |
+
+- Phase labels at `x=340` (P), `x=781` (A), `x=1248` (E)
+
+### Six Stages (see §5 for full translation narrative)
+
+| Stage | x-anchor | Biological element | Android equivalent | Key labels on diagram |
+|---|---:|---|---|---|
+| 1 | `ERX=170` | Rough ER synthesis / quality gate | `endoplasmic-reticulum → art-runtime (0.84)` | `ROUGH ER`, `Ribosome · SRP · Sec61 translocon` |
+| 2 | `COPX=470` | COPII budding (Sar1-GTP / Sec23/24 / Sec13/31) | Lazy-load cargo | `COPII VESICLES`, `await import("jspdf")` |
+| 3 | `GX=780` | Golgi cisternae stack (§1→§4) | `art-runtime`, `bionic-libc`, `package-manager` | `GOLGI CISTERNAE`, five cisterna labels |
+| 4 | `VX=1000` | Secretory vesicle / SNARE prep | `vesicles → binder-ipc` | `SECRETORY VESICLE`, `v-SNARE VAMP2` |
+| 5 | `MX=1215` | Plasma membrane fusion boundary | `cell-membrane · SELinux TE seal (0.95)` | `PLASMA MEMBRANE` |
+| 6 | `AX=1360` | Secreted artifact release | `doc.save(filename)` → filesystem | `SECRETED ARTIFACT`, `POINT OF NO RETURN` |
+
+### Five Biophoton Arcs
+
+Source: `BIOPHOTON` constant in `secretory-biophoton-diagram.html`, grounded in `mappings.ts BIOPHOTON_LINKS`.
+
+| source → target | w | σ | IPC tier | confidence | band |
+|---|---:|---:|---|---|---|
+| ER → vesicles | 0.55 | 0.6 | ordered-broadcast | indicative | P |
+| ER → golgi | null | 0.6 | ordered-broadcast | unconfirmed | P→A transition |
+| ER → lysosomes | 0.49 | 0.6 | ordered-broadcast | indicative | P (downward side branch) |
+| ribosomes → golgi | 0.62 | 0.7 | messenger | unconfirmed | P→A transition |
+| vesicles → membrane | 0.65 | 0.7 | messenger | indicative | E |
+
+### Five QI Intersection Dots
+
+Source: `QI` constant in `secretory-biophoton-diagram.html`, grounded in `qiMatrix.ts QI_INTERSECTIONS`.
+
+| id | zone | phase | scale | evidence | dot colour | title |
+|---|---|---|---|---|---|---|
+| `golgi-affect-apparatus` | golgi | affect | apparatus | verified | green (`COL_E`) | Stack Processing — Distillation in Series |
+| `golgi-expression-textual` | golgi | expression | textual | verified | green (`COL_E`) | Dispatch — Sorted Meaning Reaches Its Receiver |
+| `qi-secretion-expression-textual` | golgi | expression | textual | indicative | violet (`COL_A`) | Document Secretion — Golgi Packages the Word |
+| `qi-exocytosis-expression-organic` | membrane | expression | organic | indicative | violet (`COL_A`) | Exocytosis — Membrane Releases the Artifact |
+| `qi-document-perception-textual` | membrane | perception | textual | indicative | violet (`COL_A`) | Document Import — Membrane Receives the Text |
+
+### Five Detail Cards (Bottom Strip)
+
+Card strip at `CARD_TOP=645`, `CARD_H=152`, `CARD_W=264`. Each card aligns to its stage x-anchor.
+
+| Card | Stage | Biological rows | Code rows |
+|---|---|---|---|
+| ER SYNTHESIS | 1 | Rough ER · BiP/calnexin quality gate; ERAD: misfolded → 26S proteasome | `if (selected.size === 0) return;` |
+| COPII BUDDING | 2 | Sar1-GTP activates COPII; Sec23/24 inner · Sec13/31 outer | `await import("jspdf")` · `await import("jspdf-autotable")` |
+| GOLGI ASSEMBLY | 3 | cis→medial→trans→TGN cisternae stack | `addSectionHeader("§1…" COL_P)` through `addSectionHeader("§4…" COL_E)` |
+| SNARE EXOCYTOSIS | 4 | v-SNARE VAMP2 + t-SNARE syntaxin-1+SNAP-25; Ca²⁺/synaptotagmin trigger | `y = (doc as any).lastAutoTable.finalY + 8` |
+| MEMBRANE RELEASE | 5–6 | Bilayer fusion · extracellular release · point of no return | `const filename = \`cell-os-manifold-…\``; `doc.save(filename)` |
+
+Row colour legend:
+
+| prefix | colour | meaning |
+|---|---|---|
+| `·` | slate `#64748b` | biological fact |
+| `›` | sky (`COL_P`) | exact code line |
+| `//` | grey `#475569` | code comment / note |
+| `⬡` | violet (`COL_A`) | substrate coupling entry |
+| `●` | pink (`COL_G`) | QI intersection entry |
+
+### ERAD Side Branch
+
+A red dashed branch descends from the ER body (`ERX=170`, `ERY+50`) downward. Labels: `ERAD`, `misfolded →`, `26S proteasome`. Below the branch, two code annotation lines appear:
+
+```ts
+if (selected.size === 0) return;   // handleGenerate: no cargo → abort
+```
+
+> **Architect note:** the guard variable is `selected.size`, not `sections.size`. This was verified against `src/pages/documents.tsx handleGenerate`.
+
+Biological meaning: misfolded protein is retrotranslocated through Sec61 and degraded by the 26S proteasome (ERAD). Android analogue: ART deopt → interpreter fallback. If no sections are selected, the generate function aborts before any PDF assembly begins.
+
+### Endocytosis Return Loop
+
+A dashed `COL_G` (pink) arc runs at `ENDO_Y=840` from the Artifact stage (`AX`) back to the ER (`ERX`). Label:
+
+```
+ENDOCYTOSIS (Phase 2) — Clathrin/AP2/dynamin · File API drag-drop → FileReader
+  → parse → route to Golgi/ER render context · qi-document-perception-textual
+```
+
+This loop is **not yet implemented** (see Quick Reference). The QI intersection `qi-document-perception-textual` (`membrane × perception × textual`, indicative) anchors Phase 2 in the tensor — the return path is specified and ready; only the code path remains to be built.
+
+### σ / IPC Coupling Legend
+
+Top-right panel (`LX=1450`, `LY=128`):
+
+| σ value | IPC tier | Biological meaning |
+|---|---|---|
+| 0.6 | ordered-broadcast | Sequential cisternae procession; ER-phagy cascade |
+| 0.7 | messenger | Point-to-point vesicle docking (v-SNARE knows its t-SNARE) |
+| 0.9 | binder direct | Gap junction / ashmem pass-through; zero intermediate copy |
+
+### P→A→E Gate Glyphs
+
+Three CJK glyphs along the bottom edge (`y=H−52=948`):
+
+| glyph | x | phase | meaning |
+|---|---:|---|---|
+| `門` | 340 | Perception | Gate — the signal enters |
+| `室` | 781 | Affect | Chamber — the signal is processed |
+| `窗` | 1248 | Expression | Window — the signal exits |
+
+### Footer Source Attribution
+
+```
+Source: src/pages/documents.tsx · src/domain/content/mappings.ts
+        · src/domain/content/qiMatrix.ts · Cell OS · Fairphone 5
+        · QCM6490 · Android 13 API 33 · Sep 2023
+```
+
+QI intersections listed in footer: `golgi-affect-apparatus (verified)` · `golgi-expression-textual (verified)` · `qi-secretion-expression-textual` · `qi-exocytosis-expression-organic` · `qi-document-perception-textual`.
+
+### How to Read the Diagram
+
+1. **Orient by band**: identify which P/A/E phase band the stage falls in (background tint + phase label at top).
+2. **Follow the flow axis** left→right at `FY=380` through all six stage anchors.
+3. **Read biophoton arc colour + σ tag**: sky arcs = Perception/ordered-broadcast; violet arcs = Affect or Affect→Expression messenger; the σ tag in each arc's label maps to the IPC legend.
+4. **Read QI dot colour by evidence**: green = verified (published mechanism); violet = indicative (proposed pathway); grey = unconfirmed. Only verified dots have published biological citations.
+5. **Use the detail cards**: the bottom strip shows the bio↔code correspondence that the main flow arrows compress — each card is the ground truth for what happens at that stage in `documents.tsx`.
+6. **Check the ERAD branch** first when debugging a generation abort — it encodes the earliest possible failure mode.
+7. **The endocytosis loop** is the only dashed arc that runs *backward* (right→left) — it marks Phase 2 (import path), which is the inverse of the secretory arc.
 
 ---
 
