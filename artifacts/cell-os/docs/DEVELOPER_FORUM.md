@@ -13,12 +13,14 @@
 3. [The Three-Tensor Field](#3-the-three-tensor-field)
 4. [The Fredholm Index — Why the System Is Closed](#4-the-fredholm-index--why-the-system-is-closed)
 5. [The Secretory Pathway — Translation Layer in Action](#5-the-secretory-pathway--translation-layer-in-action)
-6. [The Biophoton Secretory Diagram — Reading the Second Map](#5b-the-biophoton-secretory-diagram--reading-the-second-map)
-7. [What Developers Can Do Today — Six Surfaces](#6-what-developers-can-do-today--six-surfaces)
-8. [The Self-Learning Epigenome](#7-the-self-learning-epigenome)
-9. [The Evolution Story Within Android](#8-the-evolution-story-within-android)
-10. [Technical Stack and Invariants](#9-technical-stack-and-invariants)
-11. [How to Contribute — The Extension Protocol](#10-how-to-contribute--the-extension-protocol)
+6. [Pathway Overview — Secretory Arc at a Glance](#pathway-overview--secretory-arc-at-a-glance)
+7. [The Biophoton Secretory Diagram — Reading the Second Map](#5b-the-biophoton-secretory-diagram--reading-the-second-map)
+8. [Implementation Steps — Building with the Secretory Pattern](#implementation-steps--building-with-the-secretory-pattern)
+9. [What Developers Can Do Today — Six Surfaces](#6-what-developers-can-do-today--six-surfaces)
+10. [The Self-Learning Epigenome](#7-the-self-learning-epigenome)
+11. [The Evolution Story Within Android](#8-the-evolution-story-within-android)
+12. [Technical Stack and Invariants](#9-technical-stack-and-invariants)
+13. [How to Contribute — The Extension Protocol](#10-how-to-contribute--the-extension-protocol)
 
 ---
 
@@ -204,7 +206,7 @@ The classical eukaryotic secretory pathway is the clearest demonstration of the 
 // src/pages/documents.tsx — every line maps to a biological stage
 
 // Stage 1 — Ribosome: signal peptide detected, but no cargo → ERAD immediately
-if (sections.size === 0) return;
+if (selected.size === 0) return;
 
 // Stage 2 — COPII coat assembly: lazy dynamic import (Sar1-GTP fires on demand)
 const { default: jsPDF }     = await import("jspdf");
@@ -220,6 +222,7 @@ const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
 addSectionHeader("§1  Manifold Health Metrics",         COL_P);   // cis
 addSectionHeader("§2  Organelle → OS Feature Mapping",  COL_A);   // medial
+addSectionHeader("§2b Organelle-Substrate Links",        COL_A);   // medial arm
 addSectionHeader("§3  QI Tensor Intersections",         COL_G);   // trans (address labels)
 addSectionHeader("§4  Biophoton Attention Map",         COL_E);   // TGN dispatch table
 
@@ -232,6 +235,32 @@ doc.save(`cell-os-manifold-${dateStr}.pdf`);   // point of no return
 ```
 
 The `y`-cursor is the ribosome reading frame — it advances linearly and never retreats. The `lastAutoTable.finalY` cast (`(doc as any).lastAutoTable.finalY`) is the inter-cisternae signalling cascade: each chamber reports its exit position to the next.
+
+---
+
+## Pathway Overview — Secretory Arc at a Glance
+
+In Cell OS, the secretory arc is one irreversible delivery pipeline (full narrative in §5): cargo is validated at the ER gate, packaged at COPII, refined and addressed across five Golgi cisternae, queued for release at the vesicle boundary, fused at the membrane crossing, and materialised as an external artifact. In code this is the same operator in `src/pages/documents.tsx`: guard → lazy-load export machinery → staged assembly → cursor handoff → membrane crossing → user-visible file on disk.
+
+```text
+ROUGH ER  [if (selected.size === 0) return]
+  → COPII  [await import("jspdf"), await import("jspdf-autotable")]
+  → GOLGI  [addSectionHeader ×5: §1, §2, §2b, §3, §4]
+  → VESICLE [y = (doc as any).lastAutoTable.finalY + 8]
+  → MEMBRANE [const filename = `cell-os-manifold-${dateStr}.pdf`; doc.save(filename)]
+  → ARTIFACT [PDF persisted to filesystem + UI success state]
+```
+
+### Stage Reference — Failure Modes and Recovery
+
+| Stage | Biological name | Code entry point | Failure mode | Recovery |
+|---|---|---|---|---|
+| 1 | Rough ER quality gate | `handleGenerate()` guard | No cargo selected | `if (selected.size === 0) return;` — require ≥1 selected section |
+| 2 | COPII budding | Dynamic imports in `generateReport()` | Import failure / blocked chunk | Wrap in `try/finally`; surface non-fatal UI error; retry |
+| 3 | Golgi cisternae assembly | `addSectionHeader(title, color)` + `autoTable(...)` | Missing or misordered sections | Preserve 5-call order: §1, §2, §2b, §3, §4 |
+| 4 | Vesicle staging | `lastAutoTable.finalY` cursor handoff | Table overlap / page overflow | Advance `y` monotonically; keep addSectionHeader page-break logic |
+| 5 | Membrane fusion | `doc.save(filename)` | Multiple releases per trigger | Fire once per user action; disable button while generating |
+| 6 | Extracellular artifact | Filesystem-visible output | Export includes disallowed data | Enforce allowlist: static genome + computed metrics only |
 
 ---
 
@@ -372,6 +401,90 @@ QI intersections listed in footer: `golgi-affect-apparatus (verified)` · `golgi
 5. **Use the detail cards**: the bottom strip shows the bio↔code correspondence that the main flow arrows compress — each card is the ground truth for what happens at that stage in `documents.tsx`.
 6. **Check the ERAD branch** first when debugging a generation abort — it encodes the earliest possible failure mode.
 7. **The endocytosis loop** is the only dashed arc that runs *backward* (right→left) — it marks Phase 2 (import path), which is the inverse of the secretory arc.
+
+---
+
+## Implementation Steps — Building with the Secretory Pattern
+
+Use this recipe for any new output feature. See §5 for pathway semantics; see §10 for contribution invariants and the seven-point checklist.
+
+### Step-by-Step Recipe
+
+1. **Choose surface + file** — implement in `src/pages/<feature>.tsx` (or extend `src/pages/documents.tsx`) as `async function generateX(metrics, selected: Set<SectionType>) { ... }`.
+2. **Stage 1 — ER gate** — validate cargo first: `if (selected.size === 0) return;`. Compute only approved payload.
+3. **Stage 2 — COPII load** — dynamically import heavy libraries only when the export is triggered: `const { default: jsPDF } = await import("jspdf");`.
+4. **Stage 3 — Golgi assembly** — keep `COL_*` constants local and honour the header contract exactly: `addSectionHeader(title: string, color: [number, number, number])` — **no `doc` or `y` arguments**; `y` advances internally.
+5. **Stage 4 — Vesicle handoff** — advance a single linear cursor/state: `y = (doc as any).lastAutoTable.finalY + 8`. The cursor never retreats.
+6. **Stage 5 — Membrane crossing** — emit exactly once per user action: `doc.save(filename)` / `anchor.click()` / `clipboard.writeText(...)`. Then set UI acknowledgement state.
+7. **Pre-merge invariant checks** — no dynamic Tailwind class interpolation; no Zustand/epigenome data in export payload; frozen-ID and Fredholm rules unchanged (see §10).
+
+### Worked Example — JSON Export Feature
+
+```ts
+// src/pages/documents.tsx (add alongside generateReport)
+type JsonSection = "manifold" | "organelles" | "qi" | "biophoton";
+
+async function generateJsonExport(
+  metrics: ReturnType<typeof computeManifoldMetrics>,
+  selected: Set<JsonSection>
+) {
+  // Stage 1 — ER quality gate
+  if (selected.size === 0) return;
+
+  // Stage 2 — COPII (lazy-load only when heavy tooling is needed)
+  // const { compress } = await import("<heavy-lib>"); // example
+
+  // Stage 3 — Golgi assembly (ordered, addressed payload)
+  const COL_P: [number, number, number] = [125, 211, 252];
+  const COL_A: [number, number, number] = [196, 181, 253];
+  const COL_G: [number, number, number] = [244, 114, 182];
+  const COL_E: [number, number, number] = [134, 239, 172];
+
+  // addSectionHeader signature: (title, color) — no doc/y args
+  // For JSON export the "cisternae" are payload keys in order:
+  const payload: Record<string, unknown> = {
+    generatedAt: new Date().toISOString(),           // §1 cis     — COL_P
+    organelles:  selected.has("organelles") ? CELL_MAPPINGS        : undefined, // §2 medial  — COL_A
+    links:       selected.has("organelles") ? ORGANELLE_SUBSTRATE_LINKS : undefined, // §2b — COL_A
+    qi:          selected.has("qi")         ? QI_INTERSECTIONS     : undefined, // §3 trans   — COL_G
+    biophoton:   selected.has("biophoton")  ? BIOPHOTON_LINKS      : undefined, // §4 TGN     — COL_E
+    // ALLOWLIST DISCIPLINE: do NOT include any Zustand/epigenome/session fields
+  };
+
+  // Stage 4 — Vesicle packaging (single-pass, monotonic)
+  const json = JSON.stringify(payload, null, 2);
+  const blob = new Blob([json], { type: "application/json" });
+
+  // Stage 5 — Membrane crossing (single irreversible release)
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const filename = `cell-os-manifold-${dateStr}.json`;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();                       // point of no return
+  URL.revokeObjectURL(url);
+}
+```
+
+### Common Mistakes and Fixes
+
+| # | Mistake | Fix |
+|---|---|---|
+| 1 | Dynamic Tailwind class (`border-${color}-500`) | Use inline style: `style={{ borderColor: value }}` |
+| 2 | Wrong ERAD guard (`sections.size`) | Correct: `if (selected.size === 0) return;` |
+| 3 | SNARE fired multiple times (double-click emits twice) | Lock with `generating` state; one membrane call per user action |
+| 4 | Manual cursor jumps breaking Golgi flow | Preserve linear `y` handoff from `lastAutoTable.finalY + 8` — never reset |
+| 5 | Zustand/session data leaking into export | Strict allowlist: static genome (`src/domain/content/`) + computed metrics only |
+
+### Testing Your Secretory Implementation
+
+- **Stage 1:** zero-selection path returns early with no artifact emitted.
+- **Stage 2:** export succeeds after first-trigger lazy-load; import failures are user-visible and recoverable.
+- **Stage 3:** section order is deterministic; `addSectionHeader` signature has no `doc` or `y` parameters.
+- **Stage 4:** no table overlap or page corruption; cursor/state advances monotonically throughout.
+- **Stage 5:** exactly one artifact emitted per user action; filename and date format match `cell-os-manifold-YYYY-MM-DD.<ext>`.
+- **Post-crossing:** output schema matches expectation and contains no epigenome or session data.
 
 ---
 
