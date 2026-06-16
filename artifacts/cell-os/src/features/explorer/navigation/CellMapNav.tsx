@@ -438,7 +438,7 @@ export function CellMapNav({ activeZone, onSelectZone, compact = false }: Props)
           className="flex items-center gap-2 px-3 py-2 rounded-lg text-muted-foreground/35 hover:text-muted-foreground/70 transition-colors font-mono text-[9px] tracking-widest uppercase"
         >
           <span style={{ color: "rgba(134,239,172,0.5)" }}>泌</span>
-          Secretory
+          Biophoton Secretory
         </a>
       </div>
     </aside>
