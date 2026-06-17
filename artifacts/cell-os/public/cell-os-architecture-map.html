@@ -185,16 +185,18 @@ function markerId(band) {
 
 // ── Zone background ellipses ──────────────────────────────────────────────────
 const zoneBGs = [
-  { zone:"nucleus",               cx:880,  cy:735,  rx:170, ry:115 },
-  { zone:"endoplasmic-reticulum", cx:545,  cy:600,  rx:165, ry:95  },
-  { zone:"ribosomes",             cx:1090, cy:510,  rx:145, ry:85  },
-  { zone:"mitochondria",          cx:385,  cy:810,  rx:135, ry:80  },
-  { zone:"golgi",                 cx:1145, cy:840,  rx:155, ry:80  },
-  { zone:"cytoskeleton",          cx:880,  cy:1050, rx:240, ry:60  },
+  { zone:"cytoplasm",             cx:830,  cy:800,  rx:612, ry:308, fo:0.05, so:0.12 },
+  { zone:"nucleus",               cx:880,  cy:735,  rx:170, ry:115, fo:0.10, so:0.25 },
+  { zone:"membrane",              cx:880,  cy:305,  rx:198, ry:63,  fo:0.10, so:0.25 },
+  { zone:"endoplasmic-reticulum", cx:545,  cy:600,  rx:165, ry:95,  fo:0.10, so:0.25 },
+  { zone:"ribosomes",             cx:1090, cy:510,  rx:145, ry:85,  fo:0.10, so:0.25 },
+  { zone:"mitochondria",          cx:385,  cy:810,  rx:135, ry:80,  fo:0.10, so:0.25 },
+  { zone:"golgi",                 cx:1145, cy:840,  rx:155, ry:80,  fo:0.10, so:0.25 },
+  { zone:"cytoskeleton",          cx:880,  cy:1050, rx:240, ry:60,  fo:0.10, so:0.25 },
 ];
 
 const zoneBGSvg = zoneBGs.map(z =>
-  `<ellipse cx="${z.cx}" cy="${z.cy}" rx="${z.rx}" ry="${z.ry}" fill="${ZONE_COLORS[z.zone]}" fill-opacity="0.10" stroke="${ZONE_COLORS[z.zone]}" stroke-opacity="0.25" stroke-width="1.5" stroke-dasharray="6,4"/>`
+  `<ellipse cx="${z.cx}" cy="${z.cy}" rx="${z.rx}" ry="${z.ry}" fill="${ZONE_COLORS[z.zone]}" fill-opacity="${z.fo}" stroke="${ZONE_COLORS[z.zone]}" stroke-opacity="${z.so}" stroke-width="1.5" stroke-dasharray="6,4"/>`
 ).join("\n");
 
 // ── Biophoton link paths ──────────────────────────────────────────────────────

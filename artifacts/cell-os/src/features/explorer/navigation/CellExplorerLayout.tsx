@@ -137,6 +137,18 @@ export function CellExplorerLayout() {
           >
             Metrics
           </Link>
+          <Link
+            href="/arch-map"
+            className="hidden md:block px-2 py-1 rounded text-[10px] font-mono text-muted-foreground/30 hover:text-muted-foreground/65 transition-colors"
+          >
+            Arch Map
+          </Link>
+          <Link
+            href="/pae-flow"
+            className="hidden md:block px-2 py-1 rounded text-[10px] font-mono text-muted-foreground/30 hover:text-muted-foreground/65 transition-colors"
+          >
+            P→A→E
+          </Link>
         </div>
       </header>
 
@@ -173,6 +185,8 @@ export function CellExplorerLayout() {
             { href: "/substrate",  glyph: "硅", label: "Substrate",  color: "rgba(251,191,36,0.6)" },
             { href: "/fractal",    glyph: "形", label: "Fractal",    color: "rgba(196,181,253,0.6)" },
             { href: "/metrics",    glyph: "量", label: "Metrics",    color: "rgba(74,222,128,0.6)"  },
+            { href: "/arch-map",   glyph: "架", label: "Arch Map",   color: "rgba(34,211,238,0.6)"  },
+            { href: "/pae-flow",   glyph: "流", label: "P→A→E",      color: "rgba(167,139,250,0.6)" },
           ].map(({ href, glyph, label, color }) => (
             <Link
               key={href}

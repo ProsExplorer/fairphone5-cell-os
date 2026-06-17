@@ -9,6 +9,8 @@ import Substrate from "@/pages/substrate";
 import Metrics from "@/pages/metrics";
 import Fractal from "@/pages/fractal";
 import Documents from "@/pages/documents";
+import ArchMap from "@/pages/arch-map";
+import PaeFlow from "@/pages/pae-flow";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +23,8 @@ function Router() {
       <Route path="/metrics" component={Metrics} />
       <Route path="/fractal" component={Fractal} />
       <Route path="/documents" component={Documents} />
+      <Route path="/arch-map" component={ArchMap} />
+      <Route path="/pae-flow" component={PaeFlow} />
       <Route component={NotFound} />
     </Switch>
   );
