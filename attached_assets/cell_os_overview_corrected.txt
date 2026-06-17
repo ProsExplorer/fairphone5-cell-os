@@ -16,7 +16,8 @@ the Linux scheduler or CPU core affinity.
 The sections below describe the architectural design blueprint — what a native
 Android implementation of Cell OS would do once built. The TypeScript/React codebase
 gives that blueprint its precise mathematical grounding: 18 canonical biophoton
-links, 39 qi-intersections, a σ-weighted attention tensor, and four integrity
+links (7 required P-series pathways plus 11 additional organelle-to-organelle
+links), 39 qi-intersections, a σ-weighted attention tensor, and four integrity
 invariants. Translating that blueprint into a running on-device middleware layer
 requires a separate native Android implementation (see Section VI).
 
@@ -24,17 +25,35 @@ requires a separate native Android implementation (see Section VI).
 PART 1 — WHAT MAKES CELL OS A FUNCTIONAL ARCHITECTURE
 ═══════════════════════════════════════════════════════════════════
 
-Cell OS subspace middleware designs a unified computing fabric where every device
-becomes part of one distributed computing topology. As an architectural blueprint
-it specifies an autonomous middleware resource governor that can monitor network
-traffic patterns in real-time, detect failures, and automatically reroute data
-through alternative pathways without human intervention.
+Cell OS subspace middleware is an architectural blueprint for an autonomous
+middleware resource governor. In a native implementation it would monitor IPC
+traffic patterns, detect localised failures, and reroute data through alternative
+pathways. What elevates it from metaphor to a specification-ready layer is its
+transition from descriptive analogy into a highly deterministic, programmatic
+control architecture grounded in the physical constraints of ultra-weak photon
+emission (UPE) and real-world computing primitives.
 
-What transforms Cell OS from a conceptual biological metaphor into a
-specification-ready operating system layer is its transition from a descriptive
-model into a highly deterministic, programmatic control architecture grounded in
-the physical constraints of ultra-weak photon emission (UPE) and real-world
-computing primitives.
+────────────────────────────────────────────────────────────────────
+0. The Three-Layer Model
+────────────────────────────────────────────────────────────────────
+
+The SPA implements three stacked conceptual layers:
+
+  Zone Layer     — 8 navigation zones in traversal order:
+                   nucleus → cytoplasm → cytoskeleton → ribosomes →
+                   mitochondria → golgi → endoplasmic-reticulum → membrane
+                   Source: CellShellProvider.tsx (CELL_ZONES registry)
+
+  Organelle Layer — 15 granular biological structures, each mapped one-to-one
+                   to a real Android OS feature or Fairphone 5 hardware role.
+                   Source: domain/content/organelles.ts (CELL_MAPPINGS)
+
+  Substrate Layer — 17 real FP5 hardware and Android software nodes, each
+                   carrying a ClaimConfidence tag.
+                   Source: domain/content/substrate.ts (SUBSTRATE_NODES)
+
+Cross-links between organelles and substrate nodes are defined once in
+domain/content/mappings.ts and derived in both directions by selectors.ts.
 
 ────────────────────────────────────────────────────────────────────
 1. Hard Biophysical Quantification over Conceptual Analogy
@@ -55,13 +74,18 @@ The Attention Tensor: The codebase maps exactly 18 canonical BIOPHOTON_LINKS and
 zone × phase × scale coordinates). Execution importance is dynamically calculated
 via a σ-weighted tensor rather than subjective priority rules.
 
-Confidence-Bounded Weighting — three tiers:
+Confidence-Bounded Weighting — four confidence labels:
 
-  • verified:    σ 0.75–1.00 — pathways confirmed in peer-reviewed literature
-  • indicative:  σ 0.50–0.75 — vendor-declared or emerging evidence
-  • speculative: σ 0.30–0.50 — proposed but not directly measured
+  • verified:     σ ≥ 0.75    — pathway confirmed in peer-reviewed literature
+  • indicative:   σ 0.50–0.75 — mechanistically coherent, peer-reviewed, not yet
+                                independently replicated
+  • speculative:  σ 0.30–0.50 — physically plausible, indirect support only
+  • unconfirmed:  σ 0.30–0.50 — same σ range as speculative, but evidence is
+                                insufficient or contradictory (no supporting
+                                literature at all); used in DATA_CONTRACT.md as a
+                                stricter quality flag than speculative
 
-All three tiers are enforced by invariant 4 of the integrity test suite. As a
+All four labels are enforced by invariant 4 of the integrity test suite. As a
 concrete example, P1 (mitochondria→nucleus) carries σ = 0.65, placing it in the
 indicative tier — a well-grounded but not fully verified pathway.
 
@@ -70,58 +94,128 @@ indicative tier — a well-grounded but not fully verified pathway.
 ────────────────────────────────────────────────────────────────────
 
 The architectural design translates biological signaling routes (P1 through P7) into
-native Linux kernel and AOSP mechanisms. The canonical source→target directions,
-enforced by integrity invariant 2:
+native Linux kernel and AOSP mechanisms. These seven are the required pathways
+enforced by integrity invariant 2; they live inside an 18-edge biophoton graph
+that also includes 11 additional organelle-to-organelle links (e.g.
+nucleus→ribosomes, ER→golgi, vesicles→cell-membrane). The P-series canonical
+source→target directions, with full metadata:
 
-  P1: mitochondria → nucleus                (retrograde; oneway Binder; σ=0.65, indicative)
+  P1: mitochondria → nucleus
+        band=NIR (700–900 nm)  σ=0.65  indicative  ipc=binder
+        Retrograde; ROS burst reports to kernel power governor without blocking
+
   P2: endoplasmic-reticulum → mitochondria
-  P3: cell-membrane → membrane-receptors    (bystander broadcast; red band, verified)
+        band=red (570–670 nm)  σ=0.55  indicative  ipc=messenger
+        MAM Ca²⁺/ROS at 10–25 nm mitochondria-associated membrane contact site
+
+  P3: cell-membrane → membrane-receptors
+        band=red (570–670 nm)  σ=0.80  verified    ipc=unordered-broadcast
+        Verified bystander UPE 600–900 nm; most replicated functional biophoton pathway
+
   P4: nucleus → cytoplasm
-  P5: cytoskeleton → mitochondria          (microtubule waveguiding; dedicated Binder pools)
+        band=UV (200–380 nm)   σ=0.35  speculative ipc=ordered-broadcast
+        UV tautomeric emission; transmitter confirmed, cytoplasmic reception undemonstrated
+
+  P5: cytoskeleton → mitochondria
+        band=NIR (700–900 nm)  σ=0.60  indicative  ipc=binder
+        Microtubule waveguide (lumen 14 nm, n≈1.46 vs cytoplasm n≈1.35)
+
   P6: cell-membrane → nucleus
-  P7: mitochondria → mitochondria           (self-loop; intra-organelle feedback)
+        band=blue-green (450–550 nm)  σ=0.60  indicative  ipc=binder
+        Hardirq → Ca²⁺/CREB signaling → gene expression
+
+  P7: mitochondria → mitochondria
+        band=red (570–670 nm)  σ=0.65  indicative  ipc=messenger
+        Lateral ΔΨm oscillation sync; single 2023 experiment (PMC10560087),
+        not yet independently replicated — σ=0.65 reflects indicative cap
 
 Asynchronous Unclogged Telemetry (P1): Mitochondrial retrograde signaling
-(mitochondria→nucleus) specifies system-wide metabolic stress telemetry built as a
-non-blocking oneway Binder IPC transaction via /dev/binder. When metabolic stress
-spikes, the calling thread never blocks, aiming to prevent thread-pool starvation
-across low-level drivers.
+specifies system-wide metabolic stress telemetry built as a non-blocking oneway
+Binder IPC transaction via /dev/binder. Because the calling thread never blocks,
+this is designed to prevent thread-pool starvation across low-level drivers.
+The NPU analogue: the Hexagon 770's INT8 token burst has the same oxidative-burst
+kinetics — workload spike, followed immediately by a thermal/power retrograde signal
+(P1) to the kernel power governor (nucleus).
 
 Decoupled System-Wide Broadcasts (P3): Cell-membrane→membrane-receptors bystander
-signaling maps to unordered-broadcast Intents — a decentralized macro-coordination
-bus across separate daemon processes.
+signaling, the most firmly established functional biophoton pathway in the current
+literature (replicated independently across multiple labs, 2013–2024), maps to
+unordered-broadcast Intents — a decentralised macro-coordination bus across
+separate daemon processes. The FP5 analogue is the Project Treble double boundary
+(/system↔/vendor wall enforced at AIDL level, sealed by SELinux type-enforcement
+rules): crossing a well-defined enforced boundary with a broadcast signal is what
+both biology and Android's Broadcast Intent system do.
 
 Isolated Traffic Pipelines (P5): Cytoskeleton→mitochondria microtubule optical
-waveguiding maps to route-specific dedicated Binder thread pools. By pinning data
-transmission to specific channels based on the target organelle node, it is designed
-to reduce system bus flooding, context switching, and cache thrashing across CPU
-core clusters.
+waveguiding (lumen 14 nm, refractive index n≈1.46 vs cytoplasm n≈1.35) maps to
+route-specific dedicated Binder thread pools. By pinning NIR-band data transmission
+to specific channels based on the target organelle node, it is designed to reduce
+system bus flooding, context switching, and cache thrashing across CPU core clusters.
 
 ────────────────────────────────────────────────────────────────────
 3. Wavelength-Driven Kernel Thread Scheduling (Hardware QoS Blueprint)
 ────────────────────────────────────────────────────────────────────
 
 The spectral identity of a biological packet acts as a direct command for native
-thread urgency. The type system defines five wavelength bands (UV, blue-green, red,
-NIR, deep-NIR); three map to explicit scheduling domains:
+thread urgency. The type system defines five wavelength bands; all five map to
+explicit Android thread priority tiers and IPC channels:
 
-  UV band (200–380 nm):          THREAD_PRIORITY_URGENT_DISPLAY / SCHED_FIFO / SCHED_RR
-                                 Reflecting emergency DNA repair and nuclear preservation
-                                 events — highest urgency, immediate kernel interception.
+  UV (200–380 nm):          THREAD_PRIORITY_URGENT_DISPLAY — high-priority Binder
+                             DNA tautomeric transitions (nucleus) — highest privilege,
+                             lowest rate; emergency nuclear preservation events.
 
-  Blue-green band (450–550 nm):  THREAD_PRIORITY_FOREGROUND
-                                 Standard metabolic endpoints such as lipid peroxidation
-                                 termination — reliable mid-tier interface execution.
+  Blue-green (450–550 nm):  THREAD_PRIORITY_FOREGROUND — normal Binder
+                             Triplet carbonyl / Russell mechanism termination —
+                             reliable mid-tier foreground execution.
 
-  Deep-NIR band (900–1400 nm,    THREAD_PRIORITY_LOWEST / AOSP WorkManager background queue
-  singlet oxygen peak at 1270nm):Long-term ambient metabolic monitoring — deprioritized
-                                 and batched to minimize thermal dissipation and preserve
-                                 battery life. Note: the type system distinguishes NIR
-                                 (700–900 nm) from deep-NIR (900–1400 nm); the 1270 nm
-                                 singlet oxygen emission falls in the deep-NIR band.
+  Red (634–703 nm):         THREAD_PRIORITY_DEFAULT — Binder pool
+                             Singlet O₂ dimol; mitochondrial sustained emission at
+                             570–670 nm peak — default execution priority.
+
+  NIR (700–1,000 nm):       THREAD_PRIORITY_BACKGROUND — Broadcast Intent
+                             Biological window for tissue-propagating cell-to-cell
+                             signals; background priority, not queued for WorkManager.
+
+  Deep-NIR (900–1,400 nm,   THREAD_PRIORITY_LOWEST — AOSP WorkManager background queue
+  singlet O₂ peak 1,270 nm): Long-term ambient metabolic monitoring — deprioritised
+                             and batched. The 1,270 nm singlet oxygen monomol peak
+                             distinguishes deep-NIR from NIR (700–900 nm).
+
+Note on SCHED_FIFO/SCHED_RR: these Linux scheduler policies are the native
+implementation target for UV-band urgency; they are not set by the current React SPA
+and require the privileged system daemon described in Section VI.
 
 ────────────────────────────────────────────────────────────────────
-4. Automated Integrity Verification Guarded by Four Invariants
+4. The Perception → Affect → Expression Triadic Model (P→A→E)
+────────────────────────────────────────────────────────────────────
+
+Every signal flowing through Cell OS passes through three phases, visualised in
+the P→A→E flow diagram (cell-os-pae-flow.html):
+
+  PERCEPTION (門 — The Door): what is allowed in
+    Biological: membrane receptors + nuclear pores admit what may enter
+    Android:    HAL boundary · IRQ controller · Sensor HAL · SELinux TE enforcement
+    Organelles: cell-membrane (P3 σ=0.80, verified), membrane-receptors, nuclear-pores
+
+  AFFECT (室 — The Room): where work happens
+    Biological: cytoplasm and all organelles transform what was received
+    Android:    kernel scheduler · ART/JIT · system_server · Binder thread pool · PowerHAL
+    Key chips:  Kryo 670 CPU + Adreno 643 GPU + Hexagon 770 NPU
+
+  EXPRESSION (窗 — The Window): what flows back out
+    Biological: vesicles and Golgi package and ship products outward
+    Android:    PackageManager dispatch · Binder reply · SurfaceFlinger · sendBroadcast
+
+Cross-phase signal routes:
+  P→A  P6 (σ=0.60, indicative, blue-green, binder): cell-membrane → nucleus
+                                                      hardirq → Ca²⁺/CREB → gene expression
+  P→A  Receptor cascade (Messenger async): membrane-receptors → cytoplasm (GPCR amplification)
+  A→E  Secretory path (ordered-broadcast, red): ER → Golgi → vesicles (COPII + SNARE)
+  A→E  P4 (σ=0.35, speculative, UV, ordered-broadcast): nucleus → cytoplasm
+  E→P  Return loop (Messenger async, blue-green): vesicles → cell-membrane (SNARE/Binder reply)
+
+────────────────────────────────────────────────────────────────────
+5. Automated Integrity Verification Guarded by Four Invariants
 ────────────────────────────────────────────────────────────────────
 
 The integrity test suite (biophotonIntegrity.assert.ts) is a Node/tsx script
@@ -130,7 +224,7 @@ invoked via:
 
 It enforces four structural laws that must hold across the entire codebase:
 
-  Invariant 1: BIOPHOTON_LINKS.length === 18 (canonical post-§13 count)
+  Invariant 1: BIOPHOTON_LINKS.length === 18 (canonical count)
   Invariant 2: All P1–P7 required source→target tuples are present
   Invariant 3: Every link carries a non-empty wavelengthBand field
   Invariant 4: Every link's couplingSigma falls within its confidence-tier bounds
@@ -152,11 +246,11 @@ PART 2 — FAIRPHONE 5 DEPLOYMENT ARCHITECTURE BLUEPRINT
 
 For a deployment built on Android (AOSP) onto the modular Fairphone 5 hardware
 (Qualcomm QCM6490, 6nm TSMC N6 process, Android 13), Cell OS would operate as an
-autonomous middleware resource governor and topological orchestration layer. By
-binding its 18 canonical links, 39 qi-intersections, and σ-weighted attention tensor
-directly to lower-level Android primitives and Linux kernel modules, it would establish
-a new model for hardware-software interaction. The following describes that
-architectural blueprint across five operational domains.
+autonomous middleware resource governor. By binding its 18 canonical links, 39
+qi-intersections, and σ-weighted attention tensor directly to lower-level Android
+primitives and Linux kernel modules, it would establish a new model for
+hardware-software interaction. The following describes that architectural blueprint
+across five operational domains.
 
 ────────────────────────────────────────────────────────────────────
 I. The Execution Runtime: Intercepting AOSP Binder Traffic
@@ -171,11 +265,11 @@ AOSP environment.
 Deterministic Inter-Process Communication: When standard Android apps communicate
 via the Binder driver (/dev/binder), a native Cell OS daemon would intercept this
 IPC traffic. The functional mapping of biological pathways (P1–P7) would dictate
-how these messages are packaged, prioritized, and routed.
+how these messages are packaged, prioritised, and routed.
 
 Unclogged Asynchronous Pipelines: P1 implemented as an explicit oneway Binder
 transaction ensures continuous hardware telemetry packets — power consumption, bus
-utilization, thermal states — never stall the system's execution pipeline or starve
+utilisation, thermal states — never stall the system's execution pipeline or starve
 the standard Android thread pool. Telemetry flows freely without inducing interface
 lag or frame drops in user-facing applications.
 
@@ -185,11 +279,27 @@ II. Hardware Modularity: Mapping the Fairphone 5 Architecture as Organelles
 
 The Fairphone 5's uniquely modular design — removable motherboard, independent
 battery, distinct camera modules, decoupled display — maps directly to the
-biological topology:
+biological topology. The primary per-zone FP5 hardware analogues:
 
-  QCM6490 SoC / Kryo 670           →  Nucleus (core coordination, σ-weighted tensor)
-  Removable battery module          →  Mitochondria (metabolic stress / ROS analogue)
-  OLED display + touch sensors      →  Plasma Membrane (perception / user interaction)
+  Mitochondria   →  Hexagon 770 NPU (12 TOPS INT8) — primary compute energy burst
+                    + PMIC / Power HAL / PowerManager wake locks
+                    + 4,200 mAh battery (FP5 hardware spec) — physical energy reservoir
+                    The NPU's INT8 token-burst has the same kinetic signature as
+                    mitochondrial UPE under oxidative stress: workload spike followed
+                    by a retrograde thermal-throttling signal (P1) to the kernel.
+
+  Nucleus        →  QCM6490 SoC / Kryo 670 — core coordination, σ-weighted tensor
+                    + Linux kernel PID 1, syscall table, process scheduler
+
+  Cytoplasm      →  LPDDR4x 8 GB @ 2,133 MHz — physical cytoplasm / diffusion medium
+                    + Bionic heap (jemalloc) + Binder system bus
+
+  Cytoskeleton   →  Adreno 643 GPU — SurfaceFlinger composition passes
+                    + UI Framework / Choreographer (16 ms frame pulse)
+                    + Binder thread pool (P5 waveguide routing)
+
+  Plasma Membrane →  Project Treble double-wall: /system↔/vendor enforced by SELinux TE
+                    + OLED display + touch sensors (perception boundary)
 
 The Living Telemetry Loop: When a physical module experiences a state change — a
 thermal spike in the charging module, a frame-rate transition on the display — the
@@ -209,11 +319,17 @@ The Fairphone 5's Qualcomm QCM6490 chipset provides an asymmetric octa-core CPU
   4× Cortex-A55 Efficiency  @ 1.96 GHz   — low-power background work
 
 A native Cell OS implementation's spectral mapping would act as a custom Hardware
-QoS governor across these clusters:
+QoS governor across these clusters and the co-processor array:
 
-  UV (200–380 nm)         →  SCHED_FIFO  →  Cortex-A78 Prime (pinned via sched_setaffinity)
-  Blue-green (450–550 nm) →  CFS FOREGROUND  →  Cortex-A78 Performance cores (90Hz UI)
-  Deep-NIR (900–1400 nm)  →  cgroups background  →  Cortex-A55 Efficiency cores / WorkManager
+  UV (200–380 nm)            →  high-priority Binder  →  Cortex-A78 Prime (sched_setaffinity)
+  Blue-green (450–550 nm)    →  normal Binder         →  Cortex-A78 Performance cores (90 Hz UI)
+  Red (634–703 nm)           →  Binder pool           →  Cortex-A78 / default CFS scheduling
+  NIR (700–1,000 nm)         →  Broadcast Intent      →  Cortex-A55 Efficiency / background
+  Deep-NIR (900–1,400 nm)    →  WorkManager queue     →  Cortex-A55 Efficiency cores
+
+The Hexagon 770 NPU (12 TOPS INT8 via QNN SDK/FastRPC bridge) handles AI inference
+bursts — the mitochondrial load spike — while the Cortex-A78 Prime core acts as the
+nucleus: the kernel power governor receiving the retrograde P1 thermal report.
 
 ────────────────────────────────────────────────────────────────────
 IV. Resilient Self-Healing and the Prevention of Cascade Failures
@@ -223,27 +339,25 @@ The Cellular Bystander Protocol (P3): If an isolated system component or backgro
 daemon crashes, it emits a simulated stress burst through the cell-membrane→
 membrane-receptors pathway. Translated to software, this triggers an AOSP
 unordered-broadcast intent that alerts all adjacent, decoupled system daemons.
-Instead of crashing the entire system, surrounding services recognize the localized
-failure, adjust their σ-weighted attention metrics, contain the failing process,
-and step down execution priority until the component can safely restart. This
-is designed to replace rigid kernel panics with scale-invariant, non-destructive
+Instead of propagating a cascading failure, surrounding services recognise the
+localised event, adjust their σ-weighted attention metrics, contain the failing
+process, and step down execution priority until the component can safely restart.
+This is designed to replace rigid kernel panics with scale-invariant, non-destructive
 fault tolerance.
 
-Invariant Guardrails: Because the TypeScript layer validates its own 18 canonical
-links and four core invariants, it prevents circular dependency deadlocks. Any
-modification that routes data in an un-biological direction — such as an inverted
-nucleus-to-mitochondria control loop — is caught by invariant 2 when the integrity
-suite is run, ensuring the device remains stable in production.
+Invariant Guardrails: Any modification that routes data in an un-biological
+direction — such as an inverted nucleus-to-mitochondria control loop — is caught by
+invariant 2 when the integrity suite is run, preventing circular dependency deadlocks.
 
 ────────────────────────────────────────────────────────────────────
 V. Meaning for the Open-Source Project Lifecycle
 ────────────────────────────────────────────────────────────────────
 
-The precisely quantified architecture — three confidence tiers, P1–P7 canonical
+The precisely quantified architecture — four confidence labels, P1–P7 canonical
 pathway set, σ ≥ 0.75 for verified routes — makes the codebase fully auditable and
-extensible by other developers. Contributors can safely build custom extensions,
-device trees, or cell-native applications because the scheduling laws and
-communication channels are bound to clear mathematical realities.
+extensible. Contributors can safely build custom extensions, device trees, or
+cell-native applications because the scheduling laws and communication channels are
+bound to clear mathematical realities grounded in peer-reviewed biophoton biology.
 
 AOSP Compatibility: Because the biophoton logic is designed to route into standard
 Android primitives (Binder, system intents, thread priorities), it is structured to
@@ -296,11 +410,18 @@ Native implementation and security validation remain as the next phases of work.
 SOURCE-CODE REFERENCE — KEY NUMBERS AT A GLANCE
 ═══════════════════════════════════════════════════════════════════
 
-  BIOPHOTON_LINKS count:    18    (biophotonIntegrity.assert.ts, invariant 1)
+  BIOPHOTON_LINKS count:    18    (7 required P-series + 11 additional; invariant 1)
   QI_INTERSECTIONS count:   39    (of 264 possible; qiMatrix.ts)
-  Canonical pathways:       P1–P7 (7 required source→target tuples; invariant 2)
+  Canonical P-pathways:     P1–P7 (7 required source→target tuples; invariant 2)
   Integrity invariants:     4     (biophotonIntegrity.assert.ts)
-  σ confidence tiers:       verified 0.75–1.00 / indicative 0.50–0.75 / speculative 0.30–0.50
+  σ confidence labels:      verified ≥0.75 / indicative 0.50–0.75 / speculative 0.30–0.50
+                            unconfirmed 0.30–0.50 (no supporting literature)
+  Organelle nodes:          15    (CELL_MAPPINGS in organelles.ts)
+  Substrate nodes:          17    (SUBSTRATE_NODES in substrate.ts)
+  Navigation zones:         8     (CELL_ZONES in CellShellProvider.tsx)
   CPU topology (Kryo 670):  1×Cortex-A78 @2.71GHz + 3×Cortex-A78 @2.40GHz + 4×Cortex-A55 @1.96GHz
+  Co-processor:             Hexagon 770 NPU — 12 TOPS INT8 (HVX + HMX)
+  Memory:                   LPDDR4x 8 GB @ 2,133 MHz
   Wavelength bands:         UV | blue-green | red | NIR | deep-NIR (types.ts)
+  P→A→E phases:             Perception (門) · Affect (室) · Expression (窗)
   Current build:            React + Vite SPA — visualization and specification tool
