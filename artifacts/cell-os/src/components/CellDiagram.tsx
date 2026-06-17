@@ -88,6 +88,24 @@ const GLYPH_OFFSETS: Record<string, { dx: number; dy: number }> = {
   "membrane-receptors":    { dx:   0, dy: -16 },
 };
 
+/**
+ * Maps a biological wavelength band to its closest visible-spectrum hex color.
+ * UV and NIR are physically invisible — we use violet and amber as proxies so
+ * the overlay carries spectral identity without misrepresenting visibility.
+ *
+ * Source: BIOPHOTON_RESEARCH.md §6 spectral table + §9.3 IPC priority channel map.
+ */
+function wbc(band: string | undefined): string {
+  switch (band) {
+    case "UV":         return "#a78bfa"; // violet  — DNA tautomeric 200–380 nm
+    case "blue-green": return "#67e8f9"; // cyan    — Russell triplet carbonyl 450–550 nm
+    case "red":        return "#f87171"; // red     — singlet O₂ dimol 634–703 nm
+    case "NIR":        return "#fb923c"; // amber   — biological window 700–1000 nm (proxy)
+    case "deep-NIR":   return "#94a3b8"; // slate   — ¹O₂ monomol 1270 nm (proxy)
+    default:           return "#ffffff";
+  }
+}
+
 interface CellDiagramProps {
   activeIds: Set<string>;
   biophotonLinks?: Array<{
@@ -95,6 +113,8 @@ interface CellDiagramProps {
     targetId: string;
     /** 0–1 attention weight — drives stroke width and opacity. Default 0.5. */
     attentionWeight?: number;
+    /** Biological spectral emission band — drives stroke color. */
+    wavelengthBand?: string;
   }>;
   onHover: (id: string | null) => void;
   onClick: (id: string) => void;
@@ -525,19 +545,21 @@ export function CellDiagram({ activeIds, biophotonLinks, visitIntensity, onHover
         )}
 
         {/* ── Biophoton inter-organelle communication overlay ───────────────
-            Links are colored by the SOURCE organelle's zone color, so
-            each connection carries zone identity. strokeWidth is driven by
+            Links are colored by SPECTRAL EMISSION BAND (wbc()) — violet for
+            UV (DNA), cyan for blue-green (triplet carbonyl), red for ¹O₂
+            dimol, amber for NIR biological window, slate for deep-NIR.
+            This grounds the visual display in real biophoton spectral biology
+            (BIOPHOTON_RESEARCH.md §6 + §9.3). strokeWidth is driven by
             attentionWeight (0–1): light attention = thin/dim, focused
-            attention = thick/bright. Mirrors the transformer attention
-            mechanism's own weight distribution.
+            attention = thick/bright.
         ──────────────────────────────────────────────────────────────── */}
         {biophotonLinks && biophotonLinks.length > 0 && (
           <g id="biophoton-overlay" aria-hidden="true">
-            {biophotonLinks.map(({ sourceId, targetId, attentionWeight = 0.5 }) => {
+            {biophotonLinks.map(({ sourceId, targetId, attentionWeight = 0.5, wavelengthBand }) => {
               const src = ORGANELLE_CENTERS[sourceId];
               const tgt = ORGANELLE_CENTERS[targetId];
               if (!src || !tgt) return null;
-              const color = zc(sourceId);
+              const color = wbc(wavelengthBand);
               const width = 1.5 + attentionWeight * 4;
               const opacity = 0.3 + attentionWeight * 0.55;
               return (

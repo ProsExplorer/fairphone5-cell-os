@@ -117,6 +117,7 @@ export function CytoplasmPanel({ view, perceive }: Props) {
       sourceId: l.sourceOrganelleId,
       targetId: l.targetOrganelleId,
       attentionWeight: blendAttentionWeight(base, learned),
+      wavelengthBand: l.wavelengthBand,
     };
   });
 
