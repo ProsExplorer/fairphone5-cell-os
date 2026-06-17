@@ -114,7 +114,7 @@ interface CellDiagramProps {
     /** 0–1 attention weight — drives stroke width and opacity. Default 0.5. */
     attentionWeight?: number;
     /** Biological spectral emission band — drives stroke color. */
-    wavelengthBand?: string;
+    wavelengthBand?: "UV" | "blue-green" | "red" | "NIR" | "deep-NIR";
   }>;
   onHover: (id: string | null) => void;
   onClick: (id: string) => void;

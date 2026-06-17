@@ -48,7 +48,7 @@ The Android analogue: when an AIDL service publishes to the framework and a depe
 **Indicative.** Band: 450–703 nm. Source: lipid peroxidation cascade at the phospholipid bilayer when external oxidants attack. In Android 13 on the Fairphone 5, the HAL boundary (enforced by Project Treble since Android 8, reaching AIDL-native maturity in Android 13) is a double-leaflet structure: SELinux Type Enforcement rules are the tight junctions — no cross-domain passage permitted, enforced by LSM hooks — and Binder ashmem/memfd channels are the gap junctions — direct shared-memory pass-through between trusted compartments. This structural homology with the phospholipid bilayer is exact, not approximate, and the P3 pathway crossing this membrane carries the only **Verified** σ=0.80 in the entire tensor.
 
 ### Golgi Apparatus — *The Honest Gap*
-**Speculative.** No direct measurement of Golgi-localised biophoton emission has been published. The biological rationale exists — glycosylation reactions and vesicle budding consume GTP and generate ROS — but as of June 2026, zero experimental papers have isolated and quantified Golgi UPE. This is why every Golgi biophoton link in `mappings.ts` carries `confidence: "speculative"` and `couplingSigma: 0.45` (within the speculative tier 0.30–0.50). The speculative floor is not a design weakness; it is the correct representation of a genuine gap in the published literature.
+**Mixed — speculative for secretory-path links, indicative for the degradation route.** No direct measurement of Golgi-localised biophoton emission has been published. The biological rationale exists — glycosylation reactions and vesicle budding consume GTP and generate ROS — but as of June 2026, zero experimental papers have isolated and quantified Golgi UPE as an emitter. The *incoming* secretory-path links (`ER→golgi`, `ribosomes→golgi`) therefore carry `confidence: "speculative"` and `couplingSigma: 0.45`. However, the `golgi→lysosomes` degradation link is classified `"indicative"` (σ=0.60): mannose-6-phosphate receptor-mediated vesicle targeting is a well-characterised pathway whose ROS generation is mechanistically well-supported even without a direct Golgi UPE measurement — the emission from the delivered ROS cargo in the lysosomal lumen is what makes this link stronger. The honest gap is that Golgi *emission* is unmeasured; Golgi *routing* has mechanistic support.
 
 ---
 
@@ -59,12 +59,12 @@ The research produced a directed graph of seven inter-organelle biophoton signal
 | Pathway | Biological Route | Evidence | σ (code) | Android IPC Analogue |
 |---|---|---|---|---|
 | **P1** | Mitochondria → Nucleus retrograde | Indicative | 0.65 | Binder `oneway` to system server — energy subsystem signals kernel supervisor without blocking |
-| **P2** | ER → Mitochondria (MAM directed proxy) | Indicative | 0.55 | `mmap` shared ring buffer at contact-site; H₂O₂ diffusion at 10–25 nm gap |
+| **P2** | ER → Mitochondria (MAM directed proxy) | Indicative | 0.55 | Messenger async — directed proxy message to the contact-site mitochondrion; H₂O₂ diffusion at the 10–25 nm MAM gap is the biological analogue |
 | **P3** | Cell-membrane → Membrane-receptors | **Verified** | **0.80** | `sendBroadcast` unordered — fire-and-forget across process boundaries |
-| **P4** | Nucleus → Cytoplasm UV anterograde | Speculative | 0.35 | `printk` / `dmesg` — kernel one-way broadcast, UV band, low rate |
+| **P4** | Nucleus → Cytoplasm UV anterograde | Speculative | 0.35 | Ordered broadcast — priority-chained signal from kernel to userspace medium; receiver processes handle it in a defined dispatch order |
 | **P5** | Cytoskeleton microtubule waveguide | Indicative | 0.60 | Binder thread pool — directed routing, not broadcast topology |
 | **P6** | Cell-membrane → Nucleus retrograde | Indicative | 0.60 | `hardirq` → IRQ thread → syscall → kernel supervisor |
-| **P7** | Mitochondria ↔ Mitochondria lateral | Indicative | 0.65 | `LocalBroadcastManager` within service cluster — same-UID inter-process sync |
+| **P7** | Mitochondria ↔ Mitochondria lateral | Indicative | 0.65 | Messenger async — each node emits and receives to maintain cohort membrane-potential synchronisation |
 
 **P3 is the anchor.** The cell-to-cell extracellular bystander biophoton effect — where stressed cells alter the behaviour of distant, optically isolated neighbours via UPE at 600–900 nm — is the most firmly established functional biophoton signaling result in the current literature, replicated independently across multiple labs (2013–2024). In Cell OS, this is modeled in-device as the crossing of the HAL membrane boundary (`cell-membrane → membrane-receptors`), preserving the IPC topology while remaining within a single device's organelle graph. Every other pathway carries a lower σ because it has less replication behind it.
 
@@ -96,7 +96,7 @@ The research produced these verifiable changes to the codebase:
 
 2. **`QI_INTERSECTIONS`: 36 → 39.** Three new biophoton-grounded quantum intersection entries, reflecting the expanded pathway graph.
 
-3. **`ClaimConfidence`: 3-tier → 4-tier.** The `"speculative"` tier was added between `"indicative"` and `"unconfirmed"`. This distinction is biologically meaningful: `"speculative"` means mechanistically plausible with some indirect support; `"unconfirmed"` means the claim exists but lacks any supporting evidence. The Golgi links use `"speculative"`; a claim invented without literature would use `"unconfirmed"`.
+3. **`ClaimConfidence`: 3-tier → 4-tier.** The `"speculative"` tier was added between `"indicative"` and `"unconfirmed"`. This distinction is biologically meaningful: `"speculative"` means mechanistically plausible with some indirect support; `"unconfirmed"` means the claim exists but lacks any supporting evidence. The secretory-path Golgi links (`ER→golgi`, `ribosomes→golgi`) use `"speculative"`; a claim invented without any literature support would use `"unconfirmed"`.
 
 4. **`wavelengthBand` field on `BiophotonLink`.** Every link now carries one of: `"UV" | "blue-green" | "red" | "NIR" | "deep-NIR"`, populated from the emission profiles in `BIOPHOTON_RESEARCH.md §4` and `§6`.
 
@@ -106,7 +106,7 @@ The research produced these verifiable changes to the codebase:
 
 7. **`organelles.ts` explanations enriched.** Nucleus, mitochondria, and ER entries now include verified emission rates, wavelength bands, and source mechanisms cited from the research. These appear in the interactive InfoPanel when you click an organelle.
 
-8. **`biophotonIntegrity.assert.ts`.** A runtime integrity assertion enforces the canonical state: exactly 18 links, all P1–P7 source/target tuples present, every link has a `wavelengthBand`, and no link's σ exceeds its confidence tier ceiling (verified ≥ 0.75, indicative 0.50–0.75, speculative 0.30–0.50). This catches miscalibration at development time rather than runtime.
+8. **`biophotonIntegrity.assert.ts`.** A build-time test script (run via `pnpm --filter @workspace/cell-os run test:biophoton`) enforces the canonical state: exactly 18 links, all P1–P7 source/target tuples present, every link has a `wavelengthBand`, and every link's σ is within the tier bounds for its confidence level. It runs as part of the development check suite, not as app-runtime code.
 
 ---
 
@@ -114,7 +114,7 @@ The research produced these verifiable changes to the codebase:
 
 This section is as important as any other. FP5 developers extending the biophoton layer need to know exactly where the evidence stops.
 
-**Golgi UPE: zero measurements.** No published paper has directly measured biophoton emission from the Golgi apparatus. The σ=0.30–0.45 range for Golgi links is the speculative floor. Any link with `golgi-apparatus` as `sourceOrganelleId` is speculative by construction until a measurement is published.
+**Golgi UPE: zero direct measurements.** No published paper has isolated and quantified biophoton emission from the Golgi apparatus as an emitter. Secretory-path links where Golgi is the *target* (`ER→golgi`, `ribosomes→golgi`) carry σ=0.45/`"speculative"`. The `golgi→lysosomes` link is `"indicative"` (σ=0.60) because the routing mechanism is well-characterised, even though the Golgi emission itself is unmeasured. The distinction matters: if you add a new link with `golgi-apparatus` as `sourceOrganelleId`, the appropriate default is speculative unless the routing biology is independently well-characterised.
 
 **P4 (Nucleus → Cytoplasm): UV emission is verified, reception is not.** The 2024 Pietruszka & Marzec paper confirms that isolated DNA emits UV photons during tautomeric transitions. What has *not* been demonstrated is that cytoplasmic components receive those photons and change their behaviour as a result. The P4 σ=0.35 reflects this asymmetry: we know the transmitter exists; we are inferring the receiver.
 
@@ -143,6 +143,6 @@ This section is as important as any other. FP5 developers extending the biophoto
 | `verified` | ≥ 0.75 | Replicated, peer-reviewed experimental result | P3 cell-to-cell bystander (σ=0.80) |
 | `indicative` | 0.50–0.75 | Mechanistically coherent, peer-reviewed, not yet independently replicated | P1 mitochondria→nucleus (σ=0.65) |
 | `speculative` | 0.30–0.50 | Physically plausible, indirect support only | Golgi links (σ=0.45), P4 nucleus→cytoplasm (σ=0.35) |
-| `unconfirmed` | < 0.30 | Reserved for future hypotheses with no current literature support | — |
+| `unconfirmed` | 0.30–0.50 | Same σ range as speculative — distinguished by evidence quality, not magnitude; no supporting literature at all | — |
 
 *Source: BIOPHOTON_RESEARCH.md §9.4 calibration guidance, implemented in `biophotonIntegrity.assert.ts`.*
