@@ -14,7 +14,7 @@
 <script>
 "use strict";
 
-const W = 1760, H = 2380;
+const W = 2200, H = 2380;
 
 // ── Phase definitions ─────────────────────────────────────────────────────────
 const PHASES = [
@@ -29,7 +29,7 @@ const PHASES = [
     cellRole:  "Membrane receptors and nuclear pores admit what may enter.",
     chipRole:  "Sensors, I²C/SPI drivers, and the NNAPI entry point accept a unit of work.",
     androidSummary: "HAL boundary · IRQ controller · Sensor HAL · SELinux TE enforcement",
-    x: 40, w: 510
+    x: 40, w: 660
   },
   {
     id: "affect",
@@ -42,7 +42,7 @@ const PHASES = [
     cellRole:  "The cytoplasm and all organelles transform what was received.",
     chipRole:  "The Kryo 670 CPU, Adreno 643 GPU, and Hexagon 770 NPU compute the result.",
     androidSummary: "Kernel scheduler · ART/JIT · system_server · Binder thread pool · PowerHAL",
-    x: 620, w: 510
+    x: 770, w: 660
   },
   {
     id: "expression",
@@ -55,7 +55,7 @@ const PHASES = [
     cellRole:  "Vesicles and the Golgi package and ship products outward.",
     chipRole:  "The result returns to the app and onto the screen.",
     androidSummary: "PackageManager dispatch · Binder reply · SurfaceFlinger · sendBroadcast",
-    x: 1210, w: 510
+    x: 1500, w: 660
   }
 ];
 
@@ -338,8 +338,8 @@ function arrMarkerId(band) {
 }
 
 // ── Cross-phase arrows rendering ──────────────────────────────────────────────
-const GAP1_X = 555; // PERCEPTION right edge → AFFECT left
-const GAP2_X = 1135;
+const GAP1_X = 700; // PERCEPTION right edge → AFFECT left
+const GAP2_X = 1430;
 const RETURN_Y = PHASE_H + 60;
 
 function renderGapArrows(arrows, startX, startY, totalY) {
@@ -388,8 +388,8 @@ const tableRows = SCALES.map((s, i) => {
 <text x="55" y="${ry+24}" fill="${col}" font-size="13" font-weight="700" font-family="Courier New,monospace">${s.scale}</text>
 <text x="55" y="${ry+40}" fill="#475569" font-size="9" font-family="Courier New,monospace">scale</text>
 <text x="230" y="${ry+24}" fill="#0ea5e9" font-size="11" font-family="Courier New,monospace">PERCEPTION: ${s.perception}</text>
-<text x="720" y="${ry+24}" fill="#7c3aed" font-size="11" font-family="Courier New,monospace">AFFECT: ${s.affect}</text>
-<text x="1240" y="${ry+24}" fill="#f59e0b" font-size="11" font-family="Courier New,monospace">EXPRESSION: ${s.expression}</text>`;
+<text x="870" y="${ry+24}" fill="#7c3aed" font-size="11" font-family="Courier New,monospace">AFFECT: ${s.affect}</text>
+<text x="1600" y="${ry+24}" fill="#f59e0b" font-size="11" font-family="Courier New,monospace">EXPRESSION: ${s.expression}</text>`;
 }).join("\n");
 
 // ── Full SVG ──────────────────────────────────────────────────────────────────
@@ -427,9 +427,9 @@ ${PHASES.map(p => {
 <rect x="${p.x+COL_PAD}" y="254" width="${p.w-COL_PAD*2}" height="1" fill="${p.color}" fill-opacity="0.3"/>
 <text x="${cx}" y="272" text-anchor="middle" fill="#64748b" font-size="10.5" font-family="Courier New,monospace">${p.androidSummary}</text>
 <rect x="${p.x+COL_PAD}" y="282" width="${p.w-COL_PAD*2}" height="1" fill="${p.color}" fill-opacity="0.15"/>
-<text x="${cx}" y="300" text-anchor="middle" fill="#475569" font-size="10" font-family="Courier New,monospace">CELL: ${p.cellRole.length > 60 ? p.cellRole.substring(0,59)+"…" : p.cellRole}</text>
-<text x="${cx}" y="316" text-anchor="middle" fill="#475569" font-size="10" font-family="Courier New,monospace">CHIP: ${p.chipRole.length > 60 ? p.chipRole.substring(0,59)+"…" : p.chipRole}</text>
-<text x="${cx}" y="332" text-anchor="middle" fill="#334155" font-size="10" font-family="Courier New,monospace">CODE: ${p.codeRole.length > 60 ? p.codeRole.substring(0,59)+"…" : p.codeRole}</text>`;
+<text x="${cx}" y="300" text-anchor="middle" fill="#475569" font-size="10" font-family="Courier New,monospace">CELL: ${p.cellRole.length > 95 ? p.cellRole.substring(0,94)+"…" : p.cellRole}</text>
+<text x="${cx}" y="316" text-anchor="middle" fill="#475569" font-size="10" font-family="Courier New,monospace">CHIP: ${p.chipRole.length > 95 ? p.chipRole.substring(0,94)+"…" : p.chipRole}</text>
+<text x="${cx}" y="332" text-anchor="middle" fill="#334155" font-size="10" font-family="Courier New,monospace">CODE: ${p.codeRole.length > 95 ? p.codeRole.substring(0,94)+"…" : p.codeRole}</text>`;
 }).join("")}
 
 <!-- ── ORGANELLE CARDS ────────────────────────────────────────────── -->
