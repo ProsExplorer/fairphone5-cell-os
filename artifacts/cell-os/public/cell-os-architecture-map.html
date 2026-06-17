@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cell OS — Full Architecture Map</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0f172a; font-family: 'Courier New', Courier, monospace; }
+  svg { display: block; }
+  .node-name { font-family: 'Courier New', Courier, monospace; font-weight: 700; }
+  .node-android { font-family: 'Courier New', Courier, monospace; }
+  .node-sub { font-family: 'Courier New', Courier, monospace; }
+</style>
+</head>
+<body>
+<script>
+"use strict";
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+const W = 1760, H = 2820;
+
+const ZONE_COLORS = {
+  nucleus:                  "#7c3aed",
+  membrane:                 "#0ea5e9",
+  cytoplasm:                "#22c55e",
+  "endoplasmic-reticulum":  "#14b8a6",
+  golgi:                    "#f59e0b",
+  mitochondria:             "#ef4444",
+  ribosomes:                "#06b6d4",
+  cytoskeleton:             "#64748b"
+};
+
+const BAND_COLORS = {
+  UV:           "#a78bfa",
+  "blue-green": "#67e8f9",
+  red:          "#f87171",
+  NIR:          "#fb923c",
+  "deep-NIR":   "#94a3b8"
+};
+
+const CONF_COLORS = {
+  verified:    "#4ade80",
+  indicative:  "#fbbf24",
+  speculative: "#f87171",
+  unconfirmed: "#94a3b8"
+};
+
+// ── Organelle Nodes (absolute SVG coords) ────────────────────────────────────
+const NODES = [
+  { id:"cell-membrane",        zone:"membrane",                name:"Cell Membrane",          android:"HAL Boundary · SELinux TE · hardirq",      band:"blue-green", x:880,  y:300  },
+  { id:"membrane-receptors",   zone:"membrane",                name:"Membrane Receptors",     android:"Sensors · Connectivity · IRQ Source ID",   band:null,        x:1590, y:730  },
+  { id:"nucleus",              zone:"nucleus",                 name:"Nucleus",                android:"Linux Kernel · syscall table · process 1",  band:"UV",        x:880,  y:700  },
+  { id:"dna",                  zone:"nucleus",                 name:"DNA / Genome",           android:"System Code · Verified Boot · dm-verity",   band:"UV",        x:800,  y:745  },
+  { id:"nucleolus",            zone:"nucleus",                 name:"Nucleolus",              android:"ART dex2oat · AOT preload factory",          band:null,        x:880,  y:770  },
+  { id:"nuclear-pores",        zone:"nucleus",                 name:"Nuclear Pores",          android:"System APIs · Binder gateway · SVC #0",    band:null,        x:960,  y:745  },
+  { id:"endoplasmic-reticulum",zone:"endoplasmic-reticulum",   name:"Endoplasmic Reticulum",  android:"App Framework · AIDL · system_server",      band:"red",       x:545,  y:575  },
+  { id:"ribosomes",            zone:"ribosomes",               name:"Ribosomes",              android:"ART JIT/AOT · dex2oat · Hexagon 770 NPU",   band:"blue-green",x:1090, y:490  },
+  { id:"mitochondria",         zone:"mitochondria",            name:"Mitochondria",           android:"Power · Battery · Hexagon NPU burst",        band:"red",       x:385,  y:790  },
+  { id:"golgi-apparatus",      zone:"golgi",                   name:"Golgi Apparatus",        android:"PackageManager · dexopt · update dispatch",  band:null,        x:1145, y:820  },
+  { id:"cytoskeleton",         zone:"cytoskeleton",            name:"Cytoskeleton",           android:"UI Framework · Choreographer · Binder MT",   band:"NIR",       x:880,  y:1060 },
+  { id:"cytoplasm",            zone:"cytoplasm",               name:"Cytoplasm",              android:"RAM / LPDDR4x · Bionic heap · Binder bus",   band:null,        x:655,  y:900  },
+  { id:"lysosomes",            zone:"cytoplasm",               name:"Lysosomes",              android:"LMKD · uninstall · TEE blast containment",  band:null,        x:485,  y:955  },
+  { id:"vacuole",              zone:"cytoplasm",               name:"Vacuole",                android:"Storage · ext4 / F2FS · Keystore vault",    band:null,        x:975,  y:965  },
+  { id:"vesicles",             zone:"cytoplasm",               name:"Vesicles",               android:"Inter-app Messaging · Binder transactions", band:"blue-green",x:1255, y:560  }
+];
+
+// ── Biophoton Links (18 canonical + secretory pathway) ───────────────────────
+const LINKS = [
+  { src:"mitochondria",         tgt:"nucleus",              band:"NIR",          sigma:0.65, conf:"indicative",  ipc:"binder",             label:"P1",  note:"ROS retrograde → power reports to kernel" },
+  { src:"nucleus",              tgt:"ribosomes",            band:"blue-green",   sigma:0.65, conf:"indicative",  ipc:"messenger",          label:"",    note:"Transcription → translation instruction flow" },
+  { src:"endoplasmic-reticulum",tgt:"golgi-apparatus",      band:"red",          sigma:0.45, conf:"speculative", ipc:"ordered-broadcast",  label:"",    note:"COPII vesicle budding to cis-Golgi (speculative)" },
+  { src:"mitochondria",         tgt:"nuclear-pores",        band:"NIR",          sigma:0.55, conf:"indicative",  ipc:"unordered-broadcast",label:"",    note:"NIR gradient to nuclear pore complex" },
+  { src:"membrane-receptors",   tgt:"cytoplasm",            band:"blue-green",   sigma:0.65, conf:"indicative",  ipc:"messenger",          label:"",    note:"GPCR cascade → cytoplasmic kinase amplification" },
+  { src:"golgi-apparatus",      tgt:"lysosomes",            band:"red",          sigma:0.60, conf:"indicative",  ipc:"ordered-broadcast",  label:"",    note:"TGN M6P routing → lysosomal degradation" },
+  { src:"mitochondria",         tgt:"dna",                  band:"red",          sigma:0.70, conf:"indicative",  ipc:"binder",             label:"",    note:"Cytochrome c / ROS → DNA fragmentation trigger" },
+  { src:"ribosomes",            tgt:"golgi-apparatus",      band:"blue-green",   sigma:0.45, conf:"speculative", ipc:"messenger",          label:"",    note:"Translation → Golgi packaging cadence (speculative)" },
+  { src:"dna",                  tgt:"ribosomes",            band:"UV",           sigma:0.40, conf:"speculative", ipc:"ordered-broadcast",  label:"",    note:"UV tautomeric emission → ribosome entrainment" },
+  { src:"cell-membrane",        tgt:"nucleus",              band:"blue-green",   sigma:0.60, conf:"indicative",  ipc:"binder",             label:"P6",  note:"hardirq → Ca²⁺/CREB → gene expression" },
+  { src:"endoplasmic-reticulum",tgt:"lysosomes",            band:"red",          sigma:0.60, conf:"indicative",  ipc:"ordered-broadcast",  label:"",    note:"ER-phagy: reticulophagy → lysosomal bulk sweep" },
+  { src:"endoplasmic-reticulum",tgt:"vesicles",             band:"red",          sigma:0.60, conf:"indicative",  ipc:"ordered-broadcast",  label:"",    note:"COPII direct budding: ER → secretory vesicles" },
+  { src:"vesicles",             tgt:"cell-membrane",        band:"blue-green",   sigma:0.70, conf:"indicative",  ipc:"messenger",          label:"",    note:"SNARE exocytosis: vesicle fuses to plasma membrane" },
+  { src:"endoplasmic-reticulum",tgt:"mitochondria",         band:"red",          sigma:0.55, conf:"indicative",  ipc:"messenger",          label:"P2",  note:"MAM Ca²⁺ / ROS at 10–25 nm contact site" },
+  { src:"cell-membrane",        tgt:"membrane-receptors",   band:"red",          sigma:0.80, conf:"verified",    ipc:"unordered-broadcast",label:"P3",  note:"VERIFIED: bystander UPE 600–900 nm broadcast" },
+  { src:"nucleus",              tgt:"cytoplasm",            band:"UV",           sigma:0.35, conf:"speculative", ipc:"ordered-broadcast",  label:"P4",  note:"UV tautomeric emission → cytoplasmic medium" },
+  { src:"cytoskeleton",         tgt:"mitochondria",         band:"NIR",          sigma:0.60, conf:"indicative",  ipc:"binder",             label:"P5",  note:"MT waveguide routing NIR (700–900 nm)" },
+  { src:"mitochondria",         tgt:"mitochondria",         band:"red",          sigma:0.65, conf:"indicative",  ipc:"messenger",          label:"P7",  note:"Lateral sync: non-contact ΔΨm oscillation (2023)" }
+];
+
+// ── Substrate Nodes ───────────────────────────────────────────────────────────
+const SUBSTRATES = [
+  { id:"qcm6490",      name:"QCM6490 SoC",       detail:"Qualcomm SM6375 · 6 nm",        role:"SoC orchestrator" },
+  { id:"kryo670",      name:"Kryo 670 CPU",       detail:"1+3+4 core · 2.2 GHz",         role:"General compute" },
+  { id:"adreno643",    name:"Adreno 643 GPU",     detail:"Graphics + parallel compute",   role:"Render pipeline" },
+  { id:"hexagon770",   name:"Hexagon 770 NPU",    detail:"12 TOPS INT8 · HVX + HMX",     role:"Neural inference" },
+  { id:"lpddr4x",      name:"LPDDR4x Memory",     detail:"8 GB · 2133 MHz shared",       role:"System RAM pool" },
+  { id:"nnapi",        name:"NNAPI / QNN SDK",    detail:"SW dispatch gateway",           role:"ML routing layer" },
+  { id:"quantization", name:"Quantization Engine",detail:"FP32→INT8/INT4 precision",     role:"Model format adapter" },
+  { id:"power",        name:"Power & Thermal",    detail:"PMIC · 4200 mAh · throttle",   role:"Energy budget" },
+  { id:"powerhal",     name:"Power HAL",          detail:"Android Power HAL 1.3+",       role:"Power state mgmt" },
+  { id:"binder-ipc",   name:"Binder IPC",         detail:"/dev/binder · mmap · ioctl",   role:"Cross-process RPC" },
+  { id:"art-runtime",  name:"ART Runtime",        detail:"Managed execution · dex2oat",  role:"App execution engine" },
+  { id:"bionic-libc",  name:"Bionic libc",        detail:"jemalloc · pthreads · dlopen", role:"C runtime + heap" },
+  { id:"zygote",       name:"Zygote",             detail:"Process fork template · /data/dalvik-cache", role:"App spawn hub" },
+  { id:"lmkd",         name:"LMKD",              detail:"oom_score_adj · SIGKILL",       role:"Memory reclamation" },
+  { id:"selinux-policy",name:"SELinux Policy",   detail:"TE rules · neverallow",         role:"MAC enforcement" },
+  { id:"package-manager",name:"PackageManager",  detail:"APK install · dexopt · uninstall", role:"App lifecycle" },
+  { id:"keystore-tee", name:"Keystore / TEE",     detail:"ARM TrustZone · KeyMint / StrongBox", role:"Secure enclave" }
+];
+
+// ── Organelle → Substrate connections ────────────────────────────────────────
+const ORG_SUB = [
+  ["nucleus","qcm6490"], ["nucleus","kryo670"], ["nucleus","zygote"],
+  ["dna","quantization"], ["dna","zygote"],
+  ["nucleolus","hexagon770"], ["nucleolus","quantization"],
+  ["nuclear-pores","nnapi"], ["nuclear-pores","binder-ipc"], ["nuclear-pores","selinux-policy"], ["nuclear-pores","keystore-tee"],
+  ["cell-membrane","power"], ["cell-membrane","selinux-policy"], ["cell-membrane","kryo670"],
+  ["membrane-receptors","nnapi"], ["membrane-receptors","kryo670"],
+  ["mitochondria","hexagon770"], ["mitochondria","power"], ["mitochondria","powerhal"],
+  ["endoplasmic-reticulum","adreno643"], ["endoplasmic-reticulum","art-runtime"], ["endoplasmic-reticulum","powerhal"],
+  ["ribosomes","hexagon770"], ["ribosomes","art-runtime"],
+  ["golgi-apparatus","nnapi"], ["golgi-apparatus","art-runtime"], ["golgi-apparatus","package-manager"], ["golgi-apparatus","bionic-libc"],
+  ["cytoskeleton","kryo670"], ["cytoskeleton","adreno643"],
+  ["cytoplasm","lpddr4x"], ["cytoplasm","bionic-libc"],
+  ["lysosomes","nnapi"], ["lysosomes","lmkd"], ["lysosomes","package-manager"], ["lysosomes","keystore-tee"],
+  ["vacuole","power"], ["vacuole","lmkd"], ["vacuole","keystore-tee"],
+  ["vesicles","nnapi"], ["vesicles","binder-ipc"]
+];
+
+// ── SVG Helpers ───────────────────────────────────────────────────────────────
+function ns(tag, attrs = {}, inner = "") {
+  const a = Object.entries(attrs).map(([k,v]) => `${k}="${v}"`).join(" ");
+  return `<${tag} ${a}>${inner}</${tag}>`;
+}
+
+function linkPath(x1, y1, x2, y2, curvature = 70) {
+  if (x1 === x2 && y1 === y2) {
+    return `M ${x1-25} ${y1-30} C ${x1-90} ${y1-110} ${x1+90} ${y1-110} ${x2+25} ${y2-30}`;
+  }
+  const dx = x2 - x1, dy = y2 - y1;
+  const len = Math.sqrt(dx*dx + dy*dy) || 1;
+  const px = -dy / len, py = dx / len;
+  const qx = ((x1+x2)/2 + px * curvature).toFixed(1);
+  const qy = ((y1+y2)/2 + py * curvature).toFixed(1);
+  return `M ${x1} ${y1} Q ${qx} ${qy} ${x2} ${y2}`;
+}
+
+function labelPos(x1, y1, x2, y2, curvature = 70) {
+  if (x1 === x2 && y1 === y2) return { x: x1, y: y1 - 120 };
+  const dx = x2 - x1, dy = y2 - y1;
+  const len = Math.sqrt(dx*dx + dy*dy) || 1;
+  const px = -dy / len, py = dx / len;
+  return {
+    x: ((x1+x2)/2 + px * curvature * 0.7).toFixed(1),
+    y: ((y1+y2)/2 + py * curvature * 0.7).toFixed(1)
+  };
+}
+
+// ── Build SVG ─────────────────────────────────────────────────────────────────
+const nodeMap = {};
+NODES.forEach(n => nodeMap[n.id] = n);
+
+const GRID_Y = 1230;
+const GRID_LEFT = 240;
+const COL_W = 98;
+const ROW_H = 49;
+const SUB_LABEL_X = 230;
+
+const nodeOrder = NODES.map(n => n.id);
+const subOrder  = SUBSTRATES.map(s => s.id);
+
+function colX(orgId) { return GRID_LEFT + nodeOrder.indexOf(orgId) * COL_W + COL_W/2; }
+function rowY(subId) { return GRID_Y + 120 + subOrder.indexOf(subId) * ROW_H + ROW_H/2; }
+
+// ── Arrowhead defs ────────────────────────────────────────────────────────────
+const bands = Object.keys(BAND_COLORS);
+const markerDefs = bands.map(b =>
+  `<marker id="arrow-${b.replace(/[^a-z]/g,'')}" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+    <path d="M0,0 L0,6 L8,3 z" fill="${BAND_COLORS[b]}"/>
+  </marker>`
+).join("\n");
+
+function markerId(band) {
+  return `url(#arrow-${band.replace(/[^a-z]/g,'')})`;
+}
+
+// ── Zone background ellipses ──────────────────────────────────────────────────
+const zoneBGs = [
+  { zone:"nucleus",               cx:880,  cy:735,  rx:170, ry:115 },
+  { zone:"endoplasmic-reticulum", cx:545,  cy:600,  rx:165, ry:95  },
+  { zone:"ribosomes",             cx:1090, cy:510,  rx:145, ry:85  },
+  { zone:"mitochondria",          cx:385,  cy:810,  rx:135, ry:80  },
+  { zone:"golgi",                 cx:1145, cy:840,  rx:155, ry:80  },
+  { zone:"cytoskeleton",          cx:880,  cy:1050, rx:240, ry:60  },
+];
+
+const zoneBGSvg = zoneBGs.map(z =>
+  `<ellipse cx="${z.cx}" cy="${z.cy}" rx="${z.rx}" ry="${z.ry}" fill="${ZONE_COLORS[z.zone]}" fill-opacity="0.10" stroke="${ZONE_COLORS[z.zone]}" stroke-opacity="0.25" stroke-width="1.5" stroke-dasharray="6,4"/>`
+).join("\n");
+
+// ── Biophoton link paths ──────────────────────────────────────────────────────
+const CURV = { P1:80, P6:85, P3:70, P2:75, P4:70, P5:85, P7:0 };
+
+const linkSvg = LINKS.map(lk => {
+  const src = nodeMap[lk.src], tgt = nodeMap[lk.tgt];
+  if (!src || !tgt) return "";
+  const curv = lk.label && CURV[lk.label] !== undefined ? CURV[lk.label] : 65;
+  const d = linkPath(src.x, src.y, tgt.x, tgt.y, curv);
+  const col = BAND_COLORS[lk.band] || "#ffffff";
+  const sw  = (1.8 + lk.sigma * 3.0).toFixed(1);
+  const op  = lk.conf === "verified" ? 0.92 : lk.conf === "indicative" ? 0.68 : 0.40;
+  const mid = labelPos(src.x, src.y, tgt.x, tgt.y, curv);
+  const dashArray = lk.conf === "speculative" ? 'stroke-dasharray="6,4"' : '';
+  const arrow = markerId(lk.band);
+
+  let labelEl = "";
+  if (lk.label) {
+    labelEl = `<rect x="${Number(mid.x)-16}" y="${Number(mid.y)-10}" width="32" height="20" rx="4" fill="#1e293b" stroke="${col}" stroke-width="1"/>
+    <text x="${mid.x}" y="${Number(mid.y)+5}" text-anchor="middle" fill="${col}" font-size="11" font-weight="bold" font-family="Courier New,monospace">${lk.label}</text>`;
+  }
+
+  return `<path d="${d}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-opacity="${op}" ${dashArray} marker-end="${arrow}"/>
+${labelEl}`;
+}).join("\n");
+
+// ── Organelle node boxes ──────────────────────────────────────────────────────
+const NW = 186, NH = 54;
+const nodeSvg = NODES.map(n => {
+  const col = ZONE_COLORS[n.zone];
+  const bCol = n.band ? BAND_COLORS[n.band] : null;
+  const x = n.x - NW/2, y = n.y - NH/2;
+  return `<g id="node-${n.id}" role="img" aria-label="${n.name}">
+  <rect x="${x}" y="${y}" width="${NW}" height="${NH}" rx="9" fill="#1e293b" stroke="${col}" stroke-width="1.8"/>
+  <rect x="${x}" y="${y}" width="5" height="${NH}" rx="3" fill="${col}"/>
+  <text x="${x+12}" y="${y+18}" fill="${col}" font-size="12.5" font-weight="700" font-family="Courier New,monospace">${n.name}</text>
+  <text x="${x+12}" y="${y+34}" fill="#94a3b8" font-size="10" font-family="Courier New,monospace">${n.android.length > 34 ? n.android.substring(0,33)+"…" : n.android}</text>
+  ${bCol ? `<circle cx="${x+NW-10}" cy="${y+11}" r="5.5" fill="${bCol}" fill-opacity="0.9"/>` : ""}
+</g>`;
+}).join("\n");
+
+// ── Cell outer ellipse ────────────────────────────────────────────────────────
+const cellEllipse = `<ellipse cx="880" cy="710" rx="830" ry="460" fill="none" stroke="#0ea5e9" stroke-width="2" stroke-opacity="0.4" stroke-dasharray="12,6"/>`;
+const cellLabel   = `<text x="100" y="320" fill="#0ea5e9" fill-opacity="0.5" font-size="13" font-family="Courier New,monospace">PLASMA MEMBRANE BOUNDARY · SELinux TE domain isolation</text>`;
+
+// ── Legend ────────────────────────────────────────────────────────────────────
+const LEGEND_Y = 140;
+const zoneLegend = Object.entries(ZONE_COLORS).map(([z,c], i) =>
+  `<rect x="${30 + i*204}" y="${LEGEND_Y}" width="16" height="16" rx="3" fill="${c}"/>
+   <text x="${30 + i*204 + 22}" y="${LEGEND_Y+13}" fill="#e2e8f0" font-size="12" font-family="Courier New,monospace">${z}</text>`
+).join("\n");
+
+const bandLegend = Object.entries(BAND_COLORS).map(([b,c], i) =>
+  `<circle cx="${30 + i*220 + 8}" cy="${LEGEND_Y+44}" r="6" fill="${c}"/>
+   <text x="${30 + i*220 + 22}" y="${LEGEND_Y+49}" fill="#e2e8f0" font-size="12" font-family="Courier New,monospace">${b} band</text>`
+).join("\n");
+
+const confLegend = Object.entries(CONF_COLORS).map(([c,col], i) =>
+  `<rect x="${30 + i*230}" y="${LEGEND_Y+68}" width="26" height="8" rx="2" fill="${col}"/>
+   <text x="${30 + i*230 + 32}" y="${LEGEND_Y+77}" fill="#e2e8f0" font-size="12" font-family="Courier New,monospace">${c}</text>`
+).join("\n");
+
+const dashLegend =
+  `<line x1="1060" y1="${LEGEND_Y+72}" x2="1100" y2="${LEGEND_Y+72}" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5,3"/>
+   <text x="1108" y="${LEGEND_Y+77}" fill="#94a3b8" font-size="12" font-family="Courier New,monospace">dashed = speculative (σ &lt; 0.50)</text>`;
+
+// ── Substrate grid ────────────────────────────────────────────────────────────
+const orgSet = new Set(ORG_SUB.map(([o]) => o));
+const subSet = new Set(ORG_SUB.map(([,s]) => s));
+
+// Column headers (rotated)
+const colHeaders = nodeOrder.map((orgId, i) => {
+  const n = nodeMap[orgId];
+  const cx = GRID_LEFT + i * COL_W + COL_W/2;
+  const cy = GRID_Y + 110;
+  const col = ZONE_COLORS[n.zone];
+  return `<g transform="translate(${cx},${cy}) rotate(-55)">
+    <text x="0" y="0" fill="${col}" font-size="11" font-family="Courier New,monospace" text-anchor="start">${n.name}</text>
+  </g>`;
+}).join("\n");
+
+// Column zone color stripe under header
+const colStripes = nodeOrder.map((orgId, i) => {
+  const n = nodeMap[orgId];
+  const cx = GRID_LEFT + i * COL_W;
+  return `<rect x="${cx}" y="${GRID_Y+130}" width="${COL_W-1}" height="${ROW_H*17}" fill="${ZONE_COLORS[n.zone]}" fill-opacity="0.06"/>`;
+}).join("\n");
+
+// Row labels
+const rowLabels = SUBSTRATES.map((sub, i) => {
+  const cy = GRID_Y + 130 + i * ROW_H + ROW_H/2;
+  const alt = i % 2 === 0;
+  return `${alt ? `<rect x="${GRID_LEFT}" y="${GRID_Y+130+i*ROW_H}" width="${COL_W*15}" height="${ROW_H}" fill="#ffffff" fill-opacity="0.02"/>` : ""}
+<text x="${SUB_LABEL_X}" y="${cy+5}" text-anchor="end" fill="#e2e8f0" font-size="11" font-family="Courier New,monospace">${sub.name}</text>
+<text x="${GRID_LEFT + COL_W*15 + 8}" y="${cy+5}" fill="#64748b" font-size="10" font-family="Courier New,monospace">${sub.role}</text>`;
+}).join("\n");
+
+// Dot matrix
+const dots = ORG_SUB.map(([orgId, subId]) => {
+  const cx = GRID_LEFT + nodeOrder.indexOf(orgId) * COL_W + COL_W/2;
+  const cy = GRID_Y + 130 + subOrder.indexOf(subId) * ROW_H + ROW_H/2;
+  const col = ZONE_COLORS[nodeMap[orgId].zone];
+  return `<circle cx="${cx}" cy="${cy}" r="7" fill="${col}" fill-opacity="0.85"/>`;
+}).join("\n");
+
+// Grid lines
+const gridH = SUBSTRATES.map((_, i) =>
+  `<line x1="${GRID_LEFT}" y1="${GRID_Y+130+i*ROW_H}" x2="${GRID_LEFT+COL_W*15}" y2="${GRID_Y+130+i*ROW_H}" stroke="#334155" stroke-width="0.5"/>`
+).join("\n");
+const gridV = nodeOrder.map((_, i) =>
+  `<line x1="${GRID_LEFT+i*COL_W}" y1="${GRID_Y+130}" x2="${GRID_LEFT+i*COL_W}" y2="${GRID_Y+130+ROW_H*17}" stroke="#334155" stroke-width="0.5"/>`
+).join("\n");
+const gridBorder = `<rect x="${GRID_LEFT}" y="${GRID_Y+130}" width="${COL_W*15}" height="${ROW_H*17}" fill="none" stroke="#475569" stroke-width="1.2"/>`;
+
+// ── Full SVG ──────────────────────────────────────────────────────────────────
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+<defs>
+${markerDefs}
+<style>text { user-select: none; }</style>
+</defs>
+
+<!-- Background -->
+<rect width="${W}" height="${H}" fill="#0f172a"/>
+
+<!-- ── HEADER ────────────────────────────────────────────────────── -->
+<rect x="0" y="0" width="${W}" height="130" fill="#0a0f1e"/>
+<text x="40" y="48" fill="#e2e8f0" font-size="26" font-weight="700" font-family="Courier New,monospace">CELL OS — FULL ARCHITECTURE MAP</text>
+<text x="40" y="74" fill="#64748b" font-size="14" font-family="Courier New,monospace">Fairphone 5 · QCM6490 SoC · 15 Organelles · 17 Substrates · 18 Biophoton Links (P1–P7 canonical) · 8 Zones</text>
+<text x="40" y="98" fill="#475569" font-size="12" font-family="Courier New,monospace">Source: BIOPHOTON_RESEARCH.md (June 2026) · σ-tiers: verified ≥0.75 · indicative 0.50–0.75 · speculative 0.30–0.50</text>
+<text x="${W-40}" y="98" text-anchor="end" fill="#334155" font-size="11" font-family="Courier New,monospace">cell-os-architecture-map.html · v1.0</text>
+
+<!-- ── LEGEND ────────────────────────────────────────────────────── -->
+<rect x="0" y="130" width="${W}" height="110" fill="#0d1526"/>
+<text x="40" y="${LEGEND_Y-8}" fill="#475569" font-size="11" font-family="Courier New,monospace">ZONES:</text>
+${zoneLegend}
+<text x="40" y="${LEGEND_Y+36}" fill="#475569" font-size="11" font-family="Courier New,monospace">SPECTRAL BANDS (biophoton link color):</text>
+${bandLegend}
+<text x="40" y="${LEGEND_Y+62}" fill="#475569" font-size="11" font-family="Courier New,monospace">CONFIDENCE TIERS (link thickness α weight):</text>
+${confLegend}
+${dashLegend}
+
+<!-- ── CELL DIAGRAM ───────────────────────────────────────────────── -->
+<text x="40" y="268" fill="#475569" font-size="13" font-weight="700" font-family="Courier New,monospace">CELL DIAGRAM — Biophoton Signal Network</text>
+
+${cellEllipse}
+${cellLabel}
+
+<!-- Zone background ellipses -->
+${zoneBGSvg}
+
+<!-- Biophoton links (drawn before nodes so nodes sit on top) -->
+${linkSvg}
+
+<!-- Organelle node boxes -->
+${nodeSvg}
+
+<!-- Section separator -->
+<line x1="40" y1="${GRID_Y-20}" x2="${W-40}" y2="${GRID_Y-20}" stroke="#334155" stroke-width="1"/>
+<text x="40" y="${GRID_Y+5}" fill="#475569" font-size="13" font-weight="700" font-family="Courier New,monospace">SUBSTRATE CONNECTIVITY MATRIX — Organelle → FP5 Hardware / Android Software</text>
+<text x="40" y="${GRID_Y+22}" fill="#334155" font-size="11" font-family="Courier New,monospace">Filled circle = verified substrate link from mappings.ts · Color = organelle zone</text>
+
+<!-- Grid column headers (organelle names, rotated) -->
+${colHeaders}
+
+<!-- Zone color column stripes -->
+${colStripes}
+
+<!-- Grid horizontal lines -->
+${gridH}
+
+<!-- Grid vertical lines -->
+${gridV}
+
+${gridBorder}
+
+<!-- Substrate row labels -->
+${rowLabels}
+
+<!-- Connection dots -->
+${dots}
+
+<!-- ── SUBSTRATE KEY ──────────────────────────────────────────────── -->
+<rect x="0" y="${GRID_Y+130+ROW_H*17+20}" width="${W}" height="220" fill="#0d1526"/>
+<text x="40" y="${GRID_Y+130+ROW_H*17+46}" fill="#475569" font-size="13" font-weight="700" font-family="Courier New,monospace">SUBSTRATE KEY — Fairphone 5 Hardware + Android System Layer</text>
+${SUBSTRATES.map((s,i) => {
+  const col = i < 8 ? 0 : 1;
+  const row = i % 8;
+  const bx = 40 + col*880;
+  const by = GRID_Y+130+ROW_H*17+68 + row*22;
+  return `<text x="${bx}" y="${by}" fill="#94a3b8" font-size="11" font-family="Courier New,monospace"><tspan fill="#e2e8f0" font-weight="700">${s.name}</tspan>  ${s.detail} · ${s.role}</text>`;
+}).join("\n")}
+
+<!-- ── FOOTER ────────────────────────────────────────────────────── -->
+<rect x="0" y="${H-60}" width="${W}" height="60" fill="#0a0f1e"/>
+<text x="40" y="${H-32}" fill="#334155" font-size="11" font-family="Courier New,monospace">Cell OS © 2026 · Fairphone 5 FP5 Developer Reference · BIOPHOTON_RESEARCH.md 34-source corpus · biophotonIntegrity.assert.ts enforces canonical counts at build time</text>
+<text x="${W-40}" y="${H-32}" text-anchor="end" fill="#334155" font-size="11" font-family="Courier New,monospace">P→A→E triadic flow: see cell-os-pae-flow.html</text>
+
+</svg>`;
+
+document.write(svg);
+</script>
+</body>
+</html>

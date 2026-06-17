@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cell OS — Perception · Affect · Expression</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0f172a; font-family: 'Courier New', Courier, monospace; }
+  svg { display: block; }
+</style>
+</head>
+<body>
+<script>
+"use strict";
+
+const W = 1760, H = 2380;
+
+// ── Phase definitions ─────────────────────────────────────────────────────────
+const PHASES = [
+  {
+    id: "perception",
+    glyph: "門",
+    title: "PERCEPTION",
+    subtitle: "The Door — what is allowed in",
+    color: "#0ea5e9",
+    bg: "#0ea5e9",
+    codeRole:  "Typed inputs and event handlers receive a signal at the edge.",
+    cellRole:  "Membrane receptors and nuclear pores admit what may enter.",
+    chipRole:  "Sensors, I²C/SPI drivers, and the NNAPI entry point accept a unit of work.",
+    androidSummary: "HAL boundary · IRQ controller · Sensor HAL · SELinux TE enforcement",
+    x: 40, w: 510
+  },
+  {
+    id: "affect",
+    glyph: "室",
+    title: "AFFECT",
+    subtitle: "The Room — where work happens",
+    color: "#7c3aed",
+    bg: "#7c3aed",
+    codeRole:  "Pure functions derive new state in one open space, without tangled branches.",
+    cellRole:  "The cytoplasm and all organelles transform what was received.",
+    chipRole:  "The Kryo 670 CPU, Adreno 643 GPU, and Hexagon 770 NPU compute the result.",
+    androidSummary: "Kernel scheduler · ART/JIT · system_server · Binder thread pool · PowerHAL",
+    x: 620, w: 510
+  },
+  {
+    id: "expression",
+    glyph: "窗",
+    title: "EXPRESSION",
+    subtitle: "The Window — what flows back out",
+    color: "#f59e0b",
+    bg: "#f59e0b",
+    codeRole:  "Results leave through clear outputs and callbacks, never trapped.",
+    cellRole:  "Vesicles and the Golgi package and ship products outward.",
+    chipRole:  "The result returns to the app and onto the screen.",
+    androidSummary: "PackageManager dispatch · Binder reply · SurfaceFlinger · sendBroadcast",
+    x: 1210, w: 510
+  }
+];
+
+// ── Zone colors ───────────────────────────────────────────────────────────────
+const ZC = {
+  nucleus:                  "#7c3aed",
+  membrane:                 "#0ea5e9",
+  cytoplasm:                "#22c55e",
+  "endoplasmic-reticulum":  "#14b8a6",
+  golgi:                    "#f59e0b",
+  mitochondria:             "#ef4444",
+  ribosomes:                "#06b6d4",
+  cytoskeleton:             "#64748b"
+};
+
+const BC = {
+  UV:           "#a78bfa",
+  "blue-green": "#67e8f9",
+  red:          "#f87171",
+  NIR:          "#fb923c",
+  "deep-NIR":   "#94a3b8"
+};
+
+// ── Organelle cards per phase ─────────────────────────────────────────────────
+const PERCEPTION_CARDS = [
+  {
+    id: "cell-membrane",
+    zone: "membrane",
+    name: "Cell Membrane",
+    android: "HAL Boundary · SELinux TE · hardirq source",
+    fp5: "Project Treble double-wall: /system ↔ /vendor enforced by SELinux neverallow. Tight junctions = TE rules, gap junctions = Binder ashmem.",
+    band: "blue-green",
+    sigma: 0.80,
+    conf: "verified",
+    link: "P3 verified (σ=0.80): broadcasts UPE to all neighbors"
+  },
+  {
+    id: "membrane-receptors",
+    zone: "membrane",
+    name: "Membrane Receptors",
+    android: "Sensor HAL · IRQ discriminator · I²C/SPI input drivers",
+    fp5: "Kryo 670 GIC-500 interrupt controller identifies IRQ source (GICD_ISPENDR) before dispatching ISR — receptor discrimination before cascade trigger.",
+    band: null,
+    sigma: 0.65,
+    conf: "indicative",
+    link: "Receptor→cytoplasm (σ=0.65): GPCR cascade → messenger"
+  },
+  {
+    id: "nuclear-pores",
+    zone: "nucleus",
+    name: "Nuclear Pores",
+    android: "System APIs · syscall gate · SVC #0 · Binder ServiceManager",
+    fp5: "Binder /dev/binder ioctl IS the nuclear pore: user-space makes SVC #0, kernel validates capabilities, passes exactly what is permitted and nothing more.",
+    band: null,
+    sigma: 0.55,
+    conf: "indicative",
+    link: "Mito→nuclear-pores (σ=0.55): NIR energy signal gated here"
+  }
+];
+
+const AFFECT_CARDS = [
+  {
+    id: "nucleus",
+    zone: "nucleus",
+    name: "Nucleus",
+    android: "Linux Kernel · PID 1 · process control · kernel syscall table",
+    fp5: "The kernel is the nucleus: every process runs in its domain, every call crosses via SVC #0. The scheduler is the cell-cycle clock.",
+    band: "UV",
+    sigma: 0.65,
+    conf: "indicative",
+    link: "P1 in (σ=0.65, NIR): power reports to kernel. P4 out (σ=0.35, UV): anterograde UV → cytoplasm"
+  },
+  {
+    id: "dna",
+    zone: "nucleus",
+    name: "DNA / Genome",
+    android: "System code · dm-verity · Verified Boot · AVB chain",
+    fp5: "dm-verity Merkle tree is the genome: every block hash is a base-pair check. A single-bit flip triggers an abort exactly as a DNA replication error triggers NER.",
+    band: "UV",
+    sigma: 0.40,
+    conf: "speculative",
+    link: "DNA→ribosomes (σ=0.40, UV): transcription → translation (speculative)"
+  },
+  {
+    id: "nucleolus",
+    zone: "nucleus",
+    name: "Nucleolus",
+    android: "ART dex2oat · AOT preload · Hexagon 770 NPU pre-warm",
+    fp5: "dex2oat at boot is the nucleolus: mass-producing ribosome components (compiled .oat files) before the factory opens. NPU model pre-warm = rRNA synthesis.",
+    band: null,
+    sigma: null,
+    conf: null,
+    link: "Supplies compiled methods to Ribosomes (ART) and GPU shader cache"
+  },
+  {
+    id: "mitochondria",
+    zone: "mitochondria",
+    name: "Mitochondria",
+    android: "Power subsystem · Battery IRQ · Hexagon 770 NPU token burst",
+    fp5: "NPU token-burst (INT8 at 12 TOPS) has identical oxidative-burst kinetics to mitochondrial UPE under load. P1 retrograde (σ=0.65, NIR) → power governor. P7 lateral sync (σ=0.65) → service cluster cohort.",
+    band: "red",
+    sigma: 0.65,
+    conf: "indicative",
+    link: "P1 out (σ=0.65, NIR binder): reports to Nucleus. P7 self (σ=0.65, red): lateral sync within cluster"
+  },
+  {
+    id: "endoplasmic-reticulum",
+    zone: "endoplasmic-reticulum",
+    name: "Endoplasmic Reticulum",
+    android: "App Framework (framework.jar) · AIDL · system_server services",
+    fp5: "AIDL service publication IS protein folding: a misfolded service (crash/restart) is UPR stress. ER-phagy = ART interpreter fallback pool swept by PackageManager dexopt.",
+    band: "red",
+    sigma: 0.55,
+    conf: "indicative",
+    link: "P2 out (σ=0.55, red messenger): to Mitochondria MAM. ER→Golgi (σ=0.45, speculative)"
+  },
+  {
+    id: "ribosomes",
+    zone: "ribosomes",
+    name: "Ribosomes",
+    android: "ART JIT / AOT compiler · Hexagon 770 NPU inference kernel",
+    fp5: "JIT translates hot DEX bytecode at runtime (exactly as ribosomes translate mRNA). The Hexagon HVX SIMD = ribosome peptidyl-transferase center — the actual synthesis hardware.",
+    band: "blue-green",
+    sigma: 0.65,
+    conf: "indicative",
+    link: "Nucleus→Ribosomes (σ=0.65, blue-green): transcription instruction flow"
+  },
+  {
+    id: "cytoskeleton",
+    zone: "cytoskeleton",
+    name: "Cytoskeleton",
+    android: "UI Framework · Choreographer · View hierarchy · Binder thread pool",
+    fp5: "Microtubules route biophotons as waveguides (MT lumen 14 nm, n≈1.46 vs cytoplasm n≈1.35). P5 (σ=0.60, NIR, binder): routes energy signals to Mitochondria. Choreographer 16 ms frame pulse = cytoskeletal beating frequency.",
+    band: "NIR",
+    sigma: 0.60,
+    conf: "indicative",
+    link: "P5 out (σ=0.60, NIR binder): MT waveguide → Mitochondria"
+  },
+  {
+    id: "cytoplasm",
+    zone: "cytoplasm",
+    name: "Cytoplasm",
+    android: "RAM · LPDDR4x 8 GB · Bionic heap (jemalloc) · Binder system bus",
+    fp5: "The Binder bus IS the cytoplasm: every message floats through it to reach any organelle. LPDDR4x at 2133 MHz = cytoplasmic diffusion constant. P4 in (σ=0.35, UV): nuclear broadcast received here.",
+    band: null,
+    sigma: 0.35,
+    conf: "speculative",
+    link: "P4 in (σ=0.35, UV): nucleus UV anterograde broadcast (speculative)"
+  }
+];
+
+const EXPRESSION_CARDS = [
+  {
+    id: "golgi-apparatus",
+    zone: "golgi",
+    name: "Golgi Apparatus",
+    android: "PackageManager · dexopt · APK verification · update dispatch",
+    fp5: "cis→medial→trans Golgi = compile→verify→install pipeline. Trans-Golgi Network = final APK sort: install dispatch (lysosomes=uninstall), update route (vesicles=Binder reply buffer).",
+    band: null,
+    sigma: 0.60,
+    conf: "indicative",
+    link: "Golgi→Lysosomes (σ=0.60, red): failed packages → forced-uninstall"
+  },
+  {
+    id: "vesicles",
+    zone: "cytoplasm",
+    name: "Vesicles",
+    android: "Binder transactions · SharedMemory · ashmem reply buffers",
+    fp5: "SNARE exocytosis = Binder reply: v-SNARE on vesicle zippers with t-SNARE on membrane, one write + one read, no intermediate copy. COPII budding = ART emitting compiled stubs directly to mmap segments.",
+    band: "blue-green",
+    sigma: 0.70,
+    conf: "indicative",
+    link: "Vesicles→Membrane (σ=0.70, blue-green messenger): SNARE exocytosis = Binder reply"
+  },
+  {
+    id: "lysosomes",
+    zone: "cytoplasm",
+    name: "Lysosomes",
+    android: "LMKD · PackageManager uninstall · ARM TrustZone TEE",
+    fp5: "LMKD bulk-kills cached processes in oom_score_adj order = lysosomal autophagy. PackageManager force-stop = receptor-mediated targeted degradation. TEE = peroxisome: dangerous chemistry (key material) contained in secure-world enclave.",
+    band: null,
+    sigma: 0.60,
+    conf: "indicative",
+    link: "Golgi→Lysosomes (σ=0.60): TGN M6P routing → degradation"
+  },
+  {
+    id: "vacuole",
+    zone: "cytoplasm",
+    name: "Vacuole",
+    android: "Storage · ext4/F2FS · Keystore / StrongBox · key vault",
+    fp5: "Vacuole stores material sequestered from the cytoplasm — TEE key material never leaves Secure World exactly as vacuolar contents never expose to cytoplasmic enzymes. LMKD reclaims vacuole-cached memory under pressure.",
+    band: null,
+    sigma: null,
+    conf: null,
+    link: "Long-term sequestered storage; reclaimed by LMKD under memory pressure"
+  }
+];
+
+// ── Cross-phase arrows ────────────────────────────────────────────────────────
+// Between PERCEPTION and AFFECT (x ~= 550-620)
+const PA_ARROWS = [
+  { label:"P6 (σ=0.80→0.60,indicative)", ipc:"hardirq → Binder → syscall", band:"blue-green", desc:"cell-membrane → nucleus: Ca²⁺/CREB gene expression" },
+  { label:"receptor cascade", ipc:"Messenger async", band:"blue-green", desc:"membrane-receptors → cytoplasm: GPCR amplification" },
+  { label:"portal gating", ipc:"SVC #0 / Binder", band:"NIR", desc:"nuclear-pores → nucleus: vetted signals pass in" }
+];
+
+// Between AFFECT and EXPRESSION (x ~= 1130-1210)
+const AE_ARROWS = [
+  { label:"secretory path", ipc:"ordered-broadcast", band:"red", desc:"ER → Golgi → vesicles: COPII budding + SNARE dispatch" },
+  { label:"P4 (σ=0.35,speculative)", ipc:"ordered-broadcast", band:"UV", desc:"nucleus → cytoplasm: UV anterograde broadcast" },
+  { label:"ribosome product", ipc:"messenger", band:"blue-green", desc:"ribosomes → golgi: compiled method → packaging" }
+];
+
+// Return loop: EXPRESSION → PERCEPTION
+const EP_ARROWS = [
+  { label:"SNARE / Binder reply", ipc:"messenger", band:"blue-green", desc:"vesicles → cell-membrane: closes the cycle" }
+];
+
+// ── SVG helpers ───────────────────────────────────────────────────────────────
+function bandDot(band, x, y) {
+  if (!band) return "";
+  return `<circle cx="${x}" cy="${y}" r="5.5" fill="${BC[band]}" fill-opacity="0.9"/>`;
+}
+
+function confBar(conf, sigma, x, y, w) {
+  if (!conf) return "";
+  const colors = { verified:"#4ade80", indicative:"#fbbf24", speculative:"#f87171" };
+  const col = colors[conf] || "#94a3b8";
+  const sw = sigma ? (sigma * w * 0.6).toFixed(0) : w * 0.3;
+  return `<rect x="${x}" y="${y}" width="${sw}" height="3" rx="1.5" fill="${col}" fill-opacity="0.7"/>`;
+}
+
+// ── Phase column content ──────────────────────────────────────────────────────
+const CARD_H  = 118;
+const CARD_GAP = 10;
+const COL_PAD = 16;
+const CARD_START_Y = 380;
+
+function renderCards(cards, phase) {
+  const cx = phase.x;
+  const cw = phase.w;
+  return cards.map((c, i) => {
+    const y = CARD_START_Y + i * (CARD_H + CARD_GAP);
+    const col = ZC[c.zone];
+    const bCol = c.band ? BC[c.band] : null;
+    return `
+<g id="pae-${c.id}">
+  <rect x="${cx+COL_PAD}" y="${y}" width="${cw-COL_PAD*2}" height="${CARD_H}" rx="10" fill="#1e293b" stroke="${col}" stroke-width="1.8"/>
+  <rect x="${cx+COL_PAD}" y="${y}" width="5" height="${CARD_H}" rx="3" fill="${col}"/>
+  <text x="${cx+COL_PAD+14}" y="${y+20}" fill="${col}" font-size="13" font-weight="700" font-family="Courier New,monospace">${c.name}</text>
+  ${bCol ? bandDot(c.band, cx+cw-COL_PAD-14, y+16) : ""}
+  <text x="${cx+COL_PAD+14}" y="${y+36}" fill="#94a3b8" font-size="10.5" font-family="Courier New,monospace">${c.android}</text>
+  <text x="${cx+COL_PAD+14}" y="${y+52}" fill="#64748b" font-size="9.5" font-family="Courier New,monospace" xml:space="preserve">${(c.fp5||"").length > 90 ? c.fp5.substring(0,89)+"…" : (c.fp5||"")}</text>
+  <rect x="${cx+COL_PAD+14}" y="${y+64}" width="${cw-COL_PAD*2-28}" height="1" fill="#334155"/>
+  <text x="${cx+COL_PAD+14}" y="${y+78}" fill="#475569" font-size="9" font-family="Courier New,monospace">${c.link||""}</text>
+  ${c.sigma !== null && c.sigma !== undefined ? confBar(c.conf, c.sigma, cx+COL_PAD+14, y+90, cw-COL_PAD*2-28) : ""}
+  ${c.sigma !== null && c.sigma !== undefined ? `<text x="${cx+COL_PAD+14}" y="${y+109}" fill="${c.conf==="verified"?"#4ade80":c.conf==="indicative"?"#fbbf24":"#f87171"}" font-size="9.5" font-family="Courier New,monospace">${c.conf}  σ=${c.sigma}</text>` : `<text x="${cx+COL_PAD+14}" y="${y+109}" fill="#475569" font-size="9.5" font-family="Courier New,monospace">structural node — no biophoton σ assigned</text>`}
+</g>`;
+  }).join("\n");
+}
+
+// Phase column height (for border)
+function phaseContentHeight(cards) {
+  return CARD_START_Y - 10 + cards.length * (CARD_H + CARD_GAP);
+}
+
+const maxCards = Math.max(PERCEPTION_CARDS.length, AFFECT_CARDS.length, EXPRESSION_CARDS.length);
+const PHASE_H = CARD_START_Y + maxCards * (CARD_H + CARD_GAP) + 30;
+
+// ── Arrowhead markers ─────────────────────────────────────────────────────────
+const ARROW_BANDS = ["blue-green","red","NIR","UV"];
+const markerDefs = ARROW_BANDS.map(b =>
+  `<marker id="parr-${b.replace(/[^a-z]/g,'')}" markerWidth="9" markerHeight="9" refX="8" refY="3.5" orient="auto">
+    <path d="M0,0 L0,7 L9,3.5 z" fill="${BC[b]}"/>
+  </marker>`
+).join("\n");
+
+function arrMarkerId(band) {
+  return `url(#parr-${(band||"red").replace(/[^a-z]/g,'')})`;
+}
+
+// ── Cross-phase arrows rendering ──────────────────────────────────────────────
+const GAP1_X = 555; // PERCEPTION right edge → AFFECT left
+const GAP2_X = 1135;
+const RETURN_Y = PHASE_H + 60;
+
+function renderGapArrows(arrows, startX, startY, totalY) {
+  return arrows.map((a, i) => {
+    const y = startY + i * 70;
+    const col = BC[a.band] || "#94a3b8";
+    return `
+<line x1="${startX}" y1="${y+15}" x2="${startX+60}" y2="${y+15}" stroke="${col}" stroke-width="2" marker-end="${arrMarkerId(a.band)}"/>
+<text x="${startX+3}" y="${y+9}" fill="${col}" font-size="9.5" font-weight="700" font-family="Courier New,monospace">${a.label}</text>
+<text x="${startX+3}" y="${y+26}" fill="#64748b" font-size="9" font-family="Courier New,monospace">${a.ipc}</text>
+<text x="${startX+3}" y="${y+38}" fill="#475569" font-size="8.5" font-family="Courier New,monospace">${a.desc.length > 28 ? a.desc.substring(0,27)+"…" : a.desc}</text>`;
+  }).join("\n");
+}
+
+const gap1Arrows = renderGapArrows(PA_ARROWS, GAP1_X, CARD_START_Y + 40, PHASE_H);
+const gap2Arrows = renderGapArrows(AE_ARROWS, GAP2_X, CARD_START_Y + 40, PHASE_H);
+
+// Return loop (bottom)
+const returnY = PHASE_H + 80;
+const returnLoop = `
+<text x="40" y="${returnY-10}" fill="#475569" font-size="11" font-family="Courier New,monospace">CYCLE RETURN: EXPRESSION → PERCEPTION (SNARE exocytosis closes each signal loop)</text>
+<line x1="${PHASES[2].x+PHASES[2].w/2}" y1="${returnY+5}" x2="${PHASES[2].x+PHASES[2].w/2}" y2="${returnY+40}" stroke="${BC["blue-green"]}" stroke-width="1.5"/>
+<line x1="${PHASES[2].x+PHASES[2].w/2}" y1="${returnY+40}" x2="${PHASES[0].x+PHASES[0].w/2}" y2="${returnY+40}" stroke="${BC["blue-green"]}" stroke-width="1.5" stroke-dasharray="8,5"/>
+<line x1="${PHASES[0].x+PHASES[0].w/2}" y1="${returnY+40}" x2="${PHASES[0].x+PHASES[0].w/2}" y2="${returnY+5}" stroke="${BC["blue-green"]}" stroke-width="1.5" marker-end="${arrMarkerId("blue-green")}"/>
+<text x="${W/2}" y="${returnY+37}" text-anchor="middle" fill="${BC["blue-green"]}" font-size="10" font-family="Courier New,monospace">Binder reply / SNARE vesicle → membrane  ·  σ=0.70 · indicative · closes the triadic cycle</text>`;
+
+// ── Nine-Scale table ──────────────────────────────────────────────────────────
+const TABLE_Y = returnY + 80;
+const SCALES = [
+  { scale:"Code", perception:"Typed inputs & event handlers",      affect:"Pure functions transform state",         expression:"Outputs and callbacks return results" },
+  { scale:"Cell", perception:"Membrane receptors & nuclear pores", affect:"Cytoplasm & organelles transform",       expression:"Vesicles & Golgi package and ship" },
+  { scale:"Chip", perception:"Sensors, IRQ, NNAPI entry point",    affect:"Kryo CPU / Adreno GPU / Hexagon NPU",   expression:"Result to app & screen display" }
+];
+
+const tableHeader = `
+<rect x="40" y="${TABLE_Y}" width="${W-80}" height="30" fill="#0d1526"/>
+<text x="${W/2}" y="${TABLE_Y+21}" text-anchor="middle" fill="#94a3b8" font-size="13" font-weight="700" font-family="Courier New,monospace">THREE-SCALE P→A→E CORRESPONDENCE (from TRIAD_PHASES in mappings.ts)</text>`;
+
+const tableRows = SCALES.map((s, i) => {
+  const ry = TABLE_Y + 30 + i * 55;
+  const bkg = i % 2 === 0 ? "#0d1526" : "#111827";
+  const scaleColors = { Code:"#a78bfa", Cell:"#67e8f9", Chip:"#fb923c" };
+  const col = scaleColors[s.scale];
+  return `
+<rect x="40" y="${ry}" width="${W-80}" height="55" fill="${bkg}"/>
+<text x="55" y="${ry+24}" fill="${col}" font-size="13" font-weight="700" font-family="Courier New,monospace">${s.scale}</text>
+<text x="55" y="${ry+40}" fill="#475569" font-size="9" font-family="Courier New,monospace">scale</text>
+<text x="230" y="${ry+24}" fill="#0ea5e9" font-size="11" font-family="Courier New,monospace">PERCEPTION: ${s.perception}</text>
+<text x="720" y="${ry+24}" fill="#7c3aed" font-size="11" font-family="Courier New,monospace">AFFECT: ${s.affect}</text>
+<text x="1240" y="${ry+24}" fill="#f59e0b" font-size="11" font-family="Courier New,monospace">EXPRESSION: ${s.expression}</text>`;
+}).join("\n");
+
+// ── Full SVG ──────────────────────────────────────────────────────────────────
+const ACTUAL_H = TABLE_Y + 30 + SCALES.length * 55 + 100;
+
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${ACTUAL_H}" viewBox="0 0 ${W} ${ACTUAL_H}">
+<defs>
+${markerDefs}
+<style>text { user-select: none; }</style>
+</defs>
+
+<!-- Background -->
+<rect width="${W}" height="${ACTUAL_H}" fill="#0f172a"/>
+
+<!-- ── HEADER ────────────────────────────────────────────────────── -->
+<rect x="0" y="0" width="${W}" height="120" fill="#0a0f1e"/>
+<text x="40" y="46" fill="#e2e8f0" font-size="26" font-weight="700" font-family="Courier New,monospace">CELL OS — PERCEPTION · AFFECT · EXPRESSION</text>
+<text x="40" y="72" fill="#64748b" font-size="14" font-family="Courier New,monospace">The Triadic Signal Flow · Fairphone 5 (QCM6490) · All 15 Organelles · Android IPC Mechanisms · Biophoton σ-weights</text>
+<text x="40" y="96" fill="#475569" font-size="12" font-family="Courier New,monospace">Source: TRIAD_PHASES in mappings.ts (BIOPHOTON_RESEARCH.md June 2026) · TriadPhase type in types.ts</text>
+<text x="${W-40}" y="96" text-anchor="end" fill="#334155" font-size="11" font-family="Courier New,monospace">cell-os-pae-flow.html · v1.0</text>
+
+<!-- ── PHASE COLUMN BACKGROUNDS ──────────────────────────────────── -->
+${PHASES.map(p => `
+<rect x="${p.x}" y="130" width="${p.w}" height="${PHASE_H-130}" rx="12" fill="${p.bg}" fill-opacity="0.06" stroke="${p.bg}" stroke-opacity="0.25" stroke-width="1.5"/>
+<rect x="${p.x}" y="130" width="${p.w}" height="240" rx="12" fill="${p.bg}" fill-opacity="0.12"/>
+`).join("")}
+
+<!-- ── PHASE HEADERS ──────────────────────────────────────────────── -->
+${PHASES.map(p => {
+  const cx = p.x + p.w/2;
+  return `
+<text x="${cx}" y="175" text-anchor="middle" fill="${p.color}" font-size="60" font-family="Courier New,monospace" opacity="0.5">${p.glyph}</text>
+<text x="${cx}" y="220" text-anchor="middle" fill="${p.color}" font-size="22" font-weight="700" font-family="Courier New,monospace">${p.title}</text>
+<text x="${cx}" y="244" text-anchor="middle" fill="${p.color}" font-size="12" font-family="Courier New,monospace" opacity="0.8">${p.subtitle}</text>
+<rect x="${p.x+COL_PAD}" y="254" width="${p.w-COL_PAD*2}" height="1" fill="${p.color}" fill-opacity="0.3"/>
+<text x="${cx}" y="272" text-anchor="middle" fill="#64748b" font-size="10.5" font-family="Courier New,monospace">${p.androidSummary}</text>
+<rect x="${p.x+COL_PAD}" y="282" width="${p.w-COL_PAD*2}" height="1" fill="${p.color}" fill-opacity="0.15"/>
+<text x="${cx}" y="300" text-anchor="middle" fill="#475569" font-size="10" font-family="Courier New,monospace">CELL: ${p.cellRole.length > 60 ? p.cellRole.substring(0,59)+"…" : p.cellRole}</text>
+<text x="${cx}" y="316" text-anchor="middle" fill="#475569" font-size="10" font-family="Courier New,monospace">CHIP: ${p.chipRole.length > 60 ? p.chipRole.substring(0,59)+"…" : p.chipRole}</text>
+<text x="${cx}" y="332" text-anchor="middle" fill="#334155" font-size="10" font-family="Courier New,monospace">CODE: ${p.codeRole.length > 60 ? p.codeRole.substring(0,59)+"…" : p.codeRole}</text>`;
+}).join("")}
+
+<!-- ── ORGANELLE CARDS ────────────────────────────────────────────── -->
+${renderCards(PERCEPTION_CARDS, PHASES[0])}
+${renderCards(AFFECT_CARDS, PHASES[1])}
+${renderCards(EXPRESSION_CARDS, PHASES[2])}
+
+<!-- ── GAP LABELS ───────────────────────────────────────────────── -->
+<text x="${GAP1_X+30}" y="${CARD_START_Y+18}" text-anchor="middle" fill="#334155" font-size="10" font-family="Courier New,monospace">P→A</text>
+<text x="${GAP2_X+30}" y="${CARD_START_Y+18}" text-anchor="middle" fill="#334155" font-size="10" font-family="Courier New,monospace">A→E</text>
+
+<!-- ── CROSS-PHASE ARROWS ─────────────────────────────────────────── -->
+${gap1Arrows}
+${gap2Arrows}
+
+<!-- ── RETURN CYCLE ──────────────────────────────────────────────── -->
+${returnLoop}
+
+<!-- ── IPC MECHANISM LEGEND ──────────────────────────────────────── -->
+<rect x="0" y="${TABLE_Y-55}" width="${W}" height="50" fill="#0d1526"/>
+<text x="40" y="${TABLE_Y-34}" fill="#475569" font-size="11" font-weight="700" font-family="Courier New,monospace">IPC MECHANISM KEY:</text>
+<text x="220" y="${TABLE_Y-34}" fill="#67e8f9" font-size="11" font-family="Courier New,monospace">binder = Binder oneway/sync (RPC)</text>
+<text x="520" y="${TABLE_Y-34}" fill="#f87171" font-size="11" font-family="Courier New,monospace">messenger = Messenger async (point-to-point)</text>
+<text x="870" y="${TABLE_Y-34}" fill="#fb923c" font-size="11" font-family="Courier New,monospace">ordered-broadcast = priority-chained dispatch</text>
+<text x="1280" y="${TABLE_Y-34}" fill="#a78bfa" font-size="11" font-family="Courier New,monospace">unordered-broadcast = fire-and-forget (P3 verified)</text>
+<text x="40" y="${TABLE_Y-16}" fill="#334155" font-size="10" font-family="Courier New,monospace">σ confidence tiers: verified ≥0.75 (green) · indicative 0.50–0.75 (amber) · speculative 0.30–0.50 (red) · dashed link = speculative</text>
+
+<!-- ── THREE-SCALE TABLE ──────────────────────────────────────────── -->
+${tableHeader}
+${tableRows}
+
+<!-- ── FOOTER ────────────────────────────────────────────────────── -->
+<rect x="0" y="${ACTUAL_H-55}" width="${W}" height="55" fill="#0a0f1e"/>
+<text x="40" y="${ACTUAL_H-28}" fill="#334155" font-size="11" font-family="Courier New,monospace">Cell OS © 2026 · TriadPhase defined in types.ts · TRIAD_PHASES exported from mappings.ts · 15 organelles across 3 phases · 18 biophoton links grounded in BIOPHOTON_RESEARCH.md</text>
+<text x="${W-40}" y="${ACTUAL_H-28}" text-anchor="end" fill="#334155" font-size="11" font-family="Courier New,monospace">Full architecture: see cell-os-architecture-map.html</text>
+</svg>`;
+
+document.write(svg);
+</script>
+</body>
+</html>
