@@ -12,7 +12,7 @@ import type { QiIntersection } from "@/domain/types";
  * This file exports curated intersections — the ones where the three axes
  * illuminate each other most sharply. They are chosen for conceptual coherence
  * and evidence quality, not for their count's sacred geometry.
- * Current count: 36 of 264 (≈ 13.6%). Do not encode product logic around counts.
+ * Current count: 39 of 264 (≈ 14.8%). Do not encode product logic around counts.
  *
  * Architect note: do not encode product logic around counts. If a new scale or
  * zone is added, the tensor grows and the selection criteria remain the same.
@@ -355,7 +355,7 @@ export const QI_INTERSECTIONS: QiIntersection[] = [
   //  endoplasmic-reticulum×affect×silicon) are singly occupied.
 
   // ── Biological Accuracy Roadmap Additions (DEVELOPMENT.md Part 3 H3) ─────────
-  // 8 new intersections; post-add running total at that point: 33 of 264 ≈ 12.5% (now 36/13.6% after Phase 1).
+  // 8 new intersections; post-add running total at that point: 33 of 264 ≈ 12.5% (now 39/14.8% after biophoton quantum additions).
   // All field names verified against QiIntersection type in types.ts.
 
   {
@@ -448,7 +448,7 @@ export const QI_INTERSECTIONS: QiIntersection[] = [
   },
 
   // ── Open Items: #9 Peroxisomes, #13 Membrane Potential, #19 Chaperones ─────────
-  // 3 new intersections; running total at that point: 33 of 264 = 12.5% (now 36/13.6% after Phase 1).
+  // 3 new intersections; running total at that point: 33 of 264 = 12.5% (now 39/14.8% after biophoton quantum additions).
   // QI density enters amber-high but all three are biologically grounded (not speculative).
 
   {
@@ -490,7 +490,7 @@ export const QI_INTERSECTIONS: QiIntersection[] = [
 
   // ── Document Secretion — Phase 1 (ARCHITECT_REPORT_2026-06-10.md Phase 1) ──
   // 3 new intersections anchoring the PDF/document secretion feature in the tensor.
-  // Post-add total: 36 of 264 = 13.6%.
+  // Post-add total at end of Phase 1: 36 of 264 = 13.6% (current file: 39 of 264 = 14.8%).
   // Biological framing: PDF = secretion product (exocytosis), not neurotransmitter.
   // ER role: execution environment (WebView/Chromium context), NOT synthesis origin.
   // Content assembly begins at Golgi per ARCHITECT_AUDIT finding #11.

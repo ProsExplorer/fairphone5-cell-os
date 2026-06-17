@@ -205,7 +205,7 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
   },
 
   // ── Biological Accuracy Roadmap Additions (DEVELOPMENT.md Part 3 H4) ─────────
-  // 3 new links completing missing cascade paths; post-add total: 11 biophoton links (9 at H4, +2 in open-items round).
+  // 3 new links completing missing cascade paths; post-add total at that stage: 11 biophoton links (9 at H4, +2 in open-items round; current canonical set: 18).
   // No 'id' field on BiophotonLink. ipcMechanism values verified against types.ts.
   {
     sourceOrganelleId: "membrane-receptors",
@@ -297,7 +297,7 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
 
   // ── Secretory pathway completion (ARCHITECT_REPORT_2026-06-10.md Phase 1) ──
   // Two biophoton links completing the ER→Golgi→vesicle→membrane arc.
-  // Post-add total: 13 biophoton links (5.8% of 225 directed pairs — amber-high).
+  // Post-add total at that Phase-1 checkpoint: 13 biophoton links (5.8% of 225 directed pairs — amber-high; current canonical set: 18).
   // Both are cross-zone links (ER-zone → golgi-zone; golgi-zone → membrane-zone).
 
   // COPII vesicle budding: rough ER synthesises → COPII coat assembles → vesicle buds toward Golgi.
@@ -353,7 +353,7 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
   {
     sourceOrganelleId: "cell-membrane",
     targetOrganelleId: "membrane-receptors",
-    description: "Bystander biophoton cell-to-cell signaling (P3 — Verified, §5): the plasma membrane emits coherent visible-band photons (400–700 nm) that traverse extracellular space and are received by membrane receptors of neighboring cells, inducing epigenetic changes without direct contact. This is the highest-confidence inter-cellular biophoton pathway (Verified, 2013–2024 literature). Android analogue: unordered broadcast intent — fire-and-forget across all process boundaries, received by all registered listeners simultaneously. σ=0.80 (biologically calibrated — the strongest verified inter-cellular coupling, higher than the IPC baseline).",
+    description: "Bystander biophoton cell-to-cell signaling (P3 — Verified, §5): stressed cells emit UPE that propagates as an extracellular broadcast and is received by neighboring cells, including transmission across photon-transparent barriers that block molecular diffusion. Pathway wavelength is 600–900 nm (the biological window), with emission/absorption through the extracellular medium over μm-to-mm distances. This is the most firmly established functional biophoton signaling pathway in the current literature (Verified, 2013–2024). Android analogue: unordered broadcast intent — fire-and-forget across all process boundaries, received by all registered listeners simultaneously. σ=0.80 (biologically calibrated for the strongest verified inter-cellular coupling).",
     rateRange: "10–500 photons/cm²/s",
     confidence: "verified",
     wavelengthBand: "blue-green",
@@ -379,7 +379,7 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
   {
     sourceOrganelleId: "cytoskeleton",
     targetOrganelleId: "mitochondria",
-    description: "Microtubule biophoton waveguide (P5 — Indicative, §5): the cytoskeleton's microtubule network has been proposed as a biological optical fiber, guiding near-infrared photons between organelles through total internal reflection within the hollow microtubule lumen. This would allow long-range biophoton routing — cytoskeleton as the fiber-optic backbone of the cell's light communication network. Android analogue: Binder thread pool routing — the thread pool routes IPC requests to the correct execution unit exactly as the microtubule routes the photon to the correct organelle (σ=0.60, indicative).",
+    description: "Microtubule waveguide routing (P5 — Indicative, §5): microtubules are proposed intracellular photon waveguides where total internal reflection occurs in the MT lumen (inner diameter ~14 nm) due to refractive-index contrast between tubulin (n≈1.46) and cytoplasm (n≈1.35). Pathway wavelength is characterized as 400–800 nm, enabling cell-scale directional and omnidirectional routing across the organelle network. Evidence is indicative: waveguide physics is established, but direct single-photon guided-propagation measurement in living microtubules is still pending. Android analogue: Binder thread-pool routing — dispatch to target execution units as route-specific photon guidance (σ=0.60, indicative).",
     rateRange: "1–50 photons/cm²/s",
     confidence: "indicative",
     wavelengthBand: "NIR",
