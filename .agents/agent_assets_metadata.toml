@@ -95,3 +95,9 @@ id = "E4Gu-TofK3NuNiFL-LQ8C"
 uri = "file://attached_assets/cell-os-forum-03-secretory-pathway.jpg"
 type = "image"
 title = "Secretory Pathway — Corrected SVG diagram (all labels source-verified)"
+
+[[outputs]]
+id = "S9V6EaQ5OzbZEyBfvYYh6"
+uri = "file://attached_assets/cell_os_overview_corrected.txt"
+type = "text"
+title = "Cell OS Overview — Source-Accurate Corrected Version"

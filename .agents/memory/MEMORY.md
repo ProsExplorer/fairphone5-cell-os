@@ -9,3 +9,4 @@
 - [Cell OS self-learning layer](cell-os-learning-layer.md) — epigenome architecture: three tensors, Hebbian adapter, observation point, visual expression pattern.
 - [Cell OS open-items tensor state](cell-os-open-items-state.md) — Fredholm cap reached (15 organelles − 17 substrates = −2 hard cap); frozen-15 backfill pattern; jsPDF over @react-pdf; next evolution triggers.
 - [Cell OS biophoton schema decisions](cell-os-biophoton-schema.md) — wavelengthBand field, ClaimConfidence "speculative" addition, 18-link canonical pathway set, σ calibration rules, ConfidenceBadge update rule.
+- [Cell OS implementation status](cell-os-implementation-status.md) — Cell OS is a React SPA not middleware; 5 wavelength bands (deep-NIR ≠ NIR); CPU = Cortex-A78/A55 not Gold+/Gold/Silver; 3 σ tiers; assert.ts is manual not auto.

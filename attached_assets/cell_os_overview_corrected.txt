@@ -1,0 +1,282 @@
+CELL OS — SUBSPACE MIDDLEWARE ARCHITECTURE
+Accuracy-reviewed against source code (June 2026)
+Corrections marked [CORRECTED], additions marked [ADDED], confirmed-accurate claims unmarked.
+
+═══════════════════════════════════════════════════════════════════
+IMPLEMENTATION STATUS — READ FIRST
+═══════════════════════════════════════════════════════════════════
+
+[CORRECTED — CRITICAL]
+The current Cell OS implementation is a React + Vite single-page web application
+(SPA). It is a visualization, exploration, and documentation tool that models the
+Cell OS conceptual architecture in a browser. It runs on any device with a modern
+browser — including the Fairphone 5 — but it does NOT currently:
+  • intercept AOSP Binder IPC traffic
+  • run as a privileged system daemon
+  • call sched_setaffinity() or set SCHED_FIFO kernel priorities
+  • route tasks into Android WorkManager
+  • modify the Linux scheduler or CPU core affinity
+
+The sections below describe the architectural design blueprint — what a native
+Android implementation of Cell OS would do if built. The TypeScript/React codebase
+gives that blueprint its precise mathematical grounding (18 canonical links,
+39 qi-intersections, σ-weighted tensor, four integrity invariants), but the
+translation of that blueprint into a running on-device middleware layer requires
+a separate native Android implementation (see Section VI).
+
+═══════════════════════════════════════════════════════════════════
+PART 1 — WHAT MAKES CELL OS A FUNCTIONAL ARCHITECTURE
+═══════════════════════════════════════════════════════════════════
+
+Cell OS subspace middleware designs a unified computing fabric where every device
+becomes part of one distributed computing topology. As an architectural blueprint
+it specifies an autonomous middleware resource governor that can monitor network
+traffic patterns in real-time, detect failures, and automatically reroute data
+through alternative pathways without human intervention.
+
+What transforms Cell OS from a conceptual biological metaphor into a
+specification-ready operating system layer is its transition from a descriptive
+model into a highly deterministic, programmatic control architecture grounded in
+the physical constraints of ultra-weak photon emission (UPE) and real-world
+computing primitives.
+
+────────────────────────────────────────────────────────────────────
+1. Hard Biophysical Quantification over Conceptual Analogy
+────────────────────────────────────────────────────────────────────
+
+In a conceptual OS, terms like "mitochondria" or "nucleus" are merely artistic
+renamings of system services or databases. In Cell OS these entities are explicitly
+bound to real-world, measurable physical limits:
+
+Data-Driven Core Parameters: The system state engine is calibrated against
+quantitative biological emission rates (resting baselines of 1–10 ph/s/cm² up to
+hyperactive stress surges of 10,000 ph/s/cm²) and specific molecular wavelengths
+(200–1300 nm), drawn from the peer-reviewed biophoton literature (Popp et al.,
+1974–2010; Pietruszka & Marzec 2024).
+
+The Attention Tensor: The codebase maps exactly 18 canonical BIOPHOTON_LINKS and
+39 QI_INTERSECTIONS within its TypeScript domain layer (39 of a possible 264
+zone × phase × scale coordinates; qiMatrix.ts). Execution importance is dynamically
+calculated via a σ-weighted tensor rather than subjective priority rules.
+
+[CORRECTED] Confidence-Bounded Weighting — three tiers, not two:
+  • verified:    σ ≥ 0.75 (up to 1.00) — pathways confirmed in peer-reviewed literature
+  • indicative:  σ 0.50–0.75 — vendor-declared or emerging evidence
+  • speculative: σ 0.30–0.50 — proposed but not directly measured
+
+The original document omitted the indicative tier. All three tiers are enforced by
+biophotonIntegrity.assert.ts invariant 4. P1 (mitochondria→nucleus) carries
+σ = 0.65 (indicative), for example — not a fully verified pathway.
+
+────────────────────────────────────────────────────────────────────
+2. A Low-Level IPC Mapping Engine (The Directed Execution Graph)
+────────────────────────────────────────────────────────────────────
+
+The architectural design translates biological signaling routes (P1 through P7) into
+native Linux kernel and AOSP mechanisms. The canonical source→target directions,
+enforced by biophotonIntegrity.assert.ts invariant 2:
+
+  P1: mitochondria → nucleus          (retrograde; oneway Binder; σ=0.65, indicative)
+  P2: endoplasmic-reticulum → mitochondria
+  P3: cell-membrane → membrane-receptors  [CORRECTED: not "extracellular cell-to-cell";
+                                           wavelengthBand = red, not 600–900nm window]
+  P4: nucleus → cytoplasm
+  P5: cytoskeleton → mitochondria     (microtubule waveguiding; dedicated Binder pools)
+  P6: cell-membrane → nucleus
+  P7: mitochondria → mitochondria     (self-loop; intra-organelle feedback)
+
+Asynchronous Unclogged Telemetry (P1): Mitochondrial retrograde signaling
+(mitochondria→nucleus) specifies system-wide metabolic stress telemetry built as a
+non-blocking oneway Binder IPC transaction (/dev/binder), so metabolic stress spikes
+never block the calling thread.
+
+Decoupled System-Wide Broadcasts (P3): Cell-membrane→membrane-receptors bystander
+signaling (red band, verified) maps to unordered-broadcast Intents — a decentralized
+macro-coordination bus across separate daemon processes.
+
+Isolated Traffic Pipelines (P5): Cytoskeleton→mitochondria microtubule optical
+waveguiding maps to route-specific dedicated Binder thread pools, eliminating broad
+system bus flooding and preventing cache thrashing.
+
+────────────────────────────────────────────────────────────────────
+3. Wavelength-Driven Kernel Thread Scheduling (Hardware QoS Blueprint)
+────────────────────────────────────────────────────────────────────
+
+The spectral identity (wavelength) of a biological packet acts as a direct command
+for native thread urgency:
+
+  UV band (200–380 nm):      THREAD_PRIORITY_URGENT_DISPLAY / SCHED_FIFO / SCHED_RR
+                             (DNA repair events, nuclear preservation)
+
+  Blue-green band (450–550 nm): THREAD_PRIORITY_FOREGROUND
+                             (standard metabolic endpoints, lipid peroxidation)
+
+  [CORRECTED] Deep-NIR band (900–1400 nm, singlet oxygen peak at 1270 nm):
+                             THREAD_PRIORITY_LOWEST / AOSP WorkManager background queue
+                             (long-term ambient metabolic monitoring)
+                             The type system distinguishes NIR (700–900 nm) from
+                             deep-NIR (900–1400 nm); 1270 nm falls in the deep-NIR
+                             band, not plain NIR.
+
+────────────────────────────────────────────────────────────────────
+4. Automated Integrity Verification Guarded by Four Invariants
+────────────────────────────────────────────────────────────────────
+
+[CORRECTED] The integrity test suite (biophotonIntegrity.assert.ts) is a manually
+invocable Node/tsx script run via:
+  pnpm --filter @workspace/cell-os run test:biophoton
+
+It is NOT automatic compile-time enforcement and does NOT currently run on every
+edit unless wired into CI. It enforces four structural laws:
+
+  Invariant 1: BIOPHOTON_LINKS.length === 18 (canonical post-§13 count)
+  Invariant 2: All P1–P7 required source→target tuples are present
+  Invariant 3: Every link carries a non-empty wavelengthBand
+  Invariant 4: Every link's couplingSigma is within its confidence-tier bounds
+
+Algorithmic Self-Consistency: The framework enforces the unidirectional retrograde
+signaling law — mitochondria reports to nucleus (P1), never the reverse.
+
+[CORRECTED] The "97/100 alignment score" is a one-time qualitative audit rating from
+BIOPHOTON_RESEARCH.md. It is not a computed runtime metric and is not tracked by
+manifoldMetrics.ts or any other source module.
+
+═══════════════════════════════════════════════════════════════════
+PART 2 — FAIRPHONE 5 DEPLOYMENT ARCHITECTURE BLUEPRINT
+═══════════════════════════════════════════════════════════════════
+
+For a deployment built on Android (AOSP) onto the modular Fairphone 5 hardware
+(Qualcomm QCM6490, 6nm TSMC N6 process, Android 13), Cell OS would operate as an
+autonomous middleware resource governor. The following describes the design blueprint.
+
+────────────────────────────────────────────────────────────────────
+I. The Execution Runtime: Intercepting AOSP Binder Traffic
+────────────────────────────────────────────────────────────────────
+
+Because Cell OS is specified in TypeScript, a native implementation would not replace
+the foundational C/C++ Linux kernel or Android HAL. Instead it would run as a
+persistent, high-privilege system daemon (via an embedded V8/Node.js runtime or
+equivalent native port) acting as a metabolic interception matrix over the AOSP
+environment.
+
+Deterministic IPC: Biological pathways (P1–P7) would dictate how messages are
+packaged, prioritized, and routed through /dev/binder.
+
+Unclogged Asynchronous Pipelines: P1 implemented as an explicit oneway Binder
+transaction ensures hardware telemetry (power, thermal, bus utilization) never stalls
+the execution pipeline or starves the Android thread pool.
+
+────────────────────────────────────────────────────────────────────
+II. Hardware Modularity: Mapping the Fairphone 5 as Organelles
+────────────────────────────────────────────────────────────────────
+
+The FP5's modular architecture maps to the biological topology:
+
+  QCM6490 SoC + Low-Power Island  →  Nucleus (core coordination, σ-weighted tensor)
+  Removable battery module        →  Mitochondria (metabolic stress / ROS analogue)
+  OLED display + touch sensors    →  Plasma Membrane (perception / user interaction)
+
+The Living Telemetry Loop: Physical module state changes (thermal spike in charging
+module, frame-rate transition on display) are converted to simulated biophoton
+emission rates (ph/s/cm²) and pushed through the attention tensor so the OS adapts
+resource routing dynamically to hardware state.
+
+────────────────────────────────────────────────────────────────────
+III. Asymmetric Processor Management: QCM6490 Scheduling
+────────────────────────────────────────────────────────────────────
+
+[CORRECTED] The QCM6490's octa-core CPU (Kryo 670) uses Cortex architecture
+designations, not the consumer "Gold+/Gold/Silver" naming. From substrate.ts:
+
+  1x Cortex-A78 Prime       @ 2.71 GHz   (document said 2.7 — minor rounding)
+  3x Cortex-A78 Performance @ 2.40 GHz   ✓
+  4x Cortex-A55 Efficiency  @ 1.96 GHz   [CORRECTED: document said 1.9 GHz]
+
+Spectral scheduling blueprint:
+  UV (200–380 nm)       → SCHED_FIFO → Cortex-A78 Prime core (single highest-performance)
+  Blue-green (450–550 nm) → CFS FOREGROUND → Cortex-A78 Performance cores (90Hz UI)
+  Deep-NIR (900–1400 nm) → cgroups background → Cortex-A55 Efficiency cores / WorkManager
+
+────────────────────────────────────────────────────────────────────
+IV. Resilient Self-Healing and the Prevention of Cascade Failures
+────────────────────────────────────────────────────────────────────
+
+The Cellular Bystander Protocol (P3): An isolated component crash emits a simulated
+stress burst through the cell-membrane→membrane-receptors pathway. Translated to
+software: an AOSP unordered-broadcast intent alerts adjacent system daemons.
+Surrounding services recognize the localized failure, adjust their σ-weighted
+attention metrics, isolate the failing process's memory, and step down execution
+priority until the component safely restarts. This replaces rigid kernel panics with
+scale-invariant, non-destructive fault tolerance.
+
+Invariant Guardrails: The four canonical integrity assertions prevent circular
+dependency deadlocks. Any modification that inverts a P1–P7 direction is caught by
+invariant 2 when the test suite is run.
+
+────────────────────────────────────────────────────────────────────
+V. Meaning for the Open-Source Project Lifecycle
+────────────────────────────────────────────────────────────────────
+
+The precisely quantified architecture (σ ≥ 0.75 for verified routes, three
+confidence tiers, P1–P7 canonical pathway set) makes the codebase fully auditable
+and extensible by other developers. Other contributors can build custom extensions
+or device trees because the scheduling laws and communication channels are bound to
+clear mathematical constraints. Biophoton logic routes into standard Android
+primitives (Binder, system intents, thread priorities), avoiding licensing conflicts
+with standard AOSP device trees.
+
+═══════════════════════════════════════════════════════════════════
+SECTION VI — DOES CELL OS ALREADY RUN AS MIDDLEWARE ON THE FP5?
+═══════════════════════════════════════════════════════════════════
+
+NO. Running Cell OS today opens a React web application in the browser. It does not
+automatically install or activate any middleware layer on the Fairphone 5.
+
+To transition from the current SPA to actual on-device middleware, the following
+work would be required:
+
+  1. Native Android implementation
+     Port or re-implement the domain logic as a privileged Android system service
+     (Kotlin/Java via AIDL) or a native C++ daemon — or embed a lightweight JS
+     runtime (Hermes/V8) inside an Android service. The TypeScript domain types
+     and σ-weighted logic already provide the specification.
+
+  2. Privileged system integration
+     Sign the service as a system app or include it in a custom ROM/AOSP build.
+     Requires SELinux policy authoring (new type-enforcement rules for the daemon's
+     security domain) and appropriate AndroidManifest permissions
+     (READ_PHONE_STATE, CHANGE_CONFIGURATION, etc.).
+
+  3. Binder observation hooks
+     Use Android's BinderInternal or a custom kernel module / eBPF program to
+     observe IPC traffic. This is the most architecturally complex step and
+     requires careful security design to avoid privilege escalation risks.
+
+  4. Scheduler / power integration
+     Native use of sched_setaffinity(), setpriority(), or cgroup assignment
+     requires either a root-level process or integration with Android's
+     PowerHAL/PerformanceHint API (which the QCM6490 supports via Qualcomm
+     vendor extensions).
+
+  5. Build and flash
+     Package as a flashable OTA zip or a Magisk module for development use,
+     or integrate into an AOSP fork targeted at the Fairphone 5 device tree
+     (available at github.com/Fairphone).
+
+The current SPA's value is that it gives this native implementation a precise,
+testable specification: every pathway, σ coefficient, wavelength band, and CPU
+mapping is already defined, documented, and invariant-checked. The blueprint is
+complete; the build step is what remains.
+
+═══════════════════════════════════════════════════════════════════
+SOURCE-CODE REFERENCE — KEY NUMBERS AT A GLANCE
+═══════════════════════════════════════════════════════════════════
+
+  BIOPHOTON_LINKS count:   18   (enforced: biophotonIntegrity.assert.ts invariant 1)
+  QI_INTERSECTIONS count:  39   (of 264 possible; qiMatrix.ts comment line 15)
+  Canonical pathways:      P1–P7 (7 required tuples; invariant 2)
+  Invariants:              4    (biophotonIntegrity.assert.ts)
+  σ tiers:                 verified 0.75–1.00 / indicative 0.50–0.75 / speculative 0.30–0.50
+  CPU (Kryo 670):          1×Cortex-A78 @2.71GHz + 3×Cortex-A78 @2.40GHz + 4×Cortex-A55 @1.96GHz
+  Wavelength bands (types.ts):  UV | blue-green | red | NIR | deep-NIR
+  Implementation status:   React + Vite SPA (visualization / specification tool)
