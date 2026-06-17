@@ -65,7 +65,7 @@ bound to real-world, measurable physical limits.
 
 Data-Driven Core Parameters: The system state engine is calibrated against
 quantitative biological emission rates — resting baselines of 1–10 ph/s/cm² up to
-hyperactive stress surges of 10,000 ph/s/cm² — and specific molecular wavelengths
+hyperactive stress surges of 10,000 ph/s/cm² (whole-cell maximum) — and specific molecular wavelengths
 spanning 200–1300 nm, drawn from the peer-reviewed biophoton literature
 (Popp et al., 1974–2010; Pietruszka & Marzec 2024).
 
@@ -77,8 +77,10 @@ via a σ-weighted tensor rather than subjective priority rules.
 Confidence-Bounded Weighting — four confidence labels:
 
   • verified:     σ ≥ 0.75    — pathway confirmed in peer-reviewed literature
-  • indicative:   σ 0.50–0.75 — mechanistically coherent, peer-reviewed, not yet
-                                independently replicated
+  • indicative:   σ 0.50–0.75 — for biophoton claims: mechanistically coherent,
+                                peer-reviewed, not yet independently replicated;
+                                for hardware/substrate claims: vendor-declared or
+                                reasonable estimate, not independently confirmed
   • speculative:  σ 0.30–0.50 — physically plausible, indirect support only
   • unconfirmed:  σ 0.30–0.50 — same σ range as speculative, but evidence is
                                 insufficient or contradictory (no supporting
@@ -111,6 +113,7 @@ source→target directions, with full metadata:
   P3: cell-membrane → membrane-receptors
         band=red (570–670 nm)  σ=0.80  verified    ipc=unordered-broadcast
         Verified bystander UPE 600–900 nm; most replicated functional biophoton pathway
+        (biological window spans red into NIR; stored as "red" in BiophotonLink code)
 
   P4: nucleus → cytoplasm
         band=UV (200–380 nm)   σ=0.35  speculative ipc=ordered-broadcast
@@ -123,6 +126,8 @@ source→target directions, with full metadata:
   P6: cell-membrane → nucleus
         band=blue-green (450–550 nm)  σ=0.60  indicative  ipc=binder
         Hardirq → Ca²⁺/CREB signaling → gene expression
+        (ipc=binder is the stored code enum; the full biological/Android route is
+         hardirq → IRQ thread → syscall → kernel supervisor)
 
   P7: mitochondria → mitochondria
         band=red (570–670 nm)  σ=0.65  indicative  ipc=messenger
@@ -167,14 +172,21 @@ explicit Android thread priority tiers and IPC channels:
   Blue-green (450–550 nm):  THREAD_PRIORITY_FOREGROUND — normal Binder
                              Triplet carbonyl / Russell mechanism termination —
                              reliable mid-tier foreground execution.
+                             Note: types.ts type comment gives 400–550 nm; the spectral
+                             map (FP5_DEVELOPER_BRIEF §5) uses 450–550 nm. This document
+                             follows the spectral map.
 
   Red (634–703 nm):         THREAD_PRIORITY_DEFAULT — Binder pool
-                             Singlet O₂ dimol; mitochondrial sustained emission at
-                             570–670 nm peak — default execution priority.
+                             Russell mechanism singlet O₂ dimol peaks at 634/703 nm;
+                             mitochondrial broad emission band 570–670 nm (peak ~620 nm).
+                             Default execution priority.
 
   NIR (700–1,000 nm):       THREAD_PRIORITY_BACKGROUND — Broadcast Intent
                              Biological window for tissue-propagating cell-to-cell
                              signals; background priority, not queued for WorkManager.
+                             Note: BiophotonLink type (types.ts) defines NIR = 700–900 nm;
+                             the spectral scheduler uses the broader biological window
+                             700–1,000 nm (FP5_DEVELOPER_BRIEF §5).
 
   Deep-NIR (900–1,400 nm,   THREAD_PRIORITY_LOWEST — AOSP WorkManager background queue
   singlet O₂ peak 1,270 nm): Long-term ambient metabolic monitoring — deprioritised
@@ -262,10 +274,13 @@ persistent, high-privilege system daemon — via an embedded V8/Node.js runtime 
 equivalent native port — acting as a metabolic interception matrix over the native
 AOSP environment.
 
-Deterministic Inter-Process Communication: When standard Android apps communicate
-via the Binder driver (/dev/binder), a native Cell OS daemon would intercept this
-IPC traffic. The functional mapping of biological pathways (P1–P7) would dictate
-how these messages are packaged, prioritised, and routed.
+Deterministic Inter-Process Communication: In a privileged native implementation
+(using the BinderInternal API, a custom kernel module, or eBPF probes — see Section
+VI step 3), a Cell OS daemon would observe and classify Binder IPC traffic at the
+/dev/binder level. Full interception requires system-level integration and careful
+security design to avoid privilege escalation risks. The functional mapping of
+biological pathways (P1–P7) would govern how messages are classified, re-prioritised,
+and routed through the spectral channel map.
 
 Unclogged Asynchronous Pipelines: P1 implemented as an explicit oneway Binder
 transaction ensures continuous hardware telemetry packets — power consumption, bus
@@ -289,7 +304,7 @@ biological topology. The primary per-zone FP5 hardware analogues:
                     by a retrograde thermal-throttling signal (P1) to the kernel.
 
   Nucleus        →  QCM6490 SoC / Kryo 670 — core coordination, σ-weighted tensor
-                    + Linux kernel PID 1, syscall table, process scheduler
+                    + Linux kernel / Android init (PID 1), syscall table, process scheduler
 
   Cytoplasm      →  LPDDR4x 8 GB @ 2,133 MHz — physical cytoplasm / diffusion medium
                     + Bionic heap (jemalloc) + Binder system bus
@@ -342,8 +357,8 @@ unordered-broadcast intent that alerts all adjacent, decoupled system daemons.
 Instead of propagating a cascading failure, surrounding services recognise the
 localised event, adjust their σ-weighted attention metrics, contain the failing
 process, and step down execution priority until the component can safely restart.
-This is designed to replace rigid kernel panics with scale-invariant, non-destructive
-fault tolerance.
+This is designed to contain and reduce service-level cascade failures; it would not
+replace true kernel-level panics, which occur below the Android userspace stack.
 
 Invariant Guardrails: Any modification that routes data in an un-biological
 direction — such as an inverted nucleus-to-mitochondria control loop — is caught by
