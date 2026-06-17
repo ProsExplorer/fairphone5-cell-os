@@ -88,7 +88,7 @@ The ServiceManager deserves special attention. In the theory's terms, it is a cr
 
 The Intent and BroadcastReceiver system extends this pattern to one-to-many biophoton links [12]. When a process sends a broadcast Intent, it does not know which receivers will handle it — the system dispatches the Intent to all registered receivers asynchronously. This is exactly the Observable/Subject pattern described in the theory's §10 table: "subjects broadcast to multiple subscribers — asynchronous, one-to-many, with backpressure." The BackPressure mechanism (ordered broadcasts with `abortBroadcast()`) maps onto the theory's `attentionWeight` field: a high-priority ordered broadcast is a synchronous, high-attention link; a normal unordered broadcast is a low-attention, eventually-consistent link [12].
 
-Android's four IPC mechanisms form a spectrum of coupling strengths that precisely maps onto the theory's biophoton link attentionWeight range: direct method calls via Binder (σ ≈ 0.9, tight coupling, synchronous), Messenger queues (σ ≈ 0.7, async but point-to-point), ordered broadcasts (σ ≈ 0.6, async with priority chain), and unordered broadcasts (σ ≈ 0.4, fully decoupled, fire-and-forget) [11][12].
+Android's four IPC mechanisms form a spectrum of coupling strengths that precisely maps onto the theory's biophoton link couplingSigma range: Binder-class directed IPC (σ ≈ 0.60–0.75, calibrated by evidence tier — indicative links, synchronous), Messenger queues (σ ≈ 0.65, async but point-to-point), ordered broadcasts (σ ≈ 0.45–0.60, async with priority chain — speculative/indicative tier), and unordered broadcasts (σ ≈ 0.40, fully decoupled, fire-and-forget) [11][12].
 
 ---
 
@@ -171,7 +171,7 @@ Third, this analysis covers the software architecture as documented and as visib
 ## Recommendations
 
 **For the theory (`UNIVERSAL_MANIFOLD.md`):**
-The §10 biophoton link model should replace the analogical `attentionWeight` → buffer size mapping with a more precise *coupling synchrony spectrum* formulation. The Binder IPC analysis provides the concrete vocabulary: synchrony (blocking vs. non-blocking) is the structurally meaningful property, not buffer capacity.
+The §10 biophoton link model should replace the analogical `attentionWeight` → buffer size mapping with a more precise *coupling synchrony spectrum* formulation. The Binder IPC analysis provides the concrete vocabulary: synchrony (blocking vs. non-blocking) is the structurally meaningful property, not buffer capacity. *(Substantially completed in `BIOPHOTON_RESEARCH.md §14–§15`: `couplingSigma` now encodes the synchrony tier on all 18 links using evidence-calibrated σ values; `attentionWeight` remains available as a secondary field.)*
 
 The §15 Condition 3 (coupling density falsifiability) should be updated to acknowledge that coupling density is scale-dependent and that the 10–25% claim applies specifically at the *functional-neighborhood* granularity — the level at which modules are actually plausible coupling partners. At the global graph level, healthy Android systems are far below 1% by necessity; the 10–25% range applies locally.
 

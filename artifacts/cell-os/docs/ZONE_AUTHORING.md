@@ -82,7 +82,7 @@ Only add links where the biological relationship genuinely maps to the hardware.
 
 ### Step 5 — Add a biophoton link (optional)
 
-Only add if there is a real or proposed biological signal pathway:
+Only add if there is a real or proposed biological signal pathway. Classify confidence using the 4-tier model and set σ to match the tier (verified ≥0.75, indicative 0.50–0.75, speculative 0.30–0.50):
 
 ```typescript
 {
@@ -90,7 +90,10 @@ Only add if there is a real or proposed biological signal pathway:
   targetOrganelleId: "nucleus",
   description: "Describe the proposed signal pathway.",
   rateRange: "1–50 photons/cm²/s",
-  confidence: "unconfirmed"
+  confidence: "speculative",
+  wavelengthBand: "NIR",
+  ipcMechanism: "messenger",
+  couplingSigma: 0.45,
 },
 ```
 
@@ -116,6 +119,7 @@ For any biological fact or hardware claim in the organelle content:
 
 ```bash
 pnpm typecheck
+pnpm --filter @workspace/cell-os run test:biophoton
 ```
 
 Then open the app, navigate to the zone that contains the new organelle, and verify:

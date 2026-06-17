@@ -184,13 +184,13 @@ The data structures themselves are a fractal compression cascade, identical to t
 
 | Tensor rank | Data structure | Biological analogue | Precision |
 |---|---|---|---|
-| Rank-3 | `QI_INTERSECTIONS` (264-cell space, 13.6% populated) | DNA — full genome, maximum fidelity | FP32 |
+| Rank-3 | `QI_INTERSECTIONS` (264-cell space, 14.8% populated) | DNA — full genome, maximum fidelity | FP32 |
 | Rank-2 | `ORGANELLE_SUBSTRATE_LINKS` (255-cell space, 16.1% populated) | mRNA — targeted excerpt of genome | FP16 |
 | Rank-1 | `SUBSTRATE_NODES` + `CELL_MAPPINGS` (17 + 15 nodes) | tRNA / amino acid table — discrete lookup | INT8 |
-| Rank-0 | `ClaimConfidence` scalar σ ∈ {0, 0.5, 1} | ATP — minimum viable energy token | INT4 |
+| Rank-0 | `ClaimConfidence` ∈ {verified, indicative, speculative, unconfirmed} | ATP — minimum viable energy token | INT4 |
 
 The compression cascade is:
-$$\mathcal{Q}^{z,p,s} \xrightarrow{\text{zone slice}} \mathcal{T}^i_{\ j} \xrightarrow{\text{organelle slice}} T_\mu^{\text{sub}} \xrightarrow{\text{confidence}} \sigma \in \{0, \frac{1}{2}, 1\}$$
+$$\mathcal{Q}^{z,p,s} \xrightarrow{\text{zone slice}} \mathcal{T}^i_{\ j} \xrightarrow{\text{organelle slice}} T_\mu^{\text{sub}} \xrightarrow{\text{confidence}} \sigma \in \{\text{verified},\text{indicative},\text{speculative},\text{unconfirmed}\}$$
 
 This is the same compression as quantization:
 $$\text{FP32} \xrightarrow{\times 0.5} \text{FP16} \xrightarrow{\times 0.5} \text{INT8} \xrightarrow{\times 0.5} \text{INT4}$$

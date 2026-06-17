@@ -43,7 +43,7 @@ Cell OS makes this mapping explicit, navigable, and computationally grounded. It
 
 **[→ QI Tensor Field — Interactive Implementation Explorer](qi-tensor-diagram.html)**
 
-> **Interactive diagram** — source-verified SVG: 8 zones × 3 phases × 11 scales = 264 cells · 36 populated · 33 unique coordinates · 3 multi-occupied. All intersection coordinates read directly from `src/domain/content/qiMatrix.ts QI_INTERSECTIONS`. **Click any glowing dot** to open a developer drawer with the full narrative, hardware analogue, substrate IDs, and evidence level for that intersection. Prev/Next navigation cycles through all 36 entries. Empty cells (dim grey dots) are inert.
+> **Interactive diagram** — source-verified SVG: 8 zones × 3 phases × 11 scales = 264 cells · 39 populated · 36 unique coordinates · 3 multi-occupied. All intersection coordinates read directly from `src/domain/content/qiMatrix.ts QI_INTERSECTIONS`. **Click any glowing dot** to open a developer drawer with the full narrative, hardware analogue, substrate IDs, and evidence level for that intersection. Prev/Next navigation cycles through all 39 entries. Empty cells (dim grey dots) are inert.
 
 The translation layer is a single operator: **Perception → Affect → Expression**.
 
@@ -71,7 +71,7 @@ Total tensor space: **8 × 3 × 11 = 264 cells**.
 
 ### The QI Intersections
 
-Of the 264 cells, **36 are currently populated** (13.6%) — each a curated intersection where the three axes illuminate each other most precisely. Not every cell can be populated: the intersection must be biologically grounded (a named mechanism), Android-grounded (a specific IPC or kernel component), and scale-specific (what this scale reveals that adjacent scales do not).
+Of the 264 cells, **39 are currently populated** (14.8%) — each a curated intersection where the three axes illuminate each other most precisely. Not every cell can be populated: the intersection must be biologically grounded (a named mechanism), Android-grounded (a specific IPC or kernel component), and scale-specific (what this scale reveals that adjacent scales do not).
 
 Example — `qi-exocytosis-expression-organic` (`membrane × expression × organic`, weight 0.9):
 
@@ -107,7 +107,7 @@ The full 41-link table is browsable on the `/substrate` surface.
 
 ### Attention Tensor — $\mathcal{A}^{ij}$ (Biophoton Links)
 
-**Populated:** 13 directed inter-organelle links (5.8% of 225 directed pairs)  
+**Populated:** 18 directed inter-organelle links (8.0% of 225 directed pairs)  
 **Source:** `src/domain/content/mappings.ts` → `BIOPHOTON_LINKS`
 
 Each link models an inter-organelle biophoton signalling relationship with an attention weight ($w_{ij}$) and a coupling sigma (σ) that maps to a specific Android IPC tier:
@@ -117,7 +117,7 @@ Each link models an inter-organelle biophoton signalling relationship with an at
 | 0.4 | Unordered broadcast | Diffuse cytoplasmic second-messenger flooding |
 | 0.6 | Ordered broadcast | Sequential cisternae procession; ER-phagy |
 | 0.7 | Messenger | Point-to-point vesicle docking (v-SNARE knows its t-SNARE) |
-| 0.9 | Binder direct | Gap junction / ashmem direct pass-through; zero intermediate copy |
+| 0.60–0.75 | Binder-class directed IPC | Directed, low-latency coupling — calibrated by evidence tier (verified ≥0.75, indicative 0.50–0.75) |
 
 The five secretory-pathway links in pathway order:
 
@@ -132,7 +132,7 @@ The five secretory-pathway links in pathway order:
 ### QI Tensor — $\mathcal{Q}^{z,p,s}$ (Rank-3)
 
 **Dimensions:** 8 × 3 × 11 = 264 cells  
-**Populated:** 36 cells (13.6%)  
+**Populated:** 39 cells (14.8%)  
 **Source:** `src/domain/content/qiMatrix.ts` → `QI_INTERSECTIONS`
 
 TypeScript type contract (`src/domain/types.ts`):
@@ -143,7 +143,7 @@ type QiIntersection = {
   zoneId: CellZoneId;                             // one of 8 frozen zone IDs
   phaseId: "perception" | "affect" | "expression";
   scaleId: string;                                 // one of 11 frozen scale IDs
-  evidence: "verified" | "indicative" | "unconfirmed";
+  evidence: ClaimConfidence; // "verified" | "indicative" | "speculative" | "unconfirmed"
   title: string;
   narrative: string;
   hardwareAnalogue?: string;
@@ -498,7 +498,7 @@ Cell OS runs as a React+Vite SPA at `/cell-os`. Six coordinate chart surfaces ar
 | `/philosophy` | **Philosophy — Theory Surface** | The P→A→E manifold theory; scale-invariance section; the yahweh-yehoshua corpus alignment | The nucleus — the genome of the organism |
 | `/substrate` | **Substrate Atlas** | Full 41-link coupling tensor; all 17 substrate nodes with organelle links; hardware specifics for the FP5 | The cytoplasm — all substrate interactions visible |
 | `/fractal` | **Fractal Navigator** | Zone-by-zone P→A→E cycle explorer; each zone's three internal phases at the scale of its own biology | Fractal self-similarity of the triadic operator |
-| `/metrics` | **Metrics — Health Surface** | Live tensor metrics: QI density (13.6%, amber), biophoton coverage (5.8%, amber), Fredholm index (−2, fixed), coupling density (16.1%) | The cell's homeostatic monitoring loop |
+| `/metrics` | **Metrics — Health Surface** | Live tensor metrics: QI density (14.8%, amber), biophoton coverage (8.0%, amber), Fredholm index (−2, fixed), coupling density (16.1%) | The cell's homeostatic monitoring loop |
 | `/documents` | **Documents — Secretion Surface** | PDF report generator; implements the secretory pathway P→A→E in code; generates the full manifold as a downloadable document | Golgi apparatus → vesicle → membrane exocytosis |
 
 All six surfaces read exclusively from `src/domain/content/` (the static genome). No server. No database. The genome is read-only. The epigenome (Hebbian learning layer) is in-memory per session.
@@ -548,7 +548,7 @@ This mirrors receptor-mediated endocytosis: a ligand (user interaction) binds th
 
 **[→ Android Evolution Diagram — Prokaryote → Eukaryote](android-evolution-diagram.html)**
 
-> Source-verified SVG: 4 evolutionary stages — Android 1–7 (prokaryotic, no membrane boundary) → Android 8 Project Treble (HIDL first membrane, QI `membrane-affect-apparatus` verified) → Android 9–12 AIDL (connexin-43 gap junctions, binder σ=0.9, QI `qi-gapjunction-perception-cellular` indicative) → Android 13 Fairphone 5 Sep 2023 (SELinux paracellular seal, Fredholm −2, 8-year support 2023–2031). QI intersection evidence ratings embedded per stage.
+> Source-verified SVG: 4 evolutionary stages — Android 1–7 (prokaryotic, no membrane boundary) → Android 8 Project Treble (HIDL first membrane, QI `membrane-affect-apparatus` verified) → Android 9–12 AIDL (connexin-43 gap junctions, binder σ=0.9 as originally modelled — subsequently recalibrated to σ=0.60–0.80 by evidence tier in BIOPHOTON_RESEARCH.md §9.4, QI `qi-gapjunction-perception-cellular` indicative) → Android 13 Fairphone 5 Sep 2023 (SELinux paracellular seal, Fredholm −2, 8-year support 2023–2031). QI intersection evidence ratings embedded per stage.
 
 ![Fairphone 5 as Living Organism](../../../attached_assets/cell-os-forum-05-fp5-organism.png)
 
@@ -571,12 +571,12 @@ Biology:    [cytoplasm] ──tight junction seal── [extracellular]
 
 AIDL native (Android Interface Definition Language) replaces HIDL for new HAL interfaces. AIDL2 matures. Binder ashmem channels and memfd create direct memory-mapped pass-through between processes — no intermediate copy, no exocytosis required.
 
-This is the connexin-43 gap junction: two process membranes aligned, aqueous channel open, direct passage without the overhead of the full secretory pathway. The σ=0.9 tier in the attention tensor encodes this mechanism.
+This is the connexin-43 gap junction: two process membranes aligned, aqueous channel open, direct passage without the overhead of the full secretory pathway. The binder-class `ipcMechanism` tier in the attention tensor encodes this mechanism (σ=0.60–0.80 depending on evidence calibration; the P3 bystander pathway holds the highest binder-class σ=0.80 as the best-verified link).
 
 ```ts
 // Binder ashmem = connexin-43 gap junction
-// σ = 0.9: binder-direct (no intermediate copy)
-{ ipcMechanism: "binder", couplingSigma: 0.9 }
+// σ = 0.60: binder-class directed IPC, indicative tier (biologically calibrated)
+{ ipcMechanism: "binder", couplingSigma: 0.60 }
 ```
 
 ### Android 13 — FP5 Launch: The Cell Reaches Maturity
@@ -658,7 +658,7 @@ Every contribution to the tensor must pass a seven-point verification before com
 - [ ] **The Android analogue is specific.** Not "Android IPC." Which mechanism: Binder transaction? Ordered broadcast? `sendBroadcast()` vs `sendOrderedBroadcast()`? Which σ tier?
 - [ ] **The tensor coordinates are non-degenerate.** The QI cell `(zoneId, phaseId, scaleId)` must not already be populated. The biophoton link `(sourceOrganelleId, targetOrganelleId)` must not already exist in `BIOPHOTON_LINKS`.
 - [ ] **The Fredholm invariants are satisfied.** No new substrate node IDs. No new organelle IDs. If adding a substrate link, the target node already exists in `SUBSTRATE_NODES`.
-- [ ] **All count comments and README figures are updated.** Run: `grep -r "36 curated\|13\.6%\|13 links\|5\.8%\|41 links\|16\.1%" README.md artifacts/cell-os/README.md` — every occurrence must reflect the new counts.
+- [ ] **All count comments and README figures are updated.** Run: `grep -r "39 curated\|14\.8%\|18 links\|8\.0%\|41 links\|16\.1%" README.md artifacts/cell-os/README.md` — every occurrence must reflect the new counts.
 - [ ] **The allowlist discipline is maintained.** Nothing from Zustand stores enters the export path. No session data, no epigenome weights, no learned co-activation values.
 
 ### Adding a QI Intersection
@@ -736,8 +736,8 @@ setTimeout(() => setCopied(false), 3000);
 
 | Metric | Value | Status |
 |---|---|---|
-| QI density | 36 / 264 = 13.6% | Amber (above 5–10% healthy range — biologically justified) |
-| Biophoton coverage | 13 / 225 = 5.8% | Amber (above 2–10% healthy range — biologically justified) |
+| QI density | 39 / 264 = 14.8% | Amber (above 5–10% healthy range — biologically justified) |
+| Biophoton coverage | 18 / 225 = 8.0% | Amber (above 2–10% healthy range — biologically justified) |
 | Coupling density | 41 / 255 = 16.1% | Green |
 | Fredholm index | 15 − 17 = −2 | Fixed (topological invariant) |
 | Surfaces | 6 | All live |

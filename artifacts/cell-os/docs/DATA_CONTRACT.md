@@ -12,16 +12,17 @@ All content in Cell OS is a **static TypeScript constant** in `src/domain/conten
 Every factual claim must carry a `ClaimConfidence` tag. This is non-negotiable — it separates verifiable hardware facts from analogical assertions.
 
 ```typescript
-type ClaimConfidence = "verified" | "indicative" | "unconfirmed";
+type ClaimConfidence = "verified" | "indicative" | "speculative" | "unconfirmed";
 ```
 
 | Level | Meaning | Typical source |
 |---|---|---|
 | `"verified"` | Confirmed against a primary or official source | Qualcomm spec sheet, AOSP commit, Fairphone official page |
 | `"indicative"` | Vendor-declared or reasonable estimate; not independently confirmed | Press release, AnandTech review, datasheet excerpt |
-| `"unconfirmed"` | Consistent with documentation or theory, but not verifiable for this exact part | Cross-referenced from similar Snapdragon SoCs, extrapolation |
+| `"speculative"` | Mechanistically coherent and proposed in literature, but not yet replicated or directly measured | Biophoton pathway models (§9.4 σ 0.30–0.50 tier); proposed but unconfirmed signal routes |
+| `"unconfirmed"` | Consistent with documentation or theory, but evidence is insufficient or contradictory | Cross-referenced from similar Snapdragon SoCs, extrapolation from related hardware |
 
-**Default rule**: when in doubt, use a lower confidence level. It is better to tag something `"unconfirmed"` accurately than to claim `"verified"` without a primary source.
+**Default rule**: prefer `"speculative"` for mechanistically coherent but unreplicated pathways (especially biophoton links); use `"unconfirmed"` when evidence is insufficient or contradictory. Never tag something `"verified"` without a primary source.
 
 ---
 
@@ -141,8 +142,13 @@ type BiophotonLink = {
   description: string;          // What the biophoton link represents biologically
   rateRange: string;            // e.g. "10–100 photons/cm²/s"
   confidence: ClaimConfidence;
-  attentionWeight?: number;     // 0–1; interpretive analogue of transformer attention strength
-                                // Not empirically measured — label with confidence "unconfirmed"
+  wavelengthBand?: "UV" | "blue-green" | "red" | "NIR" | "deep-NIR";
+                                // Primary spectral band: UV 200–380nm, blue-green 400–550nm,
+                                // red 570–670nm, NIR 700–900nm, deep-NIR 900–1400nm
+  ipcMechanism?: "binder" | "messenger" | "ordered-broadcast" | "unordered-broadcast";
+                                // Android IPC analogue for this signaling pathway
+  couplingSigma?: number;       // σ tier: verified ≥0.75, indicative 0.50–0.75, speculative 0.30–0.50
+  attentionWeight?: number;     // 0–1; legacy interpretive analogue of transformer attention strength
 };
 ```
 
@@ -220,8 +226,11 @@ If you add a new content collection, add the corresponding selector here rather 
 When adding or editing any content entry:
 
 - [ ] TypeScript compiles without error (`pnpm typecheck`)
+- [ ] Biophoton integrity passes (`pnpm --filter @workspace/cell-os run test:biophoton`)
 - [ ] `id` is kebab-case and matches all cross-references (SVG, mappings, selectors)
 - [ ] Every factual claim has a `confidence` tag
+- [ ] Biophoton links carry `wavelengthBand`, `ipcMechanism`, and `couplingSigma` fields
+- [ ] σ values match the confidence tier: verified ≥0.75, indicative 0.50–0.75, speculative 0.30–0.50
 - [ ] New hardware/AOSP claims have a citation entry in `citations.ts`
 - [ ] Colors sourced from `CELL_ZONES`, not hardcoded
 - [ ] No dynamic Tailwind class interpolation introduced

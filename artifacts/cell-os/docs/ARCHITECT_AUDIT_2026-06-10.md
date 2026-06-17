@@ -5,6 +5,8 @@
 > **Tool**: `architect` subagent — `responsibility: "evaluate_task"`  
 > **Scope**: Critical second-pass adversarial review of prior architect report for factual errors, overstatements, understatements, and security gaps  
 > **Files analyzed**: `ARCHITECT_REPORT_2026-06-10.md`, `substrate.ts`, `mappings.ts`, `qiMatrix.ts`
+>
+> ⚠ **Historical document** — accuracy findings reflect the pre-§13–§15 state (11 BIOPHOTON_LINKS, 33 QI_INTERSECTIONS). Canonical counts as of June 17 2026: **18 BIOPHOTON_LINKS, 39 QI_INTERSECTIONS**. The "NOT STARTED" biophoton links (`endoplasmic-reticulum→vesicles`, `vesicles→cell-membrane`) referenced in ARCHITECT_REPORT were subsequently implemented. See `BIOPHOTON_RESEARCH.md §13–§15`.
 
 ---
 

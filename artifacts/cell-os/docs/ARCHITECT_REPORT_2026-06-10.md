@@ -5,6 +5,8 @@
 > **Tool**: `architect` subagent — `responsibility: "plan"`  
 > **Scope**: Systematic documentation cross-examination + strategic evaluation of PDF/document output as a Cell OS capability  
 > **Files analyzed**: `DEVELOPMENT.md`, `README.md`, `artifacts/cell-os/README.md`, `substrate.ts`, `mappings.ts`, `qiMatrix.ts`
+>
+> ⚠ **Historical document** — tensor counts in this report reflect the pre-§13–§15 state (11 BIOPHOTON_LINKS, 33 QI_INTERSECTIONS). Canonical counts as of June 17 2026: **18 BIOPHOTON_LINKS, 39 QI_INTERSECTIONS**. See `BIOPHOTON_RESEARCH.md §13–§15` for implementation record.
 
 ---
 

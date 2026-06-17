@@ -21,7 +21,7 @@ Every source module is a **chart** $(U_i, \varphi_i)$ on $M$, where $U_i$ is the
 | `domain/content/mappings.ts` | 3 | `ORGANELLE_SUBSTRATE_LINKS`, `BIOPHOTON_LINKS`, `TRIAD_PHASES` |
 | `domain/content/citations.ts` | 2 | `CITATIONS`, `CITATION_MAP` |
 | `domain/content/constants.ts` | 6 | `HARMONIC_CONSTANT`, `HARMONIC_TRANSITION_S`, `HARMONIC_TRANSITION_MS`, `HARMONIC_OPACITY`, `SACRED_ANCHOR`, `SACRED_SEED` |
-| `domain/content/qiMatrix.ts` | 2 | `QI_AXES`, `QI_INTERSECTIONS: QiIntersection[36]` |
+| `domain/content/qiMatrix.ts` | 2 | `QI_AXES`, `QI_INTERSECTIONS: QiIntersection[39]` |
 | `domain/content/quantizationBiology.ts` | 1 | `QUANTIZATION_LAYERS: QuantizationLayer[4]` |
 | `domain/content/scales.ts` | 1 | `SCALE_FLOWS` |
 | `domain/content/fractalCycles.ts` | 1 | `FRACTAL_CYCLES: FractalCycle[8]` |
@@ -87,9 +87,9 @@ The manifold $M$ has no cycles in its import graph (TypeScript would reject circ
 
 ### 2.1 Rank-0 Fields (Scalar Fields)
 
-$\text{ClaimConfidence}$ is a **rank-0 field** (scalar) assigning to each substrate node $n \in \text{SUBSTRATE\_NODES}$ a value in the discrete set $\{0, \frac{1}{2}, 1\}$ under the encoding:
+$\text{ClaimConfidence}$ is a **rank-0 field** (scalar) assigning to each substrate node $n \in \text{SUBSTRATE\_NODES}$ a value in the discrete set $\{0, \frac{1}{3}, \frac{2}{3}, 1\}$ under the 4-tier encoding:
 
-$$\sigma(c) = \begin{cases} 1 & c = \text{"verified"} \\ \tfrac{1}{2} & c = \text{"indicative"} \\ 0 & c = \text{"unconfirmed"} \end{cases}$$
+$$\sigma(c) = \begin{cases} 1 & c = \text{"verified"} \\ \tfrac{2}{3} & c = \text{"indicative"} \\ \tfrac{1}{3} & c = \text{"speculative"} \\ 0 & c = \text{"unconfirmed"} \end{cases}$$
 
 This defines a **confidence scalar field** $\sigma: M_\text{substrate} \to [0,1]$. The gradient $\nabla\sigma$ points in the direction of increasing evidentiary support.
 
@@ -138,10 +138,10 @@ The **column sums** reveal substrate centrality: `nnapi` and `hexagon770` are th
 |---|---|---|---|
 | (nucleus, mitochondria) | Energy-state coordination | 10–100 ph/cm²/s | indicative |
 | (nucleus, ribosomes) | Transcription-translation coherence | 1–50 ph/cm²/s | indicative |
-| (ER, golgi-apparatus) | Protein-trafficking burst | 1–30 ph/cm²/s | unconfirmed |
+| (ER, golgi-apparatus) | Protein-trafficking burst | 1–30 ph/cm²/s | speculative |
 | (mitochondria, nuclear-pores) | Membrane-potential gradient | 5–80 ph/cm²/s | indicative |
 
-The `attentionWeight` field exists in the type schema as `optional`. Since no numerical values are currently declared in `BIOPHOTON_LINKS`, the metric computations in §4 below use the **midpoint of rateRange** as a proxy weight under the explicit assumption:
+`BIOPHOTON_LINKS` now carries calibrated `couplingSigma` values on all 18 links (verified ≥0.75, indicative 0.50–0.75, speculative 0.30–0.50), making `couplingSigma` the primary coupling weight. The `attentionWeight` field remains optional and is used where independently set. For metric computations in §4 that require a scalar weight, use `couplingSigma` as primary and fall back to the **midpoint of rateRange** only as a secondary proxy where explicitly noted — under the assumption:
 
 $$w_{ij} = \frac{r_{\max}^{ij} + r_{\min}^{ij}}{2 \cdot r_{\max}^{\text{global}}}$$
 
@@ -160,7 +160,7 @@ The `QI_INTERSECTIONS` dataset instantiates a **rank-3 tensor** over the product
 
 $$\mathcal{Q}^{z,p,s}: \text{CellZoneId} \times \{perception, affect, expression\} \times \text{ScaleId} \to \text{QiIntersection} \cup \{\emptyset\}$$
 
-The full tensor has $8 \times 3 \times 11 = 264$ possible cells. The 36 curated entries populate it at density $36/264 \approx 13.6\%$ — a sparse rank-3 tensor. The populated cells are the **high-signal intersections** where three axes illuminate each other most clearly.
+The full tensor has $8 \times 3 \times 11 = 264$ possible cells. The 39 curated entries populate it at density $39/264 \approx 14.8\%$ — a sparse rank-3 tensor. The populated cells are the **high-signal intersections** where three axes illuminate each other most clearly.
 
 ---
 
@@ -447,21 +447,22 @@ The zone signal system can exhibit **resonance** when a signal emission rate $\o
 
 ## 9. Information Geometry on the Confidence Field
 
-### 9.1 The 2-Simplex of Confidence
+### 9.1 The 3-Simplex of Confidence
 
-The three confidence levels define a probability simplex $\Delta^2$ in $\mathbb{R}^3$:
+The four confidence levels define a probability simplex $\Delta^3$ in $\mathbb{R}^4$:
 
-$$\Delta^2 = \{(p_v, p_i, p_u) \mid p_v + p_i + p_u = 1,\; p_v, p_i, p_u \geq 0\}$$
+$$\Delta^3 = \{(p_v, p_i, p_s, p_u) \mid p_v + p_i + p_s + p_u = 1,\; p_v, p_i, p_s, p_u \geq 0\}$$
 
 Each node's `confidence: ClaimConfidence` is a **vertex** of this simplex (one-hot encoding):
-- `verified` = $(1, 0, 0)$
-- `indicative` = $(0, 1, 0)$
-- `unconfirmed` = $(0, 0, 1)$
+- `verified` = $(1, 0, 0, 0)$
+- `indicative` = $(0, 1, 0, 0)$
+- `speculative` = $(0, 0, 1, 0)$
+- `unconfirmed` = $(0, 0, 0, 1)$
 
-The **Fisher information metric** on $\Delta^2$ is:
+The **Fisher information metric** on $\Delta^3$ is:
 $$g_{ij}^F = \sum_x \frac{1}{p(x|\theta)} \frac{\partial p}{\partial \theta_i} \frac{\partial p}{\partial \theta_j}$$
 
-For the simplex with the natural Dirichlet prior, this reduces to the **round metric on $S^2$** (via the square-root embedding $\phi_i = \sqrt{p_i}$, mapping $\Delta^2$ to the positive orthant of $S^2$).
+For the simplex with the natural Dirichlet prior, this reduces to the **round metric on $S^3$** (via the square-root embedding $\phi_i = \sqrt{p_i}$, mapping $\Delta^3$ to the positive orthant of $S^3$).
 
 ### 9.2 KL Divergence Between Confidence Levels
 
@@ -469,14 +470,14 @@ $$D_\text{KL}(\text{verified} \| \text{unconfirmed}) = +\infty$$
 
 (A claim labeled `verified` assigns probability 0 to `unconfirmed` — infinite divergence. This is the correct behavior: a "verified" claim **cannot** be explained by an "unconfirmed" distribution.)
 
-For the Fisher metric geodesic distance:
-$$d_F(\text{verified}, \text{indicative}) = d_F(\text{indicative}, \text{unconfirmed}) = \frac{\pi}{2}$$
+For the Fisher metric geodesic distance (all vertices equidistant on the positive orthant of $S^3$):
+$$d_F(\text{verified}, \text{indicative}) = d_F(\text{indicative}, \text{speculative}) = d_F(\text{speculative}, \text{unconfirmed}) = \frac{\pi}{2}$$
 
-The three confidence vertices form an **equilateral triangle** on $S^2$ (positive orthant) with all pairwise geodesic distances equal to $\pi/2$ radians.
+The four confidence vertices form a **regular tetrahedron** inscribed in $S^3$ (positive orthant) with all pairwise geodesic distances equal to $\pi/2$ radians. The `speculative` tier sits between `indicative` and `unconfirmed` — mechanistically coherent but empirically unreplicated pathways occupy a geometrically distinct epistemic position.
 
 ### 9.3 Zone Confidence Centroids
 
-Mapping each zone's substrate nodes to their confidence encodings $\sigma(c) \in \{0, \frac{1}{2}, 1\}$ and computing the **confidence centroid** $\bar\sigma_z$:
+Mapping each zone's substrate nodes to their confidence encodings $\sigma(c) \in \{0, \frac{1}{3}, \frac{2}{3}, 1\}$ and computing the **confidence centroid** $\bar\sigma_z$:
 
 The table is computed by (1) looking up each zone's organelles in `ORGANELLE_ZONE_MAP`, (2) finding each organelle's substrate links in `ORGANELLE_SUBSTRATE_LINKS`, (3) reading the `confidence` field of each reached `SubstrateNode`, and (4) averaging $\sigma(c)$ over all reached nodes. `nucleus` is reached via organelles `nucleus`, `nucleolus`, `dna`, and `nuclear-pores`; the others as listed.
 
@@ -602,7 +603,7 @@ This is the **confidence-gradient tour** — not the depth tour. It prioritises 
 
 ### 11.5 Biophoton Attention Map Completion
 
-$\mathcal{A}^{ij}$ has 13 entries out of 225 possible directed pairs (5.8% density). The existing links reveal a pattern: **all biophoton links connect organelles in *different* zones** (cross-zone coherence signals). The intra-zone pairs are all absent. This gives a strong prior for completion:
+$\mathcal{A}^{ij}$ has 18 entries out of 225 possible directed pairs (8.0% density). The existing links reveal a pattern: **all biophoton links connect organelles in *different* zones** (cross-zone coherence signals). The intra-zone pairs are all absent. This gives a strong prior for completion:
 
 - Any new biophoton link should be a cross-zone pair.
 - The most coherent unmapped cross-zone pairs by biological analogy: `ribosomes → golgi-apparatus` (translation → packaging, a direct functional chain), `cytoskeleton → membrane` (structural frame → boundary), `dna → ribosomes` (genome → ribosome = transcription loop).
@@ -623,12 +624,12 @@ The harmonic oscillator model identifies $\omega_0 = 0.809\text{ rad/s}$ as the 
 
 ### 11.7 QI Tensor Analytics — Dominant Narrative Planes
 
-$\mathcal{Q}^{z,p,s}$ at 13.6% density (36/264) is heavily biased along two axes (distribution ratios below reflect a 18-entry pre-expansion snapshot; the relative bias pattern remains directionally accurate):
+$\mathcal{Q}^{z,p,s}$ at 14.8% density (39/264) is heavily biased along two axes (distribution ratios below reflect a pre-expansion snapshot; the relative bias pattern remains directionally accurate):
 
 - **Phase bias**: perception entries dominate — Cell OS narrates input/sensing more richly than output/expression.
 - **Scale bias**: `silicon` and `cellular` are the co-dominant scales, with `molecular`, `organic`, and `generational` each well-represented.
 
-**SVD interpretation**: If the 36 populated cells are treated as a sparse 3D tensor and flattened to a matrix (zone × phase-scale), the dominant left singular vector identifies the zone most correlated with the most-populated (phase, scale) combinations. Preliminary inspection: `nucleus` and `mitochondria` appear in the most intersections, suggesting they are the **principal narrative axes** of the QI tensor — the zones where the biological-computational analogy is richest.
+**SVD interpretation**: If the 39 populated cells are treated as a sparse 3D tensor and flattened to a matrix (zone × phase-scale), the dominant left singular vector identifies the zone most correlated with the most-populated (phase, scale) combinations. Preliminary inspection: `nucleus` and `mitochondria` appear in the most intersections, suggesting they are the **principal narrative axes** of the QI tensor — the zones where the biological-computational analogy is richest.
 
 ---
 
@@ -639,8 +640,8 @@ The manifold representation is a **living development instrument**, not a one-ti
 | Metric | Formula | Healthy range | Signal |
 |---|---|---|---|
 | Coupling tensor density | $\|\mathcal{T}\|_0 / 120$ | 10–20% | Below 10%: underlinked; above 30%: overcoupled |
-| Mean zone confidence | $\frac{1}{8}\sum_z \bar\sigma_z$ | > 0.75 | Dropping centroid = adding unconfirmed claims |
-| Biophoton coverage | $\|\mathcal{A}\|_0 / 225$ | 2–5% | Above 5%: biophoton links no longer selective |
+| Mean zone confidence | $\frac{1}{8}\sum_z \bar\sigma_z$ | > 0.75 | Dropping centroid = adding speculative/unconfirmed claims |
+| Biophoton coverage | $\|\mathcal{A}\|_0 / 225$ | 2–10% | Above 10%: biophoton links no longer selective; current 8.0% is editorially justified |
 | QI tensor density | $\|\mathcal{Q}\|_0 / 264$ | 5–10% | Below 5%: QI matrix too sparse to be meaningful |
 | Export rank growth | $\sum_i \text{rank}(U_i)$ | < 80 total | Rapid growth = type proliferation / leaky abstractions |
 | Phase transition count | Count of discrete state jumps | = 5 (current) | New transitions = new UX modes (each needs justification) |
@@ -659,7 +660,7 @@ The deepest finding of the manifold analysis is structural: **Cell OS encodes th
 
 - **Harmonic constant as coupling constant**: $\lambda = 0.7770777$ appears at four distinct scales simultaneously: as a CSS transition duration (milliseconds), as a breath period (seconds), as an opacity coefficient (dimensionless), and as a seed integer (7 digits). A single number acting as a universal coupling constant across multiple physical dimensions is precisely the structure the app documents in the QCM6490's unified memory bus — one pool serving CPU, GPU, and Hexagon with a single bandwidth budget.
 
-- **Sparse tensors as the medium**: The app argues that on-device AI is defined by sparse, constrained computation (limited precision, shared memory, gated routing). The codebase itself is a sparse tensor — 16.1% coupling density, 13.6% QI occupancy — organised around exactly the same constraints it describes. The codebase is a working model of its own subject matter.
+- **Sparse tensors as the medium**: The app argues that on-device AI is defined by sparse, constrained computation (limited precision, shared memory, gated routing). The codebase itself is a sparse tensor — 16.1% coupling density, 14.8% QI occupancy — organised around exactly the same constraints it describes. The codebase is a working model of its own subject matter.
 
 ---
 
@@ -679,7 +680,7 @@ The deepest finding of the manifold analysis is structural: **Cell OS encodes th
 | $T_1 = 777\text{ ms}$ | The fundamental harmonic period |
 | $\omega_0$ | The natural frequency of the sacred breath oscillator |
 | $\lambda = 0.7770777$ | The harmonic constant / timing seed |
-| $\Delta^2$ | The confidence probability simplex |
+| $\Delta^3$ | The confidence probability simplex (4-vertex tetrahedron: verified, indicative, speculative, unconfirmed) |
 | $d_F$ | The Fisher information metric geodesic distance |
 | $Q$ | The full configuration space of the state system |
 | $\chi(M)$ | Euler characteristic of the module graph |

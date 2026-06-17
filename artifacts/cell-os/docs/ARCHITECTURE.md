@@ -221,5 +221,5 @@ pnpm --filter @workspace/cell-os add -D <package>
 | `useExplorerFlow` lives in `CellExplorerLayout`, not zone panels | Focus must persist when the user navigates between zones |
 | `key={activeZone}` on `ZoneContentViewport`'s `<main>` | Resets scroll + local state on zone change — intentional |
 | All content is a static TypeScript constant | No runtime fetching, no loading states, no hydration |
-| Every factual claim has a `ClaimConfidence` tag | Distinguishes verified hardware facts from analogical assertions |
+| Every factual claim has a `ClaimConfidence` tag (`verified` / `indicative` / `speculative` / `unconfirmed`) | Distinguishes verified hardware facts from analogical and speculative assertions |
 | SVG filter IDs are globally unique | DOM filter IDs are global; duplicates cause visual corruption |
