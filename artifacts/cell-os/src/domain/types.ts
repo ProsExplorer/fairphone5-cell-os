@@ -7,7 +7,7 @@
  */
 
 /** How well a stated fact is supported by the source material. */
-export type ClaimConfidence = "verified" | "indicative" | "unconfirmed";
+export type ClaimConfidence = "verified" | "indicative" | "unconfirmed" | "speculative";
 
 /**
  * The eight cellular zone identifiers — canonical axis A of the qi tensor.
@@ -155,6 +155,12 @@ export type BiophotonLink = {
   description: string;
   rateRange: string;
   confidence: ClaimConfidence;
+  /**
+   * The spectral band of photon emission for this pathway, derived from
+   * BIOPHOTON_RESEARCH.md §4–§5. Guides downstream spectral rendering.
+   * UV=200–380nm, blue-green=400–550nm, red=570–670nm, NIR=700–900nm, deep-NIR=900–1400nm.
+   */
+  wavelengthBand?: "UV" | "blue-green" | "red" | "NIR" | "deep-NIR";
   attentionWeight?: number;
   ipcMechanism?: "binder" | "messenger" | "ordered-broadcast" | "unordered-broadcast";
   couplingSigma?: number;

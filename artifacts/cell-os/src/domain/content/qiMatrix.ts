@@ -169,6 +169,21 @@ export const QI_INTERSECTIONS: QiIntersection[] = [
     evidence: "verified",
   },
 
+  // ── MITOCHONDRIA (biophoton quantum addition — BIOPHOTON_RESEARCH.md §13) ──────
+
+  {
+    id: "mitochondria-perception-quantum",
+    zoneId: "mitochondria",
+    phaseId: "perception",
+    scaleId: "quantum",
+    title: "ROS Photon Readout — Quantum Perception of Energy State",
+    narrative:
+      "Mitochondria are the cell's dominant ultra-weak photon emitters, with reported emission in the 570–670 nm band and intensities spanning roughly 10–1000 photons/cm²/s (Verified). At Complex I and III, reactive oxygen species initiate lipid-peroxidation chain reactions that generate delayed luminescent photon emission. This emission is not decorative noise; it is a quantum-scale readout of oxidative state — the mitochondrion externalizing its own energetic condition as light. Perception here is the cell sensing its own energy budget at the lowest measurable quantum granularity, before any downstream signaling cascade begins.",
+    hardwareAnalogue: "PowerHAL thermal/power state sensing at SoC energy-floor granularity",
+    substrateIds: ["powerhal"],
+    evidence: "verified",
+  },
+
   // ── GOLGI ─────────────────────────────────────────────────────────────────────
 
   {
@@ -244,6 +259,21 @@ export const QI_INTERSECTIONS: QiIntersection[] = [
     evidence: "verified",
   },
 
+  // ── NUCLEUS (biophoton quantum addition — BIOPHOTON_RESEARCH.md §13) ────────────
+
+  {
+    id: "nucleus-affect-quantum",
+    zoneId: "nucleus",
+    phaseId: "affect",
+    scaleId: "quantum",
+    title: "Tautomeric Processing — Genome Affected by Quantum Uncertainty",
+    narrative:
+      "DNA base-pair tautomerization (keto↔enol, amino↔imino) is a quantum-tunnelling process with an error floor on the order of 10⁻⁸ per base pair. Recent reports of UV biophoton emission from DNA (200–380 nm, Pietruszka & Marzec 2024) indicate that these quantum transitions are accompanied by measurable photon output. The nucleus is therefore not only receiving stochastic error pressure but being actively shaped by it — while simultaneously emitting UV coherent light as a byproduct of quantum base-pair processing. Affect at this scale is the genome being transformed by quantum uncertainty during information processing, and announcing that transformation through light.",
+    hardwareAnalogue: "ART verifier type-error propagation reshaping downstream JIT compilation graph",
+    substrateIds: ["art-runtime"],
+    evidence: "indicative",
+  },
+
   // ── MEMBRANE (HAL/Treble additions) ──────────────────────────────────────────
 
   {
@@ -290,6 +320,21 @@ export const QI_INTERSECTIONS: QiIntersection[] = [
     title: "窗 — Only the Permitted Signal Exits",
     narrative:
       "The membrane's 窗 (window) is selective in both directions: only signals that pass the receptor test enter; only signals that are correctly addressed exit. The character 窗 contains 心 (heart/mind) — the exit is not mechanical but intentional. Expression through the membrane is not leakage; it is release. The cell sends only what it has decided to send, in a form the receiver can use. This is the highest expression of selective permeability.",
+    evidence: "verified",
+  },
+
+  // ── MEMBRANE (biophoton quantum addition — BIOPHOTON_RESEARCH.md §13) ──────────
+
+  {
+    id: "membrane-expression-quantum",
+    zoneId: "membrane",
+    phaseId: "expression",
+    scaleId: "quantum",
+    title: "Bystander Emission — Quantum State Expressed Across Cell Boundaries",
+    narrative:
+      "Bystander biophoton signaling demonstrates that cells can transmit state information optically across extracellular space without direct contact (Verified, P3 pathway). Reported visible-band emission (roughly 400–700 nm) can induce downstream epigenetic effects in neighboring cells, implying functional information transfer across the membrane boundary. This is quantum expression: the cell exporting its internal quantum state as coherent light to surrounding receivers. The membrane is the emission interface — the point where intracellular quantum uncertainty becomes intercellular message. Expression at this scale is not leakage; it is a deliberate photonic broadcast across the cell boundary.",
+    hardwareAnalogue: "Android unordered broadcast intent crossing process boundaries to all registered receivers",
+    substrateIds: ["binder-ipc"],
     evidence: "verified",
   },
 

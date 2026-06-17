@@ -9,7 +9,7 @@ export const CELL_MAPPINGS: Organelle[] = [
     id: "nucleus",
     name: "Nucleus",
     osFeature: "Kernel / Control Center",
-    explanation: "The central governor that manages the phone's fundamental operations, holding the most critical instructions and orchestrating all lower-level hardware interactions.",
+    explanation: "The central governor that manages the phone's fundamental operations, holding the most critical instructions and orchestrating all lower-level hardware interactions. Biophoton profile (Verified via DNA): UV photon emission (200–380 nm) originates within the nucleus from DNA tautomeric transitions — quantum tunnelling events at the base-pair level generate coherent UV light at 1–10 photons/cm²/s. The nucleus is therefore both an information store and an active UV emitter, broadcasting its quantum processing state outward.",
     analogy: "Just as the nucleus holds DNA and governs the whole cell, the kernel directs the entire operating system securely from its core.",
     color: "hsl(280, 80%, 60%)" // Purple
   },
@@ -17,7 +17,7 @@ export const CELL_MAPPINGS: Organelle[] = [
     id: "dna",
     name: "DNA / Genome",
     osFeature: "System Code + User Configuration",
-    explanation: "The immutable root code combined with your personalized settings that dictate exactly how your device behaves and responds.",
+    explanation: "The immutable root code combined with your personalized settings that dictate exactly how your device behaves and responds. Biophoton profile (Verified, Pietruszka & Marzec 2024): DNA emits ultra-weak UV photons (200–380 nm) at 1–10 photons/cm²/s during tautomeric base-pair transitions — quantum tunnelling events (keto↔enol, amino↔imino) that are accompanied by measurable UV coherent light. The genome announces its own quantum processing through light.",
     analogy: "DNA holds the blueprint of life; the system code and your configurations are the immutable core and editable settings that make your phone uniquely yours.",
     color: "hsl(180, 100%, 50%)" // Cyan
   },
@@ -57,7 +57,7 @@ export const CELL_MAPPINGS: Organelle[] = [
     id: "mitochondria",
     name: "Mitochondria",
     osFeature: "Power / Battery Management",
-    explanation: "The adaptive energy system that efficiently distributes power to where it is needed most to prolong your device's lifespan.",
+    explanation: "The adaptive energy system that efficiently distributes power to where it is needed most to prolong your device's lifespan. Biophoton profile (Verified): primary ultra-weak photon emitter of the cell, emitting in the red band (570–670 nm) at 10–1000 photons/cm²/s via ROS-driven lipid peroxidation at Complex I and III. This emission is a quantum-scale readout of oxidative state — the mitochondrion externalizes its energy budget as light before any downstream chemical cascade begins.",
     analogy: "The powerhouse of the cell; the battery and its intelligent management system act as the ultimate energy plant.",
     color: "hsl(35, 100%, 55%)" // Orange/Amber
   },
@@ -73,7 +73,7 @@ export const CELL_MAPPINGS: Organelle[] = [
     id: "endoplasmic-reticulum",
     name: "Endoplasmic Reticulum",
     osFeature: "App Framework / System Services",
-    explanation: "The massive foundational network of background services and APIs that support running apps and transporting data between them.",
+    explanation: "The massive foundational network of background services and APIs that support running apps and transporting data between them. Biophoton profile (Verified): the ER emits in the visible-to-red band (400–700 nm) at 5–100 photons/cm²/s driven by PDI-ERO1 oxidative folding — protein disulfide isomerase generates ROS as a byproduct of disulfide bond formation, producing measurable ultra-weak photon emission. The ER-mitochondria contact sites (MAMs) propagate this signal directly to the mitochondrial outer membrane.",
     analogy: "The ER is the cell's transport and assembly network; the OS framework scaffolds and routes resources for applications.",
     color: "hsl(220, 80%, 65%)" // Blue
   },

@@ -163,41 +163,45 @@ export const ORGANELLE_SUBSTRATE_LINKS: OrganelleSubstrateLink[] = [
  */
 export const BIOPHOTON_LINKS: BiophotonLink[] = [
   {
-    sourceOrganelleId: "nucleus",
-    targetOrganelleId: "mitochondria",
-    description: "Ultra-weak photon emission may coordinate energy-state signaling between nucleus and mitochondria — the cell's two most information-dense structures. Android analogue: Binder direct method calls, the tightest IPC coupling (synchronous, σ=0.9), brokered through ServiceManager.",
-    rateRange: "10–100 photons/cm²/s",
+    sourceOrganelleId: "mitochondria",
+    targetOrganelleId: "nucleus",
+    description: "Mitochondria-to-nucleus retrograde biophoton signaling (P1 — BIOPHOTON_RESEARCH.md §5): ROS-induced ultra-weak photon emission from mitochondrial Complex I/III propagates toward the nucleus as a stress-state signal, coordinating nuclear gene expression response to metabolic load. This is the canonical retrograde direction — the mitochondrion reports its oxidative state to the nucleus, not the reverse. Android analogue: Binder oneway async message from a background service to the system server — the energy subsystem signals the kernel supervisor without blocking, σ=0.65 (indicative, biologically calibrated), brokered through ServiceManager.",
+    rateRange: "10–1000 photons/cm²/s",
     confidence: "indicative",
+    wavelengthBand: "NIR",
     ipcMechanism: "binder",
-    couplingSigma: 0.9,
+    couplingSigma: 0.65,
     hubService: "ServiceManager"
   },
   {
     sourceOrganelleId: "nucleus",
     targetOrganelleId: "ribosomes",
-    description: "Biophoton coherence has been proposed as a coordination signal across active transcription sites and ribosomal translation clusters. Android analogue: Messenger queues — async but point-to-point (σ=0.7), preserving the directional instruction-to-execution flow.",
+    description: "Biophoton coherence has been proposed as a coordination signal across active transcription sites and ribosomal translation clusters — nucleus-to-ribosome anterograde instruction flow. Android analogue: Messenger queues — async but point-to-point (σ=0.65), preserving the directional instruction-to-execution flow.",
     rateRange: "1–50 photons/cm²/s",
     confidence: "indicative",
+    wavelengthBand: "blue-green",
     ipcMechanism: "messenger",
-    couplingSigma: 0.7
+    couplingSigma: 0.65
   },
   {
     sourceOrganelleId: "endoplasmic-reticulum",
     targetOrganelleId: "golgi-apparatus",
-    description: "The protein-trafficking pathway from ER to Golgi may involve biophoton bursts during vesicle budding events. Android analogue: ordered broadcasts — sequential, priority-chained delivery (σ=0.6), matching the cisternae-to-cisternae procession.",
+    description: "The protein-trafficking pathway from ER to Golgi may involve biophoton bursts during vesicle budding events — speculative pathway with no direct experimental evidence of photon coordination at this junction. Android analogue: ordered broadcasts — sequential, priority-chained delivery (σ=0.45, speculative tier), matching the cisternae-to-cisternae procession.",
     rateRange: "1–30 photons/cm²/s",
-    confidence: "unconfirmed",
+    confidence: "speculative",
+    wavelengthBand: "red",
     ipcMechanism: "ordered-broadcast",
-    couplingSigma: 0.6
+    couplingSigma: 0.45
   },
   {
     sourceOrganelleId: "mitochondria",
     targetOrganelleId: "nuclear-pores",
-    description: "Mitochondrial membrane potential changes produce detectable biophoton bursts; nuclear pores may respond to the optical gradient. Android analogue: unordered broadcasts — fully decoupled, fire-and-forget (σ=0.4), the energy signal broadcast to all waiting receivers.",
+    description: "Mitochondrial membrane potential changes produce detectable biophoton bursts; the nuclear pore complex may act as an optical receiver, responding to the NIR gradient from the mitochondria as part of the P1 retrograde pathway. Android analogue: unordered broadcasts from the energy subsystem to all gated kernel interfaces — fire-and-forget (σ=0.55, biologically recalibrated to indicative floor).",
     rateRange: "5–80 photons/cm²/s",
     confidence: "indicative",
+    wavelengthBand: "NIR",
     ipcMechanism: "unordered-broadcast",
-    couplingSigma: 0.4
+    couplingSigma: 0.55
   },
 
   // ── Biological Accuracy Roadmap Additions (DEVELOPMENT.md Part 3 H4) ─────────
@@ -209,8 +213,9 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
     description: "Receptor-activated G-protein cascade — ligand binding at membrane receptor triggers cytoplasmic kinase cascade exactly as GPCR activates cAMP/PKA through the cytoplasm. The signal crosses the membrane boundary and amplifies through the cytoplasmic medium.",
     rateRange: "10–200 photons/cm²/s",
     confidence: "indicative",
+    wavelengthBand: "blue-green",
     attentionWeight: 0.71,
-    couplingSigma: 0.7,
+    couplingSigma: 0.65,
     ipcMechanism: "messenger",
   },
   {
@@ -219,6 +224,7 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
     description: "Trans-Golgi Network routes misfolded or damaged proteins to lysosomes for degradation via mannose-6-phosphate receptor-mediated vesicle targeting — the APK verification pipeline routes failed packages to forced-uninstall through PackageManager.",
     rateRange: "1–20 photons/cm²/s",
     confidence: "indicative",
+    wavelengthBand: "red",
     attentionWeight: 0.44,
     couplingSigma: 0.6,
     ipcMechanism: "ordered-broadcast",
@@ -226,11 +232,12 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
   {
     sourceOrganelleId: "mitochondria",
     targetOrganelleId: "dna",
-    description: "Cytochrome c release from mitochondria during intrinsic apoptosis triggers nuclear DNA fragmentation via caspase-activated DNase (CAD) — LMKD SIGKILL triggers ordered process shutdown including all file descriptor cleanup and memory reclamation.",
+    description: "Mitochondria-to-DNA retrograde biophoton signal (partial P1 pathway, proximal arc): cytochrome c release and ROS-driven photon emission reach the DNA directly, complementing the mitochondria→nucleus retrograde link. Cytochrome c also triggers nuclear DNA fragmentation via caspase-activated DNase (CAD) — LMKD SIGKILL triggers ordered process shutdown including all file descriptor cleanup and memory reclamation.",
     rateRange: "5–60 photons/cm²/s",
     confidence: "indicative",
+    wavelengthBand: "red",
     attentionWeight: 0.52,
-    couplingSigma: 0.9,
+    couplingSigma: 0.70,
     ipcMechanism: "binder",
   },
 
@@ -239,34 +246,37 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
   {
     sourceOrganelleId: "ribosomes",
     targetOrganelleId: "golgi-apparatus",
-    description: "Translation pulses in ribosomes may entrain Golgi packaging cadence — the mRNA-to-vesicle coherence pathway mirrored by the ART JIT-to-dex2oat dispatch flow: hot paths JIT-compiled, then written into .oat files for the next install.",
+    description: "Translation pulses in ribosomes may entrain Golgi packaging cadence — the mRNA-to-vesicle coherence pathway mirrored by the ART JIT-to-dex2oat dispatch flow: hot paths JIT-compiled, then written into .oat files for the next install. Speculative: no direct evidence of ribosome-Golgi biophoton coupling in the literature.",
     rateRange: "2–40 photons/cm²/s",
-    confidence: "unconfirmed",
+    confidence: "speculative",
+    wavelengthBand: "blue-green",
     attentionWeight: 0.62,
     ipcMechanism: "messenger",
-    couplingSigma: 0.7
+    couplingSigma: 0.45
   },
   {
     sourceOrganelleId: "dna",
     targetOrganelleId: "ribosomes",
-    description: "Genome-origin coherence guiding ribosomal translation forms the transcription loop — the instruction stream to execution engine, closing the expression cycle. Android analogue: verified-boot chain to ART — the code-signing root anchors every execution, Binder-mediated with tight coupling.",
-    rateRange: "1–45 photons/cm²/s",
-    confidence: "unconfirmed",
+    description: "Genome-origin UV coherence guiding ribosomal translation forms the transcription loop — DNA emits in the UV band (200–380 nm, Pietruszka & Marzec 2024) and this photon signal may entrain ribosomal translation cadence. The instruction stream to execution engine, closing the expression cycle. Android analogue: verified-boot chain to ART — the code-signing root anchors every execution. Speculative: photon-mediated transcription coupling is proposed but not directly measured.",
+    rateRange: "1–10 photons/cm²/s",
+    confidence: "speculative",
+    wavelengthBand: "UV",
     attentionWeight: 0.58,
-    ipcMechanism: "binder",
-    couplingSigma: 0.9
+    ipcMechanism: "ordered-broadcast",
+    couplingSigma: 0.40
   },
 
   // #13 Membrane potential — action potential propagates from membrane to nucleus (gene expression change)
   {
     sourceOrganelleId: "cell-membrane",
     targetOrganelleId: "nucleus",
-    description: "Action potential propagation: the membrane potential crossing threshold triggers a cascade that ultimately reaches the nucleus — Ca²⁺ influx activates CaM-kinase IV, which phosphorylates CREB, which modulates gene expression. In Android: a hardirq fires at the membrane (interrupt controller), propagates through the kernel's IRQ thread, crosses the Binder boundary as a system call, and reaches the nucleus (kernel syscall table) where the process state is updated. The tightest IPC path — σ=0.9 because hardirq→syscall is synchronous and non-maskable.",
+    description: "Action potential propagation (P6 partial — BIOPHOTON_RESEARCH.md §5): the membrane potential crossing threshold triggers a cascade that ultimately reaches the nucleus — Ca²⁺ influx activates CaM-kinase IV, which phosphorylates CREB, which modulates gene expression. Biophoton emission accompanies membrane depolarization in the blue-green band. In Android: a hardirq fires at the membrane (interrupt controller), propagates through the kernel's IRQ thread, crosses the Binder boundary as a system call, and reaches the nucleus (kernel syscall table) where the process state is updated. σ=0.60 (indicative, biologically recalibrated from over-confident 0.9).",
     rateRange: "1–500 ph/cm²/s",
     confidence: "indicative",
+    wavelengthBand: "blue-green",
     attentionWeight: 0.83,
     ipcMechanism: "binder",
-    couplingSigma: 0.9
+    couplingSigma: 0.60
   },
 
   // #19 ER-phagy path — distinct from classical ERAD (ERAD→proteasome; ER-phagy→lysosome).
@@ -279,6 +289,7 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
     description: "ER-phagy (reticulophagy): when ER quality control is overwhelmed or ER morphology is disrupted, FAM134B/RTN3 receptors flag ER fragments for autophagosomal capture — the ER membrane and its lumenal contents are engulfed and delivered to lysosomes for bulk degradation. This is distinct from classical ERAD (which routes individual misfolded proteins to the 26S proteasome). In Android: the ART interpreter fallback pool (code that has failed JIT optimisation and been demoted) accumulates until the next dexopt cycle, at which point the dex cache is evicted via PackageManager — a bulk, autophagosome-like sweep of accumulated failed-fold material, not a targeted single-protein strike. Ordered broadcast σ=0.6: the ER-phagy signal is directed and sequenced but not synchronous.",
     rateRange: "0.5–15 ph/cm²/s",
     confidence: "indicative",
+    wavelengthBand: "red",
     attentionWeight: 0.49,
     ipcMechanism: "ordered-broadcast",
     couplingSigma: 0.6
@@ -298,6 +309,7 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
     description: "COPII vesicle budding from the rough ER: Sec23/Sec24 cargo-adaptor complex captures transmembrane cargo, Sec13/Sec31 outer coat polymerises, vesicle buds from the ER exit site (ERES). The ER does not wait for the Golgi — COPII budding is a direct ER→vesicle path for certain cargo (collagen, large secretory proteins). In Android: ART dex2oat emits compiled method stubs directly into memory-mapped vesicles (shared-memory segments) without routing through the full PackageManager pipeline, for pre-compiled boot-image methods.",
     rateRange: "2–30 ph/cm²/s",
     confidence: "indicative",
+    wavelengthBand: "red",
     attentionWeight: 0.55,
     ipcMechanism: "ordered-broadcast",
     couplingSigma: 0.6
@@ -312,9 +324,80 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
     description: "SNARE-mediated secretory vesicle docking and fusion with the plasma membrane: v-SNARE (VAMP2/synaptobrevin) on the vesicle zippers with t-SNARE complex (syntaxin-1 + SNAP-25) on the plasma membrane, driving lipid bilayer merger in milliseconds. Calcium-triggered (synaptotagmin Ca²⁺ sensor). This is the final exocytosis step — the vesicle membrane becomes part of the plasma membrane, and its contents are released extracellularly. In Android: a Binder transaction delivers a completed result buffer to the requesting process — the data crosses the process membrane boundary in a single messenger call, one write, one read, no intermediate copy.",
     rateRange: "5–80 ph/cm²/s",
     confidence: "indicative",
+    wavelengthBand: "blue-green",
     attentionWeight: 0.65,
     ipcMechanism: "messenger",
     couplingSigma: 0.7
+  },
+
+  // ── Canonical Pathway Additions (BIOPHOTON_RESEARCH.md §13 — Architect Audit) ──
+  // 5 missing P-series pathways from the canonical 7-pathway graph (§5).
+  // Post-add total: 18 biophoton links. All IDs verified against frozen-15 organelle set.
+  // σ values biologically calibrated per §9.4 (Verified≥0.75, Indicative 0.50–0.75, Speculative 0.30–0.50).
+
+  // P2 — ER ↔ Mitochondria contact-site coupling (Indicative, §5 P2, PMC3699878)
+  // ER-mitochondria contact sites (MAMs) regulate Ca²⁺ transfer and oxidative stress coupling.
+  {
+    sourceOrganelleId: "endoplasmic-reticulum",
+    targetOrganelleId: "mitochondria",
+    description: "ER-mitochondria membrane contact sites (MAMs): the smooth ER forms physical tether contacts with the outer mitochondrial membrane, transferring Ca²⁺ and lipid precursors. PDI-ERO1 oxidative folding in the ER lumen generates ROS that drive biophoton emission in the red band — this signal propagates across the contact site to the mitochondrion. Android analogue: Messenger async callback from the App Framework layer to the power service — async, point-to-point, neither layer blocks the other (σ=0.55, indicative, biologically calibrated per §9.4).",
+    rateRange: "5–100 photons/cm²/s",
+    confidence: "indicative",
+    wavelengthBand: "red",
+    ipcMechanism: "messenger",
+    couplingSigma: 0.55
+  },
+
+  // P3 — Cell-to-cell bystander biophoton signaling (Verified, §5 P3, PMC3840296, PMC10606557 2024)
+  // Verified pathway: cells emit visible-band photons that induce epigenetic changes in neighbors.
+  {
+    sourceOrganelleId: "cell-membrane",
+    targetOrganelleId: "membrane-receptors",
+    description: "Bystander biophoton cell-to-cell signaling (P3 — Verified, §5): the plasma membrane emits coherent visible-band photons (400–700 nm) that traverse extracellular space and are received by membrane receptors of neighboring cells, inducing epigenetic changes without direct contact. This is the highest-confidence inter-cellular biophoton pathway (Verified, 2013–2024 literature). Android analogue: unordered broadcast intent — fire-and-forget across all process boundaries, received by all registered listeners simultaneously. σ=0.80 (biologically calibrated — the strongest verified inter-cellular coupling, higher than the IPC baseline).",
+    rateRange: "10–500 photons/cm²/s",
+    confidence: "verified",
+    wavelengthBand: "blue-green",
+    ipcMechanism: "unordered-broadcast",
+    couplingSigma: 0.80
+  },
+
+  // P4 — Nucleus → Cytoplasm UV emission (Speculative, §5 P4)
+  // DNA tautomeric transitions emit UV photons; these may diffuse into the cytoplasm as signals.
+  {
+    sourceOrganelleId: "nucleus",
+    targetOrganelleId: "cytoplasm",
+    description: "Nuclear UV biophoton emission (P4 — Speculative, §5): DNA tautomeric base-pair transitions (keto↔enol, amino↔imino) emit UV photons in the 200–380 nm band (Pietruszka & Marzec 2024). These photons diffuse from the nucleus into the cytoplasm and may serve as a quantum state broadcast — the nucleus announcing its replication or repair activity to the cytoplasmic medium. Speculative: UV emission from DNA is verified, but cytoplasmic reception as a functional signal is proposed. Android analogue: ordered broadcast from kernel to userspace — the nucleus (kernel) emits a priority-chained signal into the cytoplasm (userspace medium), σ=0.35 (speculative tier, §9.4).",
+    rateRange: "1–10 photons/cm²/s",
+    confidence: "speculative",
+    wavelengthBand: "UV",
+    ipcMechanism: "ordered-broadcast",
+    couplingSigma: 0.35
+  },
+
+  // P5 — Cytoskeleton microtubule waveguide routing (Indicative, §5 P5)
+  // Microtubules proposed as biophoton waveguides routing signals between organelles.
+  {
+    sourceOrganelleId: "cytoskeleton",
+    targetOrganelleId: "mitochondria",
+    description: "Microtubule biophoton waveguide (P5 — Indicative, §5): the cytoskeleton's microtubule network has been proposed as a biological optical fiber, guiding near-infrared photons between organelles through total internal reflection within the hollow microtubule lumen. This would allow long-range biophoton routing — cytoskeleton as the fiber-optic backbone of the cell's light communication network. Android analogue: Binder thread pool routing — the thread pool routes IPC requests to the correct execution unit exactly as the microtubule routes the photon to the correct organelle (σ=0.60, indicative).",
+    rateRange: "1–50 photons/cm²/s",
+    confidence: "indicative",
+    wavelengthBand: "NIR",
+    ipcMechanism: "binder",
+    couplingSigma: 0.60
+  },
+
+  // P7 — Mitochondria lateral synchronization (Indicative, §5 P7, PMC10560087 2023)
+  // Non-contact mitochondria-to-mitochondria biophoton synchronization (verified in 2023).
+  {
+    sourceOrganelleId: "mitochondria",
+    targetOrganelleId: "mitochondria",
+    description: "Mitochondria-to-mitochondria lateral biophoton synchronization (P7 — Indicative, §5): non-contact mitochondrial communication documented in 2023 (PMC10560087) — spatially separated mitochondria synchronize their membrane potential oscillations through ultra-weak photon signals without direct membrane contact. This lateral sync maintains coherent network-wide energy output across the mitochondrial population. Self-directed link represents the intra-population coupling: each mitochondrion is simultaneously emitter and receiver of the synchronizing signal. Android analogue: Messenger async messaging within a service cluster — each node receives and re-emits state to maintain cohort synchronization (σ=0.65, indicative, biologically calibrated).",
+    rateRange: "5–200 photons/cm²/s",
+    confidence: "indicative",
+    wavelengthBand: "red",
+    ipcMechanism: "messenger",
+    couplingSigma: 0.65
   }
 ];
 
