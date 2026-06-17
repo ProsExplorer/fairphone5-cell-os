@@ -440,20 +440,24 @@ export function CellMapNav({ activeZone, onSelectZone, compact = false }: Props)
           <span style={{ color: "rgba(134,239,172,0.5)" }}>泌</span>
           Biophoton Secretory
         </a>
-        <Link
-          href="/arch-map"
+        <a
+          href="cell-os-architecture-map.html"
+          target="_blank"
+          rel="noopener noreferrer"
           className="flex items-center gap-2 px-3 py-2 rounded-lg text-muted-foreground/35 hover:text-muted-foreground/70 transition-colors font-mono text-[9px] tracking-widest uppercase"
         >
           <span style={{ color: "rgba(34,211,238,0.5)" }}>架</span>
           Arch Map
-        </Link>
-        <Link
-          href="/pae-flow"
+        </a>
+        <a
+          href="cell-os-pae-flow.html"
+          target="_blank"
+          rel="noopener noreferrer"
           className="flex items-center gap-2 px-3 py-2 rounded-lg text-muted-foreground/35 hover:text-muted-foreground/70 transition-colors font-mono text-[9px] tracking-widest uppercase"
         >
           <span style={{ color: "rgba(167,139,250,0.5)" }}>流</span>
           P→A→E Flow
-        </Link>
+        </a>
       </div>
     </aside>
   );

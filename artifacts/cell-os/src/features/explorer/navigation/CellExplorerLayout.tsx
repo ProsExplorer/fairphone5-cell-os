@@ -137,18 +137,22 @@ export function CellExplorerLayout() {
           >
             Metrics
           </Link>
-          <Link
-            href="/arch-map"
+          <a
+            href="cell-os-architecture-map.html"
+            target="_blank"
+            rel="noopener noreferrer"
             className="hidden md:block px-2 py-1 rounded text-[10px] font-mono text-muted-foreground/30 hover:text-muted-foreground/65 transition-colors"
           >
             Arch Map
-          </Link>
-          <Link
-            href="/pae-flow"
+          </a>
+          <a
+            href="cell-os-pae-flow.html"
+            target="_blank"
+            rel="noopener noreferrer"
             className="hidden md:block px-2 py-1 rounded text-[10px] font-mono text-muted-foreground/30 hover:text-muted-foreground/65 transition-colors"
           >
             P→A→E
-          </Link>
+          </a>
         </div>
       </header>
 
@@ -185,8 +189,6 @@ export function CellExplorerLayout() {
             { href: "/substrate",  glyph: "硅", label: "Substrate",  color: "rgba(251,191,36,0.6)" },
             { href: "/fractal",    glyph: "形", label: "Fractal",    color: "rgba(196,181,253,0.6)" },
             { href: "/metrics",    glyph: "量", label: "Metrics",    color: "rgba(74,222,128,0.6)"  },
-            { href: "/arch-map",   glyph: "架", label: "Arch Map",   color: "rgba(34,211,238,0.6)"  },
-            { href: "/pae-flow",   glyph: "流", label: "P→A→E",      color: "rgba(167,139,250,0.6)" },
           ].map(({ href, glyph, label, color }) => (
             <Link
               key={href}
@@ -232,6 +234,24 @@ export function CellExplorerLayout() {
           >
             <span style={{ color: "rgba(134,239,172,0.6)" }}>泌</span>
             Biophoton Secretory
+          </a>
+          <a
+            href="cell-os-architecture-map.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-white/8 text-[9px] font-mono tracking-widest uppercase text-muted-foreground/40 hover:text-muted-foreground/75 transition-colors shrink-0"
+          >
+            <span style={{ color: "rgba(34,211,238,0.6)" }}>架</span>
+            Arch Map
+          </a>
+          <a
+            href="cell-os-pae-flow.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-white/8 text-[9px] font-mono tracking-widest uppercase text-muted-foreground/40 hover:text-muted-foreground/75 transition-colors shrink-0"
+          >
+            <span style={{ color: "rgba(167,139,250,0.6)" }}>流</span>
+            P→A→E
           </a>
         </div>
       </div>
