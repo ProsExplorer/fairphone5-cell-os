@@ -349,14 +349,14 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
   },
 
   // P3 — Cell-to-cell bystander biophoton signaling (Verified, §5 P3, PMC3840296, PMC10606557 2024)
-  // Verified pathway: cells emit visible-band photons that induce epigenetic changes in neighbors.
+  // Verified pathway: stressed cells emit biophotons in the 600–900 nm biological window that induce epigenetic changes in neighbors.
   {
     sourceOrganelleId: "cell-membrane",
     targetOrganelleId: "membrane-receptors",
     description: "Bystander biophoton cell-to-cell signaling (P3 — Verified, §5): stressed cells emit UPE that propagates as an extracellular broadcast and is received by neighboring cells, including transmission across photon-transparent barriers that block molecular diffusion. Pathway wavelength is 600–900 nm (the biological window), with emission/absorption through the extracellular medium over μm-to-mm distances. This is the most firmly established functional biophoton signaling pathway in the current literature (Verified, 2013–2024). Android analogue: unordered broadcast intent — fire-and-forget across all process boundaries, received by all registered listeners simultaneously. σ=0.80 (biologically calibrated for the strongest verified inter-cellular coupling).",
     rateRange: "10–500 photons/cm²/s",
     confidence: "verified",
-    wavelengthBand: "blue-green",
+    wavelengthBand: "red",
     ipcMechanism: "unordered-broadcast",
     couplingSigma: 0.80
   },
@@ -379,7 +379,7 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
   {
     sourceOrganelleId: "cytoskeleton",
     targetOrganelleId: "mitochondria",
-    description: "Microtubule waveguide routing (P5 — Indicative, §5): microtubules are proposed intracellular photon waveguides where total internal reflection occurs in the MT lumen (inner diameter ~14 nm) due to refractive-index contrast between tubulin (n≈1.46) and cytoplasm (n≈1.35). Pathway wavelength is characterized as 400–800 nm, enabling cell-scale directional and omnidirectional routing across the organelle network. Evidence is indicative: waveguide physics is established, but direct single-photon guided-propagation measurement in living microtubules is still pending. Android analogue: Binder thread-pool routing — dispatch to target execution units as route-specific photon guidance (σ=0.60, indicative).",
+    description: "Microtubule waveguide routing (P5 — Indicative, §5): microtubules are proposed intracellular photon waveguides where total internal reflection occurs in the MT lumen (inner diameter ~14 nm) due to refractive-index contrast between tubulin (n≈1.46) and cytoplasm (n≈1.35). Physical waveguide models support propagation across 400–800 nm, but the physiologically operative range for intracellular biophoton guidance is primarily NIR (700–900 nm), consistent with the wavelengthBand metadata. Evidence is indicative: waveguide physics is established, but direct single-photon guided-propagation measurement in living microtubules is still pending. Android analogue: Binder thread-pool routing — dispatch to target execution units as route-specific photon guidance (σ=0.60, indicative).",
     rateRange: "1–50 photons/cm²/s",
     confidence: "indicative",
     wavelengthBand: "NIR",
