@@ -38,16 +38,19 @@ Enforced at build time by `biophotonIntegrity.assert.ts` (run via `pnpm --filter
 
 ## Canonical 7-pathway set (P1–P7) — 18 links total
 
-All P1–P7 tuples must be present; enforced by the integrity script:
-- P1: `mitochondria → nucleus` (retrograde, NIR, σ=0.65, indicative)
-- P2: `endoplasmic-reticulum → mitochondria` (directed proxy, Messenger async, σ=0.55, indicative)
-- P3: `cell-membrane → membrane-receptors` (verified bystander, unordered-broadcast, σ=0.80, verified)
-- P4: `nucleus → cytoplasm` (UV anterograde, ordered-broadcast, σ=0.35, speculative)
-- P5: `cytoskeleton → mitochondria` (microtubule waveguide, Binder thread pool, σ=0.60, indicative)
-- P6: `cell-membrane → nucleus` (retrograde damage, Binder, σ=0.60, indicative)
-- P7: `mitochondria → mitochondria` (lateral sync, Messenger async, σ=0.65, indicative)
+All P1–P7 tuples must be present; enforced by the integrity script. **BIOPHOTON_RESEARCH.md is authoritative for σ values; LINEAGEOS_MANIFOLD.md is authoritative for LineageOS endpoint descriptions.** Where they conflict, BIOPHOTON_RESEARCH.md wins on σ.
 
-**Why:** P2 is directed (not bidirectional) because MAM contact-site signaling is asymmetric in the current evidence. P4 uses ordered-broadcast (not printk/dmesg) because the Android analogue is a priority-chained kernel-to-userspace signal.
+- P1: `mitochondria → nucleus` (retrograde ROS→lipid perox→450–670 nm triplet carbonyl, σ=**0.75**, indicative)
+- P2: `endoplasmic-reticulum ↔ mitochondria` (MAM oxidative crosstalk — **bidirectional**, σ=0.55, indicative)
+- P3: `cell → cell` (extracellular UPE broadcast 600–900 nm — **biology is extracellular, not intracellular**, unordered-broadcast, σ=0.80, verified)
+- P4: `nucleus → cytoplasm` (DNA excimer UV 200–380 nm anterograde, ordered-broadcast, σ=0.35, speculative)
+- P5: `microtubule waveguide routing` (MT lumen 14 nm, n≈1.46 vs 1.35 total internal reflection, Binder thread pool, σ=0.60, indicative)
+- P6: `membrane → organelle` (**biological endpoint is full organelle network, not nucleus only**; retrograde lipid perox cascade 450–703 nm, σ=**0.55**, indicative)
+- P7: `mitochondria → mitochondria` (lateral sync, 2023 experiment [PMC10560087], σ=0.65, indicative)
+
+**Why:** P1 corrected from σ=0.65 → 0.75 per BIOPHOTON_RESEARCH §5.8 cross-document audit. P6 corrected from σ=0.60 → 0.55 and endpoint broadened from "→nucleus" to "→organelle" — same audit. P2 is bidirectional (MAM is a contact site, not a one-way conduit). P3 biological route is extracellular; LineageOS maps the IPC analogue to HAL→AppOps internally, but the biology is cell-to-cell.
+
+**σ is a continuous attention-tensor weight, not a binary confidence flag.** A pathway can be `indicative` evidence level and carry σ=0.75 if its emission rate and mechanistic coherence justify high weighting (P1 canonical example).
 
 ## Golgi biophoton links — mixed confidence
 

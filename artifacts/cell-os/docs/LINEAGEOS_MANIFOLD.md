@@ -74,6 +74,14 @@ What the transition map is permitted to change:
 
 When a component is **identical to AOSP** (no LineageOS modification), its confidence tier inherits from the existing AOSP Cell OS documentation. When a component is **LineageOS-specific**, it starts at `indicative` until confirmed against the LineageOS source tree.
 
+### 2.5 Biophoton Research Grounding
+
+`BIOPHOTON_RESEARCH.md` is the authoritative source for all biological biophoton claims in this document: organelle emission profiles, inter-organelle pathway evidence tiers, σ attention weights, wavelength ranges, and emission rates. `LINEAGEOS_MANIFOLD.md` only translates those biological routes into their LineageOS software analogues.
+
+**Resolution rule**: Where the two documents conflict on σ values, evidence tiers, or biological endpoint descriptions, `BIOPHOTON_RESEARCH.md` governs. LineageOS-specific endpoint changes (package names, service paths, feature activation status) are governed by this document.
+
+**σ note**: σ is an attention-tensor weight (0–1 continuous), not a boolean confidence flag. A pathway can be `indicative` evidence level and still carry σ = 0.75 if its emission rate and mechanistic coherence support a high weighting (P1 is the canonical example).
+
 ---
 
 ## 3. AOSP–LineageOS Invariants (Components That Do Not Change)
@@ -108,6 +116,8 @@ The following components are **structurally identical** between AOSP and Lineage
 
 #### Biology
 The nucleus is the cell's control centre. It houses the genome (DNA), orchestrates gene expression, and manages cell division. The nuclear envelope with pore complexes strictly controls what enters and exits. It is the seat of genetic authority.
+
+**Biophoton emission profile** (BIOPHOTON_RESEARCH.md §4.2, verified 2024 [PMC11582580]): UV 200–380 nm; baseline rate ~1–10 ph/s/cm²; burst emission during nucleotide excision repair (NER) and chromatin remodelling. Primary source reactions: DNA excimer/exciplex emission and tautomeric base transitions. Chromatin compaction modulates emission intensity — less compact chromatin emits more freely. Confidence: `verified`.
 
 #### P→A→E (Nucleus Zone)
 - **P**: Bootloader chain delivers signed kernel image to init
@@ -166,10 +176,10 @@ The nucleus is the cell's control centre. It houses the genome (DNA), orchestrat
 | **SELinux policy** | `system/sepolicy/` | `github.com/LineageOS/android_system_sepolicy` — adds Lineage-specific type contexts for Lineage apps (Trust, LineageParts, Trebuchet, su daemon) |
 | **Keystore / TEE** | `system/security/keystore/`, Strongbox | **Identical** — TEE is hardware-enforced (ARM TrustZone); cannot be changed by OS fork |
 | **NNAPI boundary** | `frameworks/ml/nn/` | **Identical** |
-| **Trust Interface** | ❌ Not present | ⚠ **Source location unresolved**: `android_packages_apps_Trust` does NOT exist in the LineageOS GitHub org (HTTP 404 confirmed). Trust Interface is a known LineageOS feature but its source implementation location has not been identified. Likely candidates: `android_lineage-sdk`, `android_vendor_lineage`, or `android_packages_apps_Settings` fork. Until the source is found: all Trust claims are `unconfirmed`. Feature description: unified security posture dashboard (SELinux status, USB debug, root status, key health). |
-| **Confidence** | `verified` | `verified` (inherited) · `unconfirmed` (Trust Interface source location not found in LineageOS org — see §9.8 and §9.12) |
+| **Trust Interface** | ❌ Not present | ❌ **DEPRECATED/REMOVED in LOS 20/21+** — Trust Interface is confirmed removed from all current LineageOS builds. `android_packages_apps_Trust` repository deleted (HTTP 404); all five candidate source locations empty (§9.12). Do not model as a current nuclear-pore component. Historical description: unified security posture dashboard (SELinux status, USB debug, root status, key health). |
+| **Confidence** | `verified` | `verified` (inherited) · `deprecated-feature` (Trust Interface — removed in LOS 20/21+, see §9.12) |
 
-**LineageOS biological refinement**: The Trust Interface is a new class of nuclear pore — a dedicated security signal channel that did not exist in the AOSP nucleus. In cell biology, nuclear pores have specificity: not all molecules can pass. The Trust Interface adds an **immune checkpoint** that audits the state of the other pores in real time, analogous to an MHC class I presentation complex — it surfaces internal state for external immune scrutiny.
+**LineageOS biological refinement (historical)**: The Trust Interface was a dedicated security signal channel unique to early LineageOS — an **immune checkpoint** analogous to MHC class I presentation that surfaced internal state (SELinux, USB debug, root, key health) for external immune scrutiny. This organelle is architecturally significant as a design template but is **no longer expressed in LOS 20/21+ builds**.
 
 ---
 
@@ -208,7 +218,7 @@ The cytoskeleton is the cell's structural scaffolding — a dynamic network of a
 
 #### P→A→E (Cytoskeleton Zone)
 - **P**: Frame buffer ready signal (VSYNC) from display hardware
-- **A**: SurfaceFlinger composites layers; RenderThread executes GPU draws; LiveDisplay applies color transform
+- **A**: SurfaceFlinger composites layers; RenderThread executes GPU draws; LiveDisplay color transform (not active on FP5 LOS 21)
 - **E**: Composed frame pushed to panel via DSI
 
 ---
@@ -262,6 +272,8 @@ Ribosomes are the molecular machines that synthesise proteins from mRNA. They tr
 
 #### Biology
 Mitochondria generate ATP through the electron transport chain. Emission rate is directly coupled to membrane potential — a real-time readout of energy synthesis. They also regulate apoptosis and calcium buffering.
+
+**Biophoton emission profile** (BIOPHOTON_RESEARCH.md §4.1, verified [PMC7360823]): 570–670 nm (red); resting rate 10–100 ph/s/cm²; stress burst 100–1,000 ph/s/cm². Emission is ΔΨm-coupled: loss of mitochondrial membrane potential (uncoupling, Complex I/III inhibition) produces a measurable photon burst via the Russell mechanism (peroxyl radical termination → triplet carbonyl → photon). Confidence: `verified`.
 
 #### P→A→E (Mitochondria Zone)
 - **P**: Thermal sensor / PMIC reports load; battery voltage read; NPU workload request arrives
@@ -332,6 +344,8 @@ The Golgi apparatus sorts, addresses, packages, and dispatches proteins to their
 
 #### Biology
 The ER is a vast membrane network. The rough ER folds and modifies proteins entering the secretory pathway. The smooth ER synthesises lipids and detoxifies. Under ER stress (unfolded protein response), oxidative load increases proportionally.
+
+**Biophoton emission profile** (BIOPHOTON_RESEARCH.md §4.3, verified [PMC3699878]): 400–700 nm (broad visible); rate ~5–50 ph/s/cm², scales with UPR activation. Primary source: PDI-ERO1 oxidative folding axis — protein disulfide isomerase (PDI) catalysed by ERO1 transfers electrons to O₂ generating H₂O₂, which feeds ROS-driven photon emission. The ER contributes ~25% of total cellular ROS and therefore ~25% of cellular biophoton output. Confidence: `verified`.
 
 #### P→A→E (ER Zone)
 - **P**: Inference request enters NNAPI; AIDL service call arrives at framework
@@ -429,13 +443,13 @@ The seven inter-organelle biophoton signaling pathways map to Android IPC mechan
 
 | Pathway | Biological Route | σ | Android IPC | LineageOS Endpoint Delta |
 |---|---|---|---|---|
-| **P1** | Mitochondria → Nucleus (retrograde energy signal) | 0.65 / indicative | Binder `oneway` async | NPU → Power HAL → kernel governor: identical. LineageOS kernel may tune `schedutil` responsiveness at the nucleus endpoint |
-| **P2** | ER → Mitochondria (MAM directed proxy) | 0.55 / indicative | Messenger async | AIDL service → Power HAL: identical. microG may introduce a new ER endpoint for GMS-dependent power APIs |
-| **P3** | Cell-membrane → Membrane-receptors | **0.80 / verified** | `sendBroadcast` unordered | HAL boundary → Privacy Guard (LineageOS adds a receptor-level filter at the target end of this pathway; the IPC mechanism is unchanged) |
-| **P4** | Nucleus → Cytoplasm (UV anterograde) | 0.35 / speculative | Ordered broadcast | `init` → ServiceManager broadcast: identical. LineageOS `init.lineage.rc` may add additional ordered service starts |
-| **P5** | Cytoskeleton microtubule waveguide | 0.60 / indicative | Binder thread pool | SurfaceFlinger render pipeline: identical. LiveDisplay intercepts at the display HAL layer (not the Binder layer) |
-| **P6** | Cell-membrane → Nucleus (retrograde IRQ) | 0.60 / indicative | `hardirq` → IRQ thread → syscall → kernel supervisor | If WireGuard is present in the device kernel build (build-config dependent — `unconfirmed` for FP5), it adds a cryptographic channel type: WireGuard IRQ → kernel module → encrypted tunnel send. If not present, the pathway is identical to AOSP |
-| **P7** | Mitochondria ↔ Mitochondria (lateral sync) | 0.65 / indicative | Messenger async | NPU burst synchronisation: identical. Power HAL lateral signaling unchanged |
+| **P1** | Mitochondria → Nucleus (retrograde metabolic photon signal) | **0.75 / indicative** | Binder `oneway` async | NPU → Power HAL → kernel governor: identical. Biological basis: ROS→lipid peroxidation→450–670 nm triplet carbonyl emission. LineageOS `schedutil` tuning applies at the nucleus endpoint. |
+| **P2** | ER ↔ Mitochondria (MAM oxidative crosstalk — bidirectional) | 0.55 / indicative | Messenger async | AIDL service ↔ Power HAL bidirectional MAM junction: identical. microG introduces a new ER endpoint only in LOS-for-microG build variant; absent in standard LOS FP5. |
+| **P3** | Cell → Cell (extracellular UPE broadcast — Verified biology) | **0.80 / verified** | `sendBroadcast` unordered | Biology: extracellular UPE broadcast (600–900 nm NIR), the only Verified pathway (P3). LineageOS endpoint: HAL boundary → AppOps/Privacy Guard adds receptor-level filtering inside the cell. The IPC mechanism is unchanged; the biological route is extracellular, not intracellular. |
+| **P4** | Nucleus → Cytoplasm (UV anterograde) | 0.35 / speculative | Ordered broadcast | Biology: DNA excimer UV emission 200–380 nm; nuclear pore geometry (~120 nm diameter) is the photon exit port. `init` → ServiceManager broadcast: identical. LineageOS `init.lineage.rc` may add additional ordered service starts. |
+| **P5** | Microtubule waveguide (directional photon routing bus) | 0.60 / indicative | Binder thread pool / HIDL passthrough | Biology: MT lumen ~14 nm inner diameter; n≈1.46 (tubulin) vs n≈1.35 (cytoplasm) → total internal reflection at visible wavelengths. SurfaceFlinger render pipeline: identical. LiveDisplay intercepts at HAL layer — **not active on FP5 LOS 21**. |
+| **P6** | Membrane → Organelle (retrograde lipid-peroxidation damage signal) | **0.55 / indicative** | `hardirq` → IRQ thread → syscall → kernel supervisor | Biology: oxidative membrane attack propagates inward via peroxyl radical cascade (450–703 nm); biological endpoint is the full organelle network, not nucleus only. WireGuard: **`verified` for LOS 23.2** (`CONFIG_WIREGUARD=y` in `gki_defconfig` — §9.11); `indicative` for LOS 21–22.x. |
+| **P7** | Mitochondria → Mitochondria (lateral photon synchronisation) | 0.65 / indicative (2023) | Messenger async / same-UID local intent | Biology: 2023 isolated-mitochondria experiment [PMC10560087] confirmed non-chemical photon communication across opaque barrier. NPU burst synchronisation: identical. Power HAL lateral signaling unchanged. |
 
 **IPC mechanism invariance**: All seven IPC mechanisms (Binder oneway, Messenger, unordered broadcast, ordered broadcast, Binder thread pool, hardirq→syscall, Messenger async) are AOSP-inherited and unchanged by LineageOS. The σ values carry over from the AOSP calibration. LineageOS does not introduce new IPC mechanisms — it introduces new *endpoints* and *services* that use the existing mechanisms.
 
@@ -445,13 +459,13 @@ The seven inter-organelle biophoton signaling pathways map to Android IPC mechan
 
 Android thread priority constants are defined in `android.os.Process` and in the Linux kernel scheduler. LineageOS inherits these constants without modification.
 
-| Spectral Band | Wavelength | Biological Source | Android Priority | LineageOS Delta |
+| Spectral Band | Wavelength | Biological Source Reaction | Android Priority | LineageOS Delta |
 |---|---|---|---|---|
-| UV | 200–380 nm | DNA tautomeric transitions (Nucleus) | `THREAD_PRIORITY_URGENT_DISPLAY` | **Unchanged** |
-| Blue-green | 450–550 nm | Triplet carbonyl, Russell mechanism | `THREAD_PRIORITY_FOREGROUND` | **Unchanged** |
-| Red | 634–703 nm | Singlet O₂ dimol; mitochondrial emission | `THREAD_PRIORITY_DEFAULT` | **Unchanged** |
-| NIR biological window | 700–1,000 nm | Tissue-propagating cell-to-cell signals | `THREAD_PRIORITY_BACKGROUND` | **Unchanged** |
-| Deep-NIR | 1,270 nm | Singlet O₂ monomol decay | `THREAD_PRIORITY_LOWEST` | **Unchanged** (SeedVault backup, WorkManager) |
+| UV | 200–380 nm | DNA excimer/exciplex emission; NER activity burst (Nucleus) | `THREAD_PRIORITY_URGENT_DISPLAY` | **Unchanged** |
+| Blue-green | 450–550 nm | Triplet carbonyl — Russell mechanism termination of peroxyl radicals | `THREAD_PRIORITY_FOREGROUND` | **Unchanged** |
+| Red | 634 nm / 703 nm | Singlet O₂ dimol emission (¹O₂ diagnostic); mitochondrial stress burst | `THREAD_PRIORITY_DEFAULT` | **Unchanged** |
+| NIR biological window | 700–1,000 nm | Extracellular tissue-propagating UPE; cell-to-cell broadcast (P3 Verified pathway) | `THREAD_PRIORITY_BACKGROUND` | **Unchanged** |
+| Deep-NIR | 1,270 nm | Singlet O₂ monomol decay (strongest ¹O₂ signal; lowest biological information density) | `THREAD_PRIORITY_LOWEST` | **Unchanged** (SeedVault backup, WorkManager) |
 
 The spectral channel map is a **manifold invariant** — it is grounded in emission physics and Android kernel scheduling constants, neither of which LineageOS modifies. The `wbc()` spectral color rendering in `CellDiagram.tsx` is fully valid under the LineageOS coordinate system.
 
@@ -465,8 +479,8 @@ These features have no AOSP equivalent. They represent **emergent organelles** �
 
 ### 7.1 Trust Interface → **Immune Checkpoint Complex**
 
-**Source**: ⚠ **UNRESOLVED** — `android_packages_apps_Trust` does NOT exist in the LineageOS GitHub org (HTTP 404 verified by GitHub API). Trust Interface is a real LineageOS feature but the source repository has not been located. Candidate locations: `android_lineage-sdk`, `android_vendor_lineage`, `android_packages_apps_Settings` LineageOS fork, or a private/renamed package. **Verification required before citing.** Previous document had `packages/apps/Twelve` (the music player) — that was wrong. The corrected path is also unverified. See §9.12.
-**Zone**: membrane (membrane zone — security boundary layer)
+**Source**: ❌ **DEPRECATED/REMOVED in LOS 20/21+** — Trust Interface was a real LineageOS security dashboard feature that was removed in LOS 20/21+. `android_packages_apps_Trust` repository deleted (HTTP 404); all five source candidates verified empty (§9.12). Do not cite as a live LOS 21+ component. The biological analogy below is preserved as architectural history only.
+**Zone**: membrane (membrane zone — security boundary layer, historical reference)
 
 **Biological analogy**: The Trust Interface is the cell's **immune checkpoint complex** — analogous to MHC class I presentation at the surface of a nucleated cell. MHC I does not filter molecules itself; it presents peptide fragments of everything inside the cell to passing immune cells (cytotoxic T lymphocytes), which then decide whether the cell is healthy or should be eliminated. The Trust Interface performs the same role: it does not block or filter IPC itself, but it continuously samples the internal security state (SELinux status, USB debug state, root presence, key health) and surfaces that presentation to the user — who acts as the immune system's decision layer.
 
@@ -475,7 +489,7 @@ These features have no AOSP equivalent. They represent **emergent organelles** �
 - A: Trust HAL evaluates against policy (healthy / degraded / violated)
 - E: Trust badge displayed; user alerted if posture changes
 
-**Confidence**: `unconfirmed` — Trust Interface is a known LineageOS feature; the exact package path (`packages/apps/Trust` vs other location) and HAL depth require source-level verification before this entry can be elevated to `indicative`. See §9.8.
+**Confidence**: `deprecated-feature` — Trust Interface is confirmed removed in LOS 20/21+. The MHC-I immune checkpoint analogy is preserved as architectural history; do not apply to current LOS builds. See §9.12.
 
 ---
 
@@ -647,8 +661,10 @@ This section documents where the LineageOS translation is weaker than the AOSP o
 **Confidence**: `verified` for absence in checked build configs.
 **Impact**: microG requires the separate "LineageOS for microG" build variant. All document references to microG must distinguish: standard LOS FP5 = no microG; LOS-for-microG = separate variant. The vacuole / endosome GmsCore proxy claim is `speculative` for standard FP5, `indicative` for LOS-for-microG.
 
-### 9.6 Golgi Biophoton Links Remain Speculative
+### 9.6 Golgi and Peroxisome Biophoton Links Remain Speculative
 **Gap**: The existing AOSP Cell OS documentation already notes that Golgi UPE has zero direct measurements. The LineageOS translation does not change this fundamental biological gap. `ER→golgi` and `ribosomes→golgi` links remain `σ = 0.45 / speculative` regardless of OS.
+
+**Peroxisome mapping**: BIOPHOTON_RESEARCH.md §4.4 and §9.1 identify peroxisomes as high-intensity H₂O₂ emitters (visible–NIR, indicative evidence, σ = 0.50) — the biological analogue of a background work manager / battery scavenger. Peroxisome is not one of the 15 fixed Cell OS organelles (Fredholm cap: 15 organelles − 17 substrates = −2 hard limit; see `.agents/memory/cell-os-open-items-state.md`). The peroxisome biophoton signal should be absorbed into the nearest mapped zone (lysosomes / vacuole) rather than creating a new organelle entry. σ = 0.50 / indicative for any peroxisome-derived photon links in `mappings.ts`.
 
 ### 9.7 LineageOS Updater Long-term Support Horizon — PARTIALLY RESOLVED
 **Finding**: FP5 has an active maintainer (`mikeioannina`) with builds across versions 21–23.2 (2022–2024+). This confirms ongoing LineageOS support is real and active, not speculative.
@@ -725,7 +741,7 @@ A complete LINEAGEOS_MANIFOLD.md entry must satisfy:
 - [x] microG entries distinguish "standard LineageOS" (no microG) from "LineageOS for microG" build variant (§9.5)
 - [x] Trust Interface is deprecated/removed in LOS 20/21+ — do not cite as a current LOS feature (§9.12)
 - [x] No claim uses `packages/apps/Twelve` for Trust Interface — that is the music player (§9.8)
-- [ ] Trust Interface references in earlier sections are marked `deprecated-feature`, not `unconfirmed`
+- [x] Trust Interface references in earlier sections are marked `deprecated-feature`, not `unconfirmed`
 - [ ] Privacy Guard fake-data injection claims are marked `unconfirmed` — 0 `privacyguard` hits in current frameworks_base (§9.4, §9.9)
 - [ ] SeedVault is NOT included by default in standard LOS FP5 — not in device.mk or vendor common makefiles
 - [x] LiveDisplay claims distinguish LineageOS-wide capability from FP5 activation — FP5 LOS 21 has no LiveDisplay `PRODUCT_PACKAGES` or overlays despite SDM blob presence (§7.3)
@@ -741,7 +757,7 @@ A complete LINEAGEOS_MANIFOLD.md entry must satisfy:
 | Framework base | `github.com/LineageOS/android_frameworks_base` |
 | System core (init) | `github.com/LineageOS/android_system_core` |
 | SELinux policy | `github.com/LineageOS/android_system_sepolicy` |
-| Trust Interface | ❌ **SOURCE NOT FOUND** — `android_packages_apps_Trust` HTTP 404; `android_packages_apps_Twelve` is music player. Source location unresolved. See §9.12 for search plan. |
+| Trust Interface | ❌ **DEPRECATED/REMOVED in LOS 20/21+** — `android_packages_apps_Trust` repository deleted (HTTP 404); all five candidate source locations empty. Feature confirmed removed in LOS 20/21+. See §9.12. |
 | Privacy Guard | Integrated in `android_frameworks_base` (permission hooks; fake-data injection status `unconfirmed`) |
 | LiveDisplay HAL | `github.com/LineageOS/android_hardware_lineage_livedisplay` |
 | Trebuchet | `github.com/LineageOS/android_packages_apps_Trebuchet` |
