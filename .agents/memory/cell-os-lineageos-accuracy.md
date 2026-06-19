@@ -61,6 +61,17 @@ All 5 candidate repos searched with negative result:
 - `android_vendor_lineage` common makefiles: no root packages
 - Opt-in via Magisk post-install only
 
+## LiveDisplay on FP5 LOS 21 — CONFIRMED NOT ACTIVE
+
+- `android_hardware_lineage_livedisplay` has three generic backends: `sdm`, `legacymm`, `sysfs` — no FP5/QCM6490-specific backend
+- FP5 `device.mk` (lineage-21): 0 LiveDisplay packages or overlays; `lineage.dependencies` has no LiveDisplay repo
+- SDM backend's required blob (`libsdm-disp-vndapis.so`) IS in FP5 proprietary-files.txt — theoretically attemptable but not enabled
+- No other QCM6490/SM7325 device (Motorola Dubai, OnePlus u4t, Xiaomi diting) uses LiveDisplay on LOS 21
+- Active FP5 display pipeline: SurfaceFlinger → HWC/QTI display HAL → panel. LiveDisplay is a dormant MAP precursor.
+- Biological framing: LiveDisplay is LineageOS-wide capability; on FP5 LOS 21 the MAP precursor is present but unexpressed.
+
+**Rule**: Do NOT claim LiveDisplay is active on FP5 LOS 21. Distinguish LineageOS-wide capability from FP5 activation status.
+
 ## Privacy Guard — PARTIALLY RESOLVED (Likely Removed/Renamed in LOS 21+)
 
 - `android_frameworks_base` code search for `privacyguard` → 0 hits

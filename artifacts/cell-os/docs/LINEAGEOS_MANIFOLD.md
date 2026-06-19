@@ -222,12 +222,12 @@ The cytoskeleton is the cell's structural scaffolding — a dynamic network of a
 | **HWC2 / Hardware Composer** | `hardware/interfaces/graphics/composer/2.1/` | **Identical** |
 | **RenderThread** | `frameworks/base/libs/hwui/renderthread/` | **Identical** |
 | **CPU scheduler** | `kernel/sched/core.c`, `schedutil` governor | LineageOS kernel: `schedutil` governor improvements for smoother scheduling; same kernel facility, tuned parameters |
-| **LiveDisplay** | ❌ Not present in AOSP | **LineageOS-exclusive**: `hardware/lineage/livedisplay/` + `frameworks/base` display hooks. Provides hardware-accelerated color profiles, adaptive colour temperature, reading mode, outdoor mode. Runs at the display HAL layer — it is a **motor protein operating on the cytoskeletal microtubules**: it changes the properties of the track that frames travel along, not the frames themselves |
+| **LiveDisplay** | ❌ Not present in AOSP | **LineageOS-wide capability**: `hardware/lineage/livedisplay/` + `frameworks/base` display hooks. Generic backends: `sdm`, `legacymm`, `sysfs`. Provides hardware-accelerated colour profiles, adaptive colour temperature, reading mode, outdoor mode — it is a **motor protein operating on the cytoskeletal microtubules**. ⚠️ **FP5 LOS 21**: LiveDisplay is **not active** — `device.mk` has zero LiveDisplay packages or overlays, no LiveDisplay dependency is declared, and no other QCM6490 device (Motorola Dubai, OnePlus u4t) uses it on LOS 21. The SDM backend's required blob (`libsdm-disp-vndapis.so`) is present in FP5 proprietary files — making it theoretically attemptable — but functional enablement is absent. |
 | **Adreno 643 GPU** | Executes SurfaceFlinger passes | **Identical** (hardware-invariant) |
-| **Display: 6.46" FHD+ 90Hz OLED** | HWC2 delivers 90Hz | **Identical** + LiveDisplay color processing |
-| **Confidence** | `verified` (SurfaceFlinger) | `verified` (inherited) · `indicative` (LiveDisplay; source path confirmed at org level; device-specific HAL support requires FP5 branch verification) |
+| **Display: 6.46" FHD+ 90Hz OLED** | HWC2 delivers 90Hz | **Identical** — active FP5 pipeline: SurfaceFlinger → HWC/QTI display HAL → panel. LiveDisplay colour processing is **not active on standard FP5 LOS 21**. |
+| **Confidence** | `verified` (SurfaceFlinger) | `verified` (inherited) · `verified` (LiveDisplay absent from FP5 LOS 21 — confirmed by device.mk, overlay, and dependency source reads) |
 
-**LineageOS biological refinement**: LiveDisplay is the most significant cytoskeletal addition. In cell biology, microtubule-associated proteins (MAPs) modulate how motor proteins move along microtubules — they do not change the track but alter its functional properties. LiveDisplay is a MAP for the display pipeline: it modulates the rendering track's chromatic properties without replacing SurfaceFlinger.
+**LineageOS biological refinement**: LiveDisplay is the most significant cytoskeletal addition in the LineageOS coordinate chart generally. In cell biology, microtubule-associated proteins (MAPs) modulate how motor proteins move along microtubules — they do not change the track but alter its functional properties. LiveDisplay is a MAP for the display pipeline: it modulates the rendering track's chromatic properties without replacing SurfaceFlinger. **On FP5 LOS 21 specifically, this MAP is dormant** — the microtubule infrastructure (QTI display HAL) is present, the MAP precursor (`libsdm-disp-vndapis.so`) is in the cell, but the MAP has not been expressed (no `PRODUCT_PACKAGES` activation).
 
 ---
 
@@ -728,6 +728,7 @@ A complete LINEAGEOS_MANIFOLD.md entry must satisfy:
 - [ ] Trust Interface references in earlier sections are marked `deprecated-feature`, not `unconfirmed`
 - [ ] Privacy Guard fake-data injection claims are marked `unconfirmed` — 0 `privacyguard` hits in current frameworks_base (§9.4, §9.9)
 - [ ] SeedVault is NOT included by default in standard LOS FP5 — not in device.mk or vendor common makefiles
+- [x] LiveDisplay claims distinguish LineageOS-wide capability from FP5 activation — FP5 LOS 21 has no LiveDisplay `PRODUCT_PACKAGES` or overlays despite SDM blob presence (§7.3)
 - [ ] Updater entries do not claim "complete replacement" of update_engine — scope is OTA client UX + server endpoint (§7.4)
 - [ ] All repo paths in Appendix A have been API-verified or explicitly flagged as unverified
 
@@ -771,7 +772,7 @@ The following claims require primary source verification before being elevated t
 | Trust Interface source location | All 5 candidates checked: lineage-sdk (0 paths), vendor_lineage (0 hits), Settings (AOSP TrustAgent only), hardware_interfaces (no trust dir), repo search (no match) | ✓ RESOLVED — feature DEPRECATED/REMOVED in LOS 20/21+ |
 | Privacy Guard fake data injection (current builds) | `android_frameworks_base` code search for `privacyguard` → 0 hits; feature removed/renamed | ⚠️ PARTIAL — injection path unconfirmed; AppOps toggle indicative |
 | Privacy Guard legacy vs current | 0 `privacyguard` hits in frameworks_base; CyanogenMod fake-data injection not detectable in LOS 21+ source | ⚠️ PARTIAL — legacy injection unconfirmed in current builds |
-| LiveDisplay FP5 HAL backend | Check `android_hardware_lineage_livedisplay` for QCM6490/FP5 HAL backend presence | ⏳ pending |
+| LiveDisplay FP5 HAL backend | `android_hardware_lineage_livedisplay` (lineage-21.0) has generic backends: `sdm`, `legacymm`, `sysfs` — no FP5/QCM6490-specific backend. FP5 `device.mk` has 0 LiveDisplay packages or overlays; `lineage.dependencies` adds no LiveDisplay repo. FP5 proprietary blobs do include `libsdm-disp-vndapis.so` (the SDM backend's required library), but enablement and functional validation are absent. No other QCM6490 device (Motorola Dubai, OnePlus u4t) uses LiveDisplay on lineage-21 either. | ✓ RESOLVED — **not active** in standard LOS 21 FP5 build; generic SDM prerequisite blob present but LiveDisplay is not enabled or configured |
 | Root/su availability on FP5 builds | `device.mk` (lineage-21): no su/root packages; vendor common makefiles: no root packages | ✓ RESOLVED — not default; opt-in via Magisk |
 | SeedVault default inclusion | `android_vendor_lineage` common_full_phone.mk and common_mobile_full.mk: 0 SeedVault references; device.mk: no SeedVault | ✓ RESOLVED — not included by default in standard LOS FP5 |
 | microG signature spoofing on FP5 builds | device.mk (lineage-21): no microG packages; vendor_lineage: 0 microG hits | ✓ RESOLVED — not included; requires separate LOS-for-microG variant |
