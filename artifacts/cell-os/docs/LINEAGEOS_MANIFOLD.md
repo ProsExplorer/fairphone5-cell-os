@@ -377,10 +377,12 @@ The ER is a vast membrane network. The rough ER folds and modifies proteins ente
 #### Biology
 The plasma membrane is the cell's selective boundary. The phospholipid bilayer controls what enters and exits. Receptor proteins detect external signals; channel proteins regulate ion flow. The membrane maintains the electrochemical potential that drives the entire cell.
 
+**Biophoton emission profile** (BIOPHOTON_RESEARCH.md §4.6, indicative [PMC5433113][PMC6104306]): 450–703 nm; elevated under oxidative damage; resting rate ~1–10 ph/s/cm², rising sharply under lipid peroxidation attack. Primary source: peroxyl radical cascade initiated by ROS at the bilayer surface → triplet carbonyl (450–550 nm) + singlet O₂ dimol (634/703 nm). This is the P6 retrograde signal origin — membrane oxidative damage is the photon source that propagates inward to organelles. Confidence: `indicative`.
+
 #### P→A→E (Membrane Zone)
 - **P**: External signal (network packet, sensor reading, user touch, USB event) crosses the hardware boundary
-- **A**: SELinux/netfilter/eBPF filters; Privacy Guard evaluates permission; Trust Interface monitors security posture
-- **E**: Signal admitted (or rejected); response emitted; Trust status updated
+- **A**: SELinux/netfilter/eBPF filters; Privacy Guard evaluates permission; security posture audited (Trust Interface was a former LOS feature — deprecated in LOS 20/21+, see §9.12)
+- **E**: Signal admitted (or rejected); response emitted
 
 ---
 
@@ -388,13 +390,13 @@ The plasma membrane is the cell's selective boundary. The phospholipid bilayer c
 
 | | AOSP | LineageOS |
 |---|---|---|
-| **SELinux Binder contexts** | `system/sepolicy/private/` | `github.com/LineageOS/android_system_sepolicy` — adds Lineage-specific `te` contexts for su daemon, Lineage system apps, Trust Interface daemon |
-| **netfilter / iptables** | `kernel/net/netfilter/` | **Identical** + WireGuard may be present if the device kernel build includes the backport (WireGuard is in mainline Linux 5.6+; msm-5.4 requires a backport patch that is build-config dependent) — `unconfirmed` for FP5 specifically; see §9.11 |
+| **SELinux Binder contexts** | `system/sepolicy/private/` | `github.com/LineageOS/android_system_sepolicy` — adds Lineage-specific `te` contexts for su daemon, Lineage system apps (Trust Interface daemon contexts are legacy — Trust removed in LOS 20/21+, see §9.12) |
+| **netfilter / iptables** | `kernel/net/netfilter/` | **Identical** + WireGuard: **`verified` for LOS 23.2** (`CONFIG_WIREGUARD=y` confirmed in `gki_defconfig` — §9.11); `indicative` for LOS 21–22.x (backport patch present in lineage-23.2; earlier branch configs not read) |
 | **eBPF networking** | `kernel/net/core/filter.c` | **Identical** + LineageOS kernel may include eBPF privacy accounting extensions; build-config dependent |
 | **Android permission model** | `frameworks/base/.../pm/permission/` | **Inherited** + Lineage permission hooks (see membrane-receptors below) |
 | **Biometric HAL** | `hardware/interfaces/biometrics/` | **Identical** |
-| **Trust Interface** | ❌ AOSP has no equivalent | **LineageOS-exclusive**: `packages/apps/Trust` [citation needed — see §9.8] — a unified security posture dashboard. Displays: SELinux enforcement status, USB debugging status, root access status, keys & certificate status. **Biological analogy**: the Trust Interface is an **immune checkpoint complex** — it does not filter molecules itself, but continuously audits the state of all membrane channels and surfaces that status to the nucleus |
-| **Confidence** | `verified` (SELinux, netfilter) | `verified` (inherited) · `unconfirmed` (Trust Interface — package path requires source verification; see §9.8) |
+| **Trust Interface** | ❌ AOSP has no equivalent | ❌ **DEPRECATED/REMOVED in LOS 20/21+** — `android_packages_apps_Trust` repository deleted; all five source candidates empty (§9.12). Historical description: unified security posture dashboard (SELinux enforcement, USB debug, root status, key health) — **immune checkpoint complex** analogy preserved as architectural reference only. |
+| **Confidence** | `verified` (SELinux, netfilter) | `verified` (inherited) · `deprecated-feature` (Trust Interface — removed in LOS 20/21+, see §9.12) |
 
 ---
 
@@ -451,7 +453,7 @@ The seven inter-organelle biophoton signaling pathways map to Android IPC mechan
 | **P6** | Membrane → Organelle (retrograde lipid-peroxidation damage signal) | **0.55 / indicative** | `hardirq` → IRQ thread → syscall → kernel supervisor | Biology: oxidative membrane attack propagates inward via peroxyl radical cascade (450–703 nm); biological endpoint is the full organelle network, not nucleus only. WireGuard: **`verified` for LOS 23.2** (`CONFIG_WIREGUARD=y` in `gki_defconfig` — §9.11); `indicative` for LOS 21–22.x. |
 | **P7** | Mitochondria → Mitochondria (lateral photon synchronisation) | 0.65 / indicative (2023) | Messenger async / same-UID local intent | Biology: 2023 isolated-mitochondria experiment [PMC10560087] confirmed non-chemical photon communication across opaque barrier. NPU burst synchronisation: identical. Power HAL lateral signaling unchanged. |
 
-**IPC mechanism invariance**: All seven IPC mechanisms (Binder oneway, Messenger, unordered broadcast, ordered broadcast, Binder thread pool, hardirq→syscall, Messenger async) are AOSP-inherited and unchanged by LineageOS. The σ values carry over from the AOSP calibration. LineageOS does not introduce new IPC mechanisms — it introduces new *endpoints* and *services* that use the existing mechanisms.
+**IPC mechanism invariance**: All seven IPC mechanisms (Binder oneway, Messenger, unordered broadcast, ordered broadcast, Binder thread pool, hardirq→syscall, Messenger async) are AOSP-inherited and unchanged by LineageOS. The **IPC mechanisms** carry over from AOSP; the **σ values and evidence tiers** are governed by `BIOPHOTON_RESEARCH.md` (see §2.5 — not the AOSP calibration). LineageOS does not introduce new IPC mechanisms — it introduces new *endpoints* and *services* that use the existing mechanisms.
 
 ---
 
@@ -486,8 +488,8 @@ These features have no AOSP equivalent. They represent **emergent organelles** �
 
 **P→A→E**:
 - P: System state sampled (SELinux status, USB debug, root mode, key attestation)
-- A: Trust HAL evaluates against policy (healthy / degraded / violated)
-- E: Trust badge displayed; user alerted if posture changes
+- A: Trust HAL evaluated posture against policy (healthy / degraded / violated) — *historical; feature removed in LOS 20/21+*
+- E: Trust badge displayed; user alerted if posture changes — *historical; feature removed in LOS 20/21+*
 
 **Confidence**: `deprecated-feature` — Trust Interface is confirmed removed in LOS 20/21+. The MHC-I immune checkpoint analogy is preserved as architectural history; do not apply to current LOS builds. See §9.12.
 
@@ -542,7 +544,7 @@ These features have no AOSP equivalent. They represent **emergent organelles** �
 
 **Biological analogy**: Root access, when deliberately enabled, is **steroid hormone receptor nuclear import** — a lipophilic molecule that bypasses standard membrane receptors, enters the cytoplasm, binds its nuclear receptor, and imports directly into the nucleus to act as a transcription factor for arbitrary system state. Because root is opt-in and not constitutive, the biological equivalent is an **inducible hormone cascade**, not a constitutive nuclear import pathway.
 
-LineageOS Trust Interface (when present) surfaces root status — the hormone's nuclear entry is reported to the immune checkpoint. This is **inducible, user-gated, Trust-audited nuclear import**.
+The Trust Interface (when it existed in early LineageOS) would surface root status — the hormone's nuclear entry reported to the immune checkpoint. Because Trust Interface is **deprecated in LOS 20/21+** (§9.12), this audit mechanism is no longer active in standard builds. The biological model remains: **inducible, user-gated nuclear import**, with the immune checkpoint layer now absent.
 
 **Confidence**: `unconfirmed` for FP5 specifically — whether a LineageOS FP5 build permits root at all depends on device config and AVB unlock status. Magisk compatibility with FP5's boot image requires verification. See §9.10.
 
