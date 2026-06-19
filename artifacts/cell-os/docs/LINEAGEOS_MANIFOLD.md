@@ -54,7 +54,7 @@ What the transition map is permitted to change:
 |---|---|
 | LineageOS GitHub organisation | `github.com/LineageOS` |
 | LineageOS Android tree | `github.com/LineageOS/android` (manifest) |
-| LineageOS kernel (msm-5.4 base) | `github.com/LineageOS/android_kernel_qcom_sm7325` (closest to FP5 / QCM6490 family) |
+| LineageOS kernel (msm-5.4 base) | `github.com/LineageOS/android_kernel_qcom_sm7325` ⚠ **candidate/closest** — not Tier 1 verified for FP5; use as starting point only (see §9.2) |
 | LineageOS framework patches | `github.com/LineageOS/android_frameworks_base` |
 | LineageOS packages | `github.com/LineageOS/android_packages_apps_*` |
 | Fairphone kernel tree | `github.com/fairphone/kernel_fairphone_5` |
@@ -122,11 +122,12 @@ The nucleus is the cell's control centre. It houses the genome (DNA), orchestrat
 | **Primary source** | `system/core/init/init.cpp` | `github.com/LineageOS/android_system_core` — same file, minimal delta |
 | **Kernel init** | `init` (PID 1), `init.rc` | Identical; LineageOS `init.lineage.rc` extends base `init.rc` with Lineage-specific services |
 | **Kernel tree** | `kernel/msm-5.4` (AOSP / CAF) | `android_kernel_qcom_sm7325` (closest LineageOS tree) + FP5-specific `kernel/fairphone_5` patches |
-| **Kernel additions** | Standard CAF patches | LineageOS kernel patches: WireGuard built-in (`net/wireguard/`), additional security hardening, `schedutil` governor improvements, `eBPF` extensions for privacy accounting |
+| **Kernel additions** | Standard CAF patches | LineageOS kernel patches: additional security hardening, `schedutil` governor tuning, possible eBPF extensions — all build-config and device-maintainer dependent; `unconfirmed` for FP5 specifically until kernel config verified |
+| **Root / su** | Not present by default | Root access is **opt-in only** and **not enabled by default** in modern LineageOS (17+). The traditional su binary has been removed from official builds; users wanting root must use Magisk or similar post-install tools. LineageOS adbd root mode (developer options) provides limited adb-only root |
 | **Boot verification** | Android Verified Boot 2.0 (AVB2) | LineageOS supports AVB2; ships with AVB enforcing on many devices. FP5 support: `indicative` |
-| **Confidence** | `verified` (kernel; AOSP primary source) | `indicative` (LineageOS-specific kernel patches; branch/device path requires verification) |
+| **Confidence** | `verified` (kernel; AOSP primary source) | `indicative` (LineageOS kernel framework; `unconfirmed` for FP5-specific patches — see §9.2 and §9.10) |
 
-**LineageOS biological refinement**: The LineageOS kernel adds WireGuard natively (a modern DNA repair enzyme — patching cryptographic vulnerabilities at the kernel level). The `init.lineage.rc` overlay is like an epigenetic mark on the base genome — it activates Lineage-specific gene expression without replacing the foundational sequence.
+**LineageOS biological refinement**: The `init.lineage.rc` overlay is an **epigenetic mark on the base genome** — it activates Lineage-specific gene expression (service starts, property overrides) without replacing the foundational sequence. Root access, when present, is a **steroid hormone receptor import event** — bypassing standard membrane receptors to act directly in the nucleus. Because root is opt-in and not default, this nuclear import event is rare and audited, not constitutive.
 
 ---
 
@@ -164,10 +165,10 @@ The nucleus is the cell's control centre. It houses the genome (DNA), orchestrat
 | **SELinux policy** | `system/sepolicy/` | `github.com/LineageOS/android_system_sepolicy` — adds Lineage-specific type contexts for Lineage apps (Trust, LineageParts, Trebuchet, su daemon) |
 | **Keystore / TEE** | `system/security/keystore/`, Strongbox | **Identical** — TEE is hardware-enforced (ARM TrustZone); cannot be changed by OS fork |
 | **NNAPI boundary** | `frameworks/ml/nn/` | **Identical** |
-| **Trust Interface** | ❌ Not present | `packages/apps/Twelve` / LineageParts Trust HAL — adds a unified security posture API that reads SELinux status, USB debug state, root state, key attestation. This is an **additional nuclear pore** — a new channel type through which security signals pass |
-| **Confidence** | `verified` | `verified` (inherited) · `indicative` (Trust Interface source path needs branch verification) |
+| **Trust Interface** | ❌ Not present | `packages/apps/Trust` [citation needed — `android_packages_apps_Trust`; **not** `packages/apps/Twelve` which is the LineageOS music player] — a unified security posture dashboard reading SELinux status, USB debug state, root state, key attestation. This is an **additional nuclear pore** — a new channel type through which security signals pass |
+| **Confidence** | `verified` | `verified` (inherited) · `unconfirmed` (Trust Interface package path requires source-level confirmation before being cited as authoritative — see §9.8) |
 
-**LineageOS biological refinement**: The Trust Interface is a new class of nuclear pore — a dedicated security signal channel that did not exist in the AOSP nucleus. In cell biology, nuclear pores have specificity: not all molecules can pass. The Trust Interface adds a **meta-pore** that audits the state of the other pores in real time.
+**LineageOS biological refinement**: The Trust Interface is a new class of nuclear pore — a dedicated security signal channel that did not exist in the AOSP nucleus. In cell biology, nuclear pores have specificity: not all molecules can pass. The Trust Interface adds an **immune checkpoint** that audits the state of the other pores in real time, analogous to an MHC class I presentation complex — it surfaces internal state for external immune scrutiny.
 
 ---
 
@@ -304,7 +305,7 @@ The Golgi apparatus sorts, addresses, packages, and dispatches proteins to their
 | **NotificationManagerService** | `frameworks/base/services/core/java/com/android/server/notification/` | `github.com/LineageOS/android_frameworks_base` — inherits NMS; no structural fork |
 | **Intent dispatch (AMS)** | `frameworks/base/services/core/java/com/android/server/am/` | **Identical** |
 | **PackageManager** | `frameworks/base/services/core/java/com/android/server/pm/` | **Identical** base; LineageOS adds Privacy Guard hooks to permission grant flow |
-| **OTA delivery** | `system/update_engine/` (A/B update engine, Google-hosted OTA) | **LineageOS Updater**: `packages/apps/Updater` — LineageOS-hosted OTA server, delta package download, scheduled/background update checks. This is a **complete Golgi sorting-and-dispatch replacement**: the address label on every package now points to LineageOS servers, not Google's |
+| **OTA delivery** | `system/update_engine/` (A/B update engine, Google-hosted OTA) | **LineageOS Updater**: `packages/apps/Updater` — replaces the OTA client UX and server endpoint (pointing to LineageOS servers), while the underlying A/B update platform mechanism may still be used beneath it. The address label on every package now points to LineageOS servers, not Google's — a trans-Golgi network route change, not a replacement of the entire dispatch machinery |
 | **Trebuchet launcher** | ❌ AOSP Launcher3 | `packages/apps/Trebuchet` — LineageOS default launcher. The launcher is the **secretory vesicle that delivers the expression layer to the user** — what the Golgi dispatches as the final product visible at the plasma membrane |
 | **8-year software support** | Fairphone OTA commitment | Under LineageOS: community-maintained; official LineageOS FP5 support depends on device maintainer status |
 | **UFS 2.2 — write pipeline** | Package install writes | **Identical** (hardware-invariant) |
@@ -347,11 +348,11 @@ The ER is a vast membrane network. The rough ER folds and modifies proteins ente
 | **TFLite NNAPI delegate** | `external/tensorflow/` (AOSP external tree) | **Identical** |
 | **NN HAL** | `hardware/interfaces/neuralnetworks/` | **Identical** |
 | **AIDL service layer** | `frameworks/base` | `github.com/LineageOS/android_frameworks_base` — inherits; Lineage adds framework hooks for Trust and Privacy Guard |
-| **microG compatibility** | ❌ Not present in AOSP | **LineageOS supports microG** (`github.com/microg/GmsCore`) — an open-source implementation of Google Play Services. microG stubs the GMS API surface, allowing apps that depend on Google Play Services to function without Google. **Biological analogy**: molecular mimicry — the microG receptor analog binds the same ligand site as the GMS receptor, triggering the same downstream cascade from a different molecular origin. It occupies the ER lumen without the Google glycoprotein signature |
+| **microG compatibility** | ❌ Not present in AOSP | **Available via "LineageOS for microG" build variant** (`github.com/microg/GmsCore`) — a separate, officially maintained build that includes signature spoofing and microG pre-installed. Standard official LineageOS builds do **not** ship microG and do not include signature spoofing by default. Users on standard LineageOS can install microG manually only if the device maintainer has enabled signature spoofing in the build. **Biological analogy**: molecular mimicry — the microG receptor analog binds the same ligand site as the GMS receptor from a different molecular origin |
 | **Ion alloc / DMA-buf** | `drivers/staging/android/ion/` | **Identical** (kernel-level; inherited) |
-| **Confidence** | `verified` (NNAPI, AIDL) | `verified` (inherited) · `speculative` (microG integration depth on FP5 specifically; depends on whether official Lineage FP5 build ships microG by default or as a separate variant) |
+| **Confidence** | `verified` (NNAPI, AIDL) | `verified` (inherited) · `speculative` (microG on standard LineageOS FP5 build — entirely build-variant dependent; see §9.5) |
 
-**LineageOS biological refinement**: microG is the single most structurally interesting addition in the ER zone. In cell biology, molecular mimics — viral proteins that resemble host ligands — bind host receptors and hijack downstream signaling. microG is a beneficial mimic: it presents the GMS surface to apps, triggering correct downstream behavior, while routing all actual computation through open-source implementations. The ER folds this mimic protein into the secretory pathway exactly as it would fold the original.
+**LineageOS biological refinement**: microG molecular mimicry is the most structurally interesting ER-zone addition, but it must be understood as a **separate organism variant** — "LineageOS for microG" is a distinct build of the LineageOS cell. Standard LineageOS cells do not contain this mimic protein by default. The ER folding machinery is present in all variants; the mimic protein itself is an optional package that must be explicitly selected at the organism (build) level.
 
 ---
 
@@ -373,12 +374,12 @@ The plasma membrane is the cell's selective boundary. The phospholipid bilayer c
 | | AOSP | LineageOS |
 |---|---|---|
 | **SELinux Binder contexts** | `system/sepolicy/private/` | `github.com/LineageOS/android_system_sepolicy` — adds Lineage-specific `te` contexts for su daemon, Lineage system apps, Trust Interface daemon |
-| **netfilter / iptables** | `kernel/net/netfilter/` | **Identical** + LineageOS ships WireGuard natively in kernel (P2P VPN tunnel as a dedicated membrane channel — an ion channel with cryptographic selectivity) |
-| **eBPF networking** | `kernel/net/core/filter.c` | **Identical** + LineageOS kernel eBPF extensions for enhanced privacy accounting |
-| **Android permission model** | `frameworks/base/.../pm/permission/` | **Inherited** + Privacy Guard augmentation (see membrane-receptors below) |
+| **netfilter / iptables** | `kernel/net/netfilter/` | **Identical** + WireGuard may be present if the device kernel build includes the backport (WireGuard is in mainline Linux 5.6+; msm-5.4 requires a backport patch that is build-config dependent) — `unconfirmed` for FP5 specifically; see §9.11 |
+| **eBPF networking** | `kernel/net/core/filter.c` | **Identical** + LineageOS kernel may include eBPF privacy accounting extensions; build-config dependent |
+| **Android permission model** | `frameworks/base/.../pm/permission/` | **Inherited** + Lineage permission hooks (see membrane-receptors below) |
 | **Biometric HAL** | `hardware/interfaces/biometrics/` | **Identical** |
-| **Trust Interface** | ❌ AOSP has no equivalent | **LineageOS-exclusive**: `packages/apps/Twelve` + `lineageos/trust` HAL — a unified security posture dashboard. Displays: SELinux enforcement status, USB debugging status, root access status, keys & certificate status. **Biological analogy**: the Trust Interface is the cell's gap junction complex — it does not directly filter molecules, but continuously monitors the state of the membrane's other channels, alerting the nucleus when a boundary violation is detected |
-| **Confidence** | `verified` (SELinux, netfilter) | `verified` (inherited) · `indicative` (Trust Interface; package name confirmed, HAL depth requires source verification) |
+| **Trust Interface** | ❌ AOSP has no equivalent | **LineageOS-exclusive**: `packages/apps/Trust` [citation needed — see §9.8] — a unified security posture dashboard. Displays: SELinux enforcement status, USB debugging status, root access status, keys & certificate status. **Biological analogy**: the Trust Interface is an **immune checkpoint complex** — it does not filter molecules itself, but continuously audits the state of all membrane channels and surfaces that status to the nucleus |
+| **Confidence** | `verified` (SELinux, netfilter) | `verified` (inherited) · `unconfirmed` (Trust Interface — package path requires source verification; see §9.8) |
 
 ---
 
@@ -388,12 +389,12 @@ The plasma membrane is the cell's selective boundary. The phospholipid bilayer c
 |---|---|---|
 | **Android permission model** | `packages/apps/PermissionController/` | **Identical** base |
 | **Privacy dashboard (Android 12+)** | `packages/apps/PermissionController/` | **Inherited** |
-| **Privacy Guard** | ❌ AOSP equivalent is limited; Android 12 Privacy Dashboard is read-only | **LineageOS-exclusive**: Privacy Guard is integrated into `AppOpsManager` (`frameworks/base`, LineageOS fork). Provides **per-app, per-permission toggles with fake data injection** — camera returns blank frames, location returns null, microphone returns silence. **Biological analogy**: Privacy Guard is a **receptor decoy** mechanism — it allows the ligand (the app's API call) to bind the receptor, but injects a synthetic response instead of the real signal. The cell controls information leakage at the receptor level, not just at the membrane level |
+| **Privacy Guard** | ❌ AOSP equivalent is limited; Android 12 Privacy Dashboard is read-only | **LineageOS feature (legacy/reduced in modern builds)**: Privacy Guard originated in CyanogenMod and early LineageOS. In LineageOS 17+, the fake-data-injection capability (blank camera, null location, silent mic) has been substantially reduced or removed from many builds; modern LineageOS relies on AOSP's `AppOpsManager` + `PermissionController` with Lineage-specific permission hooks. **Biological analogy preserved**: the permission control architecture (receptor-level gating) is still present — the fake-data effector is the element under dispute. See §9.9. |
 | **Sensors / ISR** | Hardware interrupt → kernel driver → sensor HAL | **Identical** (hardware-invariant) |
 | **Connectivity (5G, Wi-Fi 6, BT 5.2)** | QCM6490 integrated modem + QCA6391 | **Identical** (hardware-invariant) |
-| **Confidence** | `verified` (sensors, connectivity) | `indicative` (Privacy Guard; well-documented LineageOS feature; source path in `android_frameworks_base` requires branch confirmation) |
+| **Confidence** | `verified` (sensors, connectivity) | `unconfirmed` (Privacy Guard fake-data injection in current LineageOS builds; permission gating architecture is `indicative` — see §9.9) |
 
-**LineageOS biological refinement**: Privacy Guard is the most biologically precise addition in the entire LineageOS manifold. The receptor decoy mechanism — allowing ligand binding while controlling the effector response — is a well-established cellular signaling control. In pharmacology this is called **competitive antagonism with partial agonist activity**. Privacy Guard implements this at the OS permission layer.
+**LineageOS biological refinement**: The receptor-level permission architecture — where the OS controls what data reaches the app — remains present in LineageOS. Whether the full synthetic-effector mechanism (fake camera/location/mic data) is available depends on build version and device configuration. The biological analogy (receptor gating) is structurally valid; the pharmacological precision (full competitive antagonism with synthetic effector) should be confirmed against the specific build before citing.
 
 ---
 
@@ -432,7 +433,7 @@ The seven inter-organelle biophoton signaling pathways map to Android IPC mechan
 | **P3** | Cell-membrane → Membrane-receptors | **0.80 / verified** | `sendBroadcast` unordered | HAL boundary → Privacy Guard (LineageOS adds a receptor-level filter at the target end of this pathway; the IPC mechanism is unchanged) |
 | **P4** | Nucleus → Cytoplasm (UV anterograde) | 0.35 / speculative | Ordered broadcast | `init` → ServiceManager broadcast: identical. LineageOS `init.lineage.rc` may add additional ordered service starts |
 | **P5** | Cytoskeleton microtubule waveguide | 0.60 / indicative | Binder thread pool | SurfaceFlinger render pipeline: identical. LiveDisplay intercepts at the display HAL layer (not the Binder layer) |
-| **P6** | Cell-membrane → Nucleus (retrograde IRQ) | 0.60 / indicative | `hardirq` → IRQ thread → syscall → kernel supervisor | WireGuard (LineageOS kernel) adds a new channel type: cryptographic IRQ → WireGuard kernel module → tunnel send. Same topology, new membrane channel |
+| **P6** | Cell-membrane → Nucleus (retrograde IRQ) | 0.60 / indicative | `hardirq` → IRQ thread → syscall → kernel supervisor | If WireGuard is present in the device kernel build (build-config dependent — `unconfirmed` for FP5), it adds a cryptographic channel type: WireGuard IRQ → kernel module → encrypted tunnel send. If not present, the pathway is identical to AOSP |
 | **P7** | Mitochondria ↔ Mitochondria (lateral sync) | 0.65 / indicative | Messenger async | NPU burst synchronisation: identical. Power HAL lateral signaling unchanged |
 
 **IPC mechanism invariance**: All seven IPC mechanisms (Binder oneway, Messenger, unordered broadcast, ordered broadcast, Binder thread pool, hardirq→syscall, Messenger async) are AOSP-inherited and unchanged by LineageOS. The σ values carry over from the AOSP calibration. LineageOS does not introduce new IPC mechanisms — it introduces new *endpoints* and *services* that use the existing mechanisms.
@@ -461,35 +462,37 @@ These features have no AOSP equivalent. They represent **emergent organelles** �
 
 ---
 
-### 7.1 Trust Interface → **Gap Junction Complex / Immune Sentinel**
+### 7.1 Trust Interface → **Immune Checkpoint Complex**
 
-**Source**: `packages/apps/Twelve` + `lineageos/trust` HAL (LineageOS framework)
+**Source**: `packages/apps/Trust` [citation needed — verify against `github.com/LineageOS/android_packages_apps_Trust`; **note**: `packages/apps/Twelve` is the LineageOS music player, not Trust]
 **Zone**: membrane (membrane zone — security boundary layer)
 
-**Biological analogy**: The Trust Interface is the cell's **gap junction complex combined with an immune sentinel**. Gap junctions are specialised membrane channels that connect adjacent cells and allow them to monitor each other's internal state. The Trust Interface monitors the state of all security-relevant channels simultaneously — SELinux enforcement, USB debugging, root status, cryptographic key health — and reports any deviation. It is the membrane watching itself.
+**Biological analogy**: The Trust Interface is the cell's **immune checkpoint complex** — analogous to MHC class I presentation at the surface of a nucleated cell. MHC I does not filter molecules itself; it presents peptide fragments of everything inside the cell to passing immune cells (cytotoxic T lymphocytes), which then decide whether the cell is healthy or should be eliminated. The Trust Interface performs the same role: it does not block or filter IPC itself, but it continuously samples the internal security state (SELinux status, USB debug state, root presence, key health) and surfaces that presentation to the user — who acts as the immune system's decision layer.
 
 **P→A→E**:
 - P: System state sampled (SELinux status, USB debug, root mode, key attestation)
 - A: Trust HAL evaluates against policy (healthy / degraded / violated)
-- E: Trust badge displayed; nucleus alerted if posture changes
+- E: Trust badge displayed; user alerted if posture changes
 
-**Confidence**: `indicative` — Trust Interface is a well-documented and actively maintained LineageOS feature; exact HAL source path requires branch-level verification for FP5.
+**Confidence**: `unconfirmed` — Trust Interface is a known LineageOS feature; the exact package path (`packages/apps/Trust` vs other location) and HAL depth require source-level verification before this entry can be elevated to `indicative`. See §9.8.
 
 ---
 
-### 7.2 Privacy Guard → **Receptor Decoy / Competitive Antagonist**
+### 7.2 Privacy Guard → **Receptor-Level Permission Gating**
 
-**Source**: `AppOpsManager` extensions in `github.com/LineageOS/android_frameworks_base`
+**Source**: Lineage permission hooks in `github.com/LineageOS/android_frameworks_base` + AOSP `AppOpsManager`
 **Zone**: membrane-receptors
 
-**Biological analogy**: Privacy Guard implements **competitive antagonism with synthetic effector**: the app's API call (ligand) is permitted to bind the permission receptor, but the effector response is replaced with a synthetic signal (blank camera frame, null location, silent microphone). The cell controls downstream information leakage at the receptor level without blocking the binding event itself.
+**Historical note**: Privacy Guard with full synthetic-effector capability (blank camera, null location, silent mic) originated in CyanogenMod / early LineageOS. In LineageOS 17+ (Android 10+), Android's own `AppOpsManager` and Privacy Dashboard absorbed many of these functions. The deep fake-data injection layer is reduced or absent in many modern builds. What remains is the per-app permission toggle architecture — which is the biologically relevant mapping.
+
+**Biological analogy**: The LineageOS permission architecture implements **receptor-level gating** — the OS intercepts the ligand-receptor binding event at the AppOps level and may block the downstream effector signal. Whether the cell injects a **synthetic effector response** (the full competitive antagonist model) depends on build version and device configuration.
 
 **P→A→E**:
 - P: App requests permission-gated data (camera, mic, location, contacts)
-- A: Privacy Guard evaluates per-app toggle; if restricted, generates synthetic data
-- E: Real data withheld; synthetic data returned to app; app function preserved
+- A: AppOps + Lineage permission hooks evaluate per-app policy
+- E: Data admitted (real), blocked, or (where synthetic effector is present) replaced with a null signal
 
-**Confidence**: `indicative`
+**Confidence**: `unconfirmed` (fake-data injection in current builds) · `indicative` (permission gating architecture). See §9.9.
 
 ---
 
@@ -504,27 +507,29 @@ These features have no AOSP equivalent. They represent **emergent organelles** �
 
 ---
 
-### 7.4 LineageOS Updater → **Directed Vesicle Transport / Exocytosis**
+### 7.4 LineageOS Updater → **Trans-Golgi Network Route Change**
 
 **Source**: `packages/apps/Updater`
 **Zone**: golgi-apparatus
 
-**Biological analogy**: The LineageOS Updater is **clathrin-independent directed vesicle transport**. In the AOSP cell, OTA vesicles are addressed by Google's sorting machinery. In the LineageOS cell, the Golgi re-addresses the same vesicle structure to LineageOS servers — a **trans-Golgi network route change** that does not alter the vesicle's lipid bilayer or cargo loading mechanism, only its destination address label.
+**Biological analogy**: The LineageOS Updater replaces the OTA client UX layer and re-addresses the vesicle routing to LineageOS servers — a **trans-Golgi network route change**. The vesicle addressing label now reads "LineageOS OTA server" rather than "Google OTA server," but the underlying lipid bilayer and cargo-loading machinery (the A/B update platform) may still be operating beneath the client layer. This is not a replacement of the entire Golgi exocytosis apparatus; it is a re-labelling of the sorting destination.
 
-**Confidence**: `verified` — LineageOS Updater source is confirmed and well-documented.
+**Confidence**: `verified` — LineageOS Updater source is confirmed and well-documented. The scope (client UX + server endpoint) is accurately represented.
 
 ---
 
-### 7.5 Root / su Management → **Hormone Receptor Nuclear Access**
+### 7.5 Root / su Management → **Optional Hormone Receptor Nuclear Access**
 
-**Source**: `system/extras/su` (LineageOS fork), `adbd` root mode
+**Source**: Post-install tools (e.g. Magisk); `adbd` root mode (developer options only)
 **Zone**: nucleus (privileged access above standard kernel grant)
 
-**Biological analogy**: Root access in LineageOS is **steroid hormone receptor nuclear import**. Steroid hormones (cortisol, testosterone, estrogen) are lipophilic — they cross the plasma membrane without receptor binding, enter the cytoplasm, bind their nuclear receptor, and import directly into the nucleus to act as transcription factors. Root/su is precisely this: it bypasses the standard syscall receptor (the Linux permission model) and imports directly into the nucleus (kernel space) to act as a transcription factor for arbitrary system state.
+**Critical framing**: Root access is **not default and not present in modern official LineageOS builds**. In LineageOS 17+ the traditional su binary has been removed from official builds. Root is an opt-in capability added post-install by the user (typically via Magisk), and enabling it is a deliberate user decision carrying security implications. `adbd` root (adb shell → root via developer options) is present but provides limited shell-level root, not persistent system-level root.
 
-LineageOS makes root optional and auditable via the Trust Interface (the Trust badge changes when root is active — the hormone has entered the nucleus, and the gap junction is reporting it). This is **hormonally regulated but Trust-monitored nuclear import**.
+**Biological analogy**: Root access, when deliberately enabled, is **steroid hormone receptor nuclear import** — a lipophilic molecule that bypasses standard membrane receptors, enters the cytoplasm, binds its nuclear receptor, and imports directly into the nucleus to act as a transcription factor for arbitrary system state. Because root is opt-in and not constitutive, the biological equivalent is an **inducible hormone cascade**, not a constitutive nuclear import pathway.
 
-**Confidence**: `indicative` — root management is well-documented; Trust integration specifics require source verification.
+LineageOS Trust Interface (when present) surfaces root status — the hormone's nuclear entry is reported to the immune checkpoint. This is **inducible, user-gated, Trust-audited nuclear import**.
+
+**Confidence**: `unconfirmed` for FP5 specifically — whether a LineageOS FP5 build permits root at all depends on device config and AVB unlock status. Magisk compatibility with FP5's boot image requires verification. See §9.10.
 
 ---
 
@@ -539,25 +544,44 @@ LineageOS makes root optional and auditable via the Trust Interface (the Trust b
 
 ---
 
-### 7.7 microG Compatibility → **Molecular Mimicry**
+### 7.7 microG Compatibility → **Molecular Mimicry (Build-Variant Dependent)**
 
-**Source**: `github.com/microg/GmsCore` (third-party; supported by LineageOS with signature spoofing patch)
+**Source**: `github.com/microg/GmsCore` (third-party; available via "LineageOS for microG" official build variant or manual installation with signature spoofing)
 **Zone**: endoplasmic-reticulum
 
-**Biological analogy**: microG implements **molecular mimicry** — the strategy by which a molecule presents the binding epitope of another molecule to engage a receptor while routing the downstream cascade through a different biochemical pathway. microG presents the GMS API surface (the GMS epitope) to Android apps (the receptor), triggering the same binding event, while routing all actual computation through open-source implementations. The ER folds this mimic protein — it cannot tell the difference at the folding stage.
+**Build-variant clarification**: **Official standard LineageOS does not ship microG.** "LineageOS for microG" is a separate officially maintained build variant at `lineage.microg.org` that includes signature spoofing and microG pre-installed. On standard LineageOS, microG can only function if the device maintainer has explicitly enabled signature spoofing in the build configuration — which varies per device. These are two distinct Cell OS phenotypes, not one.
 
-**Confidence**: `speculative` for automatic microG inclusion — LineageOS ships without Google apps by default; microG integration requires either a dedicated microG LineageOS build or manual installation. The confidence is `speculative` on the FP5 specifically because whether official LineageOS builds for FP5 include signature spoofing (required for microG) depends on the device maintainer's build configuration.
+**Biological analogy**: microG implements **molecular mimicry** — presenting the GMS API epitope to apps while routing computation through open-source biochemical pathways. The ER folds the mimic protein identically to the original. However, this mimic protein is **expressed only in the microG organism variant** — it is not a constitutive protein in the standard LineageOS cell.
+
+**Confidence**: `speculative` for standard LineageOS FP5 builds · `indicative` for "LineageOS for microG" build variant (well-documented project). See §9.5.
 
 ---
 
 ### 7.8 Trebuchet Launcher → **Cilia / Flagellum — Expression Interface**
 
 **Source**: `packages/apps/Trebuchet`
-**Zone**: golgi-apparatus (expression surface)
+**Zone**: golgi-apparatus (dispatch origin) → **membrane** (expression destination)
 
-**Biological analogy**: Trebuchet is the cell's **cilia array** — the external expression interface through which the cell presents itself to the environment. Cilia are not internal organelles; they are extensions that project outward from the membrane. Trebuchet is the outermost expression surface of the LineageOS cell: it is the delivered cargo that the Golgi dispatched to the membrane, now visible to the user as the home screen.
+**Zone note**: Trebuchet is listed under golgi-apparatus as its dispatch origin (the Golgi packages and addresses the launcher as an output), but its biological analogy places it more precisely at the **membrane zone** — it is the outermost expression surface of the LineageOS cell, visible to the user at the plasma membrane layer. Future revisions may re-classify Trebuchet to the membrane zone to better reflect its biological function.
+
+**Biological analogy**: Trebuchet is the cell's **cilia array** — the external expression interface projecting outward from the membrane. Cilia are not internal organelles; they are the outermost protrusions the cell uses to sense and present itself to the environment. Trebuchet is the delivered cargo that the Golgi dispatched to the membrane, now visible to the user as the home screen — the cell's face.
 
 **Confidence**: `verified` — Trebuchet is a core LineageOS package.
+
+---
+
+### 7.9 Additional LineageOS-Native Features
+
+The following LineageOS additions have biological relevance but require shorter treatment. They are listed here to prevent omission rather than given full P→A→E entries at this stage.
+
+| Feature | Source | Zone | Biological Analogy | Confidence |
+|---|---|---|---|---|
+| **LineageParts** | `packages/apps/LineageParts` | nucleus / cytoplasm | The cell's **gene regulatory region** — a dedicated locus for system-wide tuning that is not part of the standard AOSP gene set | `indicative` |
+| **Styles / Themes** | `lineage-sdk` + `packages/apps/ThemePicker` | cytoskeleton | **Cell morphology program** — changing the cytoskeletal expression profile without altering underlying biochemistry; the cell looks different but the same proteins are running | `indicative` |
+| **Button remapping** | LineageParts hardware key settings | membrane-receptors | **Receptor isoform switching** — the same physical receptor (hardware button) can be wired to a different downstream effector cascade by changing the receptor-signaling adapter | `indicative` |
+| **Network traffic monitor** | LineageOS status bar extension | cytoplasm | **Metabolic flux readout** — a real-time display of ion current across the membrane, making the invisible visible at the cytoplasm surface | `indicative` |
+| **LineageOS for microG** | `lineage.microg.org` build variant | endoplasmic-reticulum | **Separate organism phenotype** — not a modification of the standard cell but a distinct expressed phenotype with the molecular mimicry protein constitutively expressed (see §7.7) | `indicative` (project) · `speculative` (FP5) |
+| **Build type variants** | `eng` / `userdebug` / `user` | nucleus | **Cell differentiation state** — the same genome expressed at different levels of regulatory constraint. `user` builds are terminally differentiated; `userdebug` retains stem-cell-like debugging plasticity | `verified` (AOSP mechanism; LineageOS inherits) |
 
 ---
 
@@ -612,6 +636,22 @@ This section documents where the LineageOS translation is weaker than the AOSP o
 ### 9.7 LineageOS Updater Long-term Support Horizon
 **Gap**: Fairphone's 8-year software support commitment applies to Fairphone-published Android builds. LineageOS support duration depends on community maintainers — historically more variable. The Golgi's 8-year vesicle delivery guarantee does not automatically carry over to the LineageOS coordinate system.
 
+### 9.8 Trust Interface Package Name — Corrected But Unverified
+**Gap**: The original LINEAGEOS_MANIFOLD.md incorrectly cited `packages/apps/Twelve` as the Trust Interface source. `Twelve` is the LineageOS music player. The corrected path is `packages/apps/Trust` / `github.com/LineageOS/android_packages_apps_Trust` — but this corrected path has not yet been source-verified. All Trust Interface entries throughout this document carry `unconfirmed` confidence until verified.
+**Action required**: Open `github.com/LineageOS/android_packages_apps_Trust` and confirm the package exists and implements the Trust dashboard features described.
+
+### 9.9 Privacy Guard Legacy Status
+**Gap**: Privacy Guard's fake-data-injection capability (blank camera, null location, silent mic) originated in CyanogenMod and was present in early LineageOS builds. In LineageOS 17+ (Android 10+), much of this functionality was superseded by AOSP's own AppOps / Privacy Dashboard. The synthetic-effector feature (the pharmacologically precise competitive antagonist model) is `unconfirmed` in current LineageOS builds.
+**Confidence floor**: The per-app permission toggle architecture (`indicative`) and the receptor-level gating concept (biologically valid) remain sound. Only the claim of synthetic data injection (null mic/location/camera) is downgraded to `unconfirmed` pending build-specific verification.
+
+### 9.10 Root / su — Not Default in Modern LineageOS
+**Gap**: Root access is not a default feature of modern official LineageOS builds (17+). The traditional su binary has been removed. Persistent root requires post-install tools (Magisk or similar). All claims connecting root to Trust Interface monitoring are dependent on both root being enabled AND Trust being present — two unconfirmed assumptions for FP5 specifically.
+**Confidence**: `unconfirmed` for FP5. The biological analogy (inducible nuclear import) is valid; the FP5-specific implementation path is not verified.
+
+### 9.11 WireGuard — Build-Config Dependent, Not Universal
+**Gap**: WireGuard has been in the mainline Linux kernel since 5.6, but the Qualcomm msm-5.4 kernel branch used by QCM6490 requires a specific backport patch. Whether the LineageOS kernel tree for FP5 includes this backport is build-maintainer-dependent and has not been verified.
+**Confidence**: `unconfirmed` for FP5. P6 biophoton pathway WireGuard claims are conditioned on this verification.
+
 ---
 
 ## 10. Acceptance Checklist
@@ -624,10 +664,17 @@ A complete LINEAGEOS_MANIFOLD.md entry must satisfy:
 - [ ] Every AOSP-identical component is explicitly marked as invariant
 - [ ] P1–P7 biophoton IPC pathways are confirmed or noted as endpoint-changed
 - [ ] Spectral priority channels confirmed unchanged
-- [ ] All 8 LineageOS-native additions have a biological analogy and confidence tag
+- [ ] All 9 LineageOS-native additions have a biological analogy and confidence tag (§7.1–7.9)
 - [ ] FP5 hardware invariants are preserved
-- [ ] All 7 honest gaps are documented with confidence downgrade instructions
+- [ ] All 11 honest gaps are documented with confidence downgrade instructions (§9.1–9.11)
 - [ ] No claim is marked `verified` without a primary source path that has been confirmed open
+- [ ] No claim uses `packages/apps/Twelve` for Trust Interface — that is the music player (see §9.8)
+- [ ] Privacy Guard fake-data claims are marked `unconfirmed` pending current-build verification (§9.9)
+- [ ] Root/su entries are framed as opt-in, not default (§9.10)
+- [ ] WireGuard claims are build-config-conditional, not universal (§9.11)
+- [ ] microG entries distinguish "standard LineageOS" from "LineageOS for microG" build variant (§9.5, §7.7)
+- [ ] Kernel tree `android_kernel_qcom_sm7325` is labelled as candidate/closest, not Tier 1 verified (§9.2)
+- [ ] Updater entries do not claim "complete replacement" of update_engine — scope is OTA client UX + server endpoint (§7.4)
 
 ---
 
@@ -638,7 +685,7 @@ A complete LINEAGEOS_MANIFOLD.md entry must satisfy:
 | Framework base | `github.com/LineageOS/android_frameworks_base` |
 | System core (init) | `github.com/LineageOS/android_system_core` |
 | SELinux policy | `github.com/LineageOS/android_system_sepolicy` |
-| Trust Interface | `github.com/LineageOS/android_packages_apps_Twelve` |
+| Trust Interface | `github.com/LineageOS/android_packages_apps_Trust` ⚠ [citation needed — previous reference to `android_packages_apps_Twelve` (LineageOS music player) was an error; this corrected path requires source verification] |
 | Privacy Guard | Integrated in `android_frameworks_base` |
 | LiveDisplay HAL | `github.com/LineageOS/android_hardware_lineage_livedisplay` |
 | Trebuchet | `github.com/LineageOS/android_packages_apps_Trebuchet` |
@@ -647,7 +694,7 @@ A complete LINEAGEOS_MANIFOLD.md entry must satisfy:
 | Lineage interfaces | `github.com/LineageOS/android_hardware_lineage_interfaces` |
 | SeedVault | `github.com/seedvault-app/seedvault` |
 | microG (external) | `github.com/microg/GmsCore` |
-| Kernel (QCM6490 family) | `github.com/LineageOS/android_kernel_qcom_sm7325` |
+| Kernel (QCM6490 family — candidate) | `github.com/LineageOS/android_kernel_qcom_sm7325` ⚠ candidate/closest known tree — not Tier 1 verified for FP5; FP5-specific branch may differ or be maintained separately. See §9.2 |
 | Manifest | `github.com/LineageOS/android` |
 | Device wiki | `wiki.lineageos.org` |
 
@@ -661,7 +708,7 @@ The following claims require primary source verification before being elevated t
 |---|---|
 | FP5 official LineageOS support | Check `wiki.lineageos.org/devices/FP5/` |
 | Exact FP5 kernel branch | Check `github.com/LineageOS` for FP5-specific kernel |
-| Trust Interface HAL polling mechanism | Read `android_packages_apps_Twelve` source |
+| Trust Interface package + HAL mechanism | Verify `github.com/LineageOS/android_packages_apps_Trust` exists and read source — previous erroneous citation of `android_packages_apps_Twelve` (music player) has been corrected but not yet source-confirmed |
 | Privacy Guard fake data injection | Read LineageOS `android_frameworks_base` AppOps fork |
 | LiveDisplay FP5 HAL backend | Check `android_hardware_lineage_livedisplay` for QCM6490 |
 | Root/su availability on FP5 builds | Check LineageOS FP5 device config and Trust integration |
