@@ -9,4 +9,5 @@
 - [Cell OS self-learning layer](cell-os-learning-layer.md) — epigenome architecture: three tensors, Hebbian adapter, observation point, visual expression pattern.
 - [Cell OS open-items tensor state](cell-os-open-items-state.md) — Fredholm cap reached (15 organelles − 17 substrates = −2 hard cap); frozen-15 backfill pattern; jsPDF over @react-pdf; next evolution triggers.
 - [Cell OS biophoton schema decisions](cell-os-biophoton-schema.md) — wavelengthBand field, ClaimConfidence "speculative" addition, 18-link canonical pathway set, σ calibration rules, ConfidenceBadge update rule.
+- [Cell OS bioplasma schema decisions](cell-os-bioplasma-schema.md) — BP1–BP9 pathway set, σ values, plasma-literalness taxonomy, cells-are-not-plasmas G1 boundary, pseudoscience exclusions, 以太收斂 = field-substrate convergence.
 - [Cell OS LineageOS manifold accuracy rules](cell-os-lineageos-accuracy.md) — six architect-flagged factual errors corrected; durable accuracy constraints for all future LineageOS docs.

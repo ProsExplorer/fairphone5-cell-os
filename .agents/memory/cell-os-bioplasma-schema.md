@@ -1,0 +1,57 @@
+---
+name: Cell OS bioplasma schema decisions
+description: Durable decisions on bioplasma pathway set (BP1–BP9), σ calibration, plasma-literalness taxonomy, pseudoscience filters, and authority hierarchy with BIOPHOTON_RESEARCH.md.
+---
+
+## Canonical bioplasma pathway set — BP1–BP9
+
+Nine pathways defined in BIOPLASMA_RESEARCH.md §5. BIOPLASMA_RESEARCH.md is authoritative for all BP pathway σ values; BIOPHOTON_RESEARCH.md is authoritative for P1–P7 biophoton σ values. Where both address the same organelle, bioplasma governs ionic/EM weight, biophoton governs photon emission weight.
+
+| Pathway | σ | Tier | Description |
+|---|---|---|---|
+| BP1 | 0.92 | Verified | Membrane resting potential (Na⁺/K⁺ gradient) |
+| BP2 | 0.90 | Verified | Action potential propagation (NaV/KV wave) |
+| BP3 | 0.85 | Verified | Wound bioelectric field (TEP disruption, 40–200 mV/mm) |
+| BP7 | 0.72 | Indicative | Morphogenetic Vmem patterning (Levin bioelectricity) |
+| BP4 | 0.65 | Indicative | ELF coupling 0.01–300 Hz (VGCC stochastic resonance) |
+| BP5 | 0.60 | Indicative | RF/MMW coupling 300 MHz–300 GHz (membrane lipid resonance) |
+| BP9 | 0.50 | Indicative (lower) | THz refractive phenotype 0.1–10 THz |
+| BP6 | 0.45 | Speculative | Fröhlich coherent dipolar oscillation GHz–THz |
+| BP8 | 0.32 | Speculative | QED water coherence domain field (Del Giudice model) |
+
+## Plasma-literalness taxonomy
+
+Every bioplasma pathway must carry one of three tags:
+- **Literal quasi-plasma** — medium meets quasineutrality (cells do); collective oscillations overdamped. Only valid at membrane sheath. BP1, BP2, BP3.
+- **Electrolyte-plasma analogy** — structured electrolyte with plasma-like field behaviour; no literal plasma physics applies. BP7.
+- **Field-coherence analogy** — EM field coupling; "plasma" is metaphoric. BP4, BP5, BP6, BP8, BP9.
+
+## Cells are NOT literal plasmas — G1 boundary determination
+
+At physiological ionic strength (0.15 M), Debye length λ_D ≈ 0.7–1.0 nm. Three plasma criteria:
+- Quasineutrality: MET (cells 10–100 µm >> λ_D)
+- Plasma parameter Λ = nλ_D³: NOT MET (~2–4 ions/Debye sphere, need >> 1)
+- Collective oscillations ω_p >> ν_coll: NOT MET (heavily overdamped; K⁺ plasma freq ~140 GHz < collision freq ~10¹² Hz)
+
+Correct vocabulary: "structured electrolytes" or "quasi-plasma" (at membrane surface only).
+
+**Why:** Prevents future documents from claiming cells ARE plasmas in physics sense. Any bioplasma doc that uses literal plasma language without this qualifier is inaccurate.
+
+## Pseudoscience exclusions (hard)
+
+Never cite these in Cell OS docs:
+- Kirlian/GDV photography (moisture discharge artefact)
+- Sheldrake morphic resonance (explicitly non-falsifiable)
+- Harold Burr L-fields (not replicated with modern controls)
+- Tachyon energy / scalar wave biology (no peer-reviewed basis)
+- arXiv:2105.10541 (LoRA LLM paper — confirmed off-topic by G2 audit)
+
+## σ tier bounds (same as biophoton schema)
+
+Verified ≥0.75, Indicative 0.50–0.75, Speculative 0.30–0.50, Unconfirmed <0.30.
+
+## Key scientific anchors
+
+- Fröhlich condensate in vitro crystal evidence: Lundholm 2015 PMC4711649 (0.4 THz → non-thermal structural changes in lysozyme crystal, microsecond persistence). In vivo gap unresolved.
+- Levin morphogenetic bioelectricity: PMC6815261, PMC5443973 — Tier 1, Verified level; planarian body axis reprogramming via Vmem manipulation is the strongest aether-convergence anchor.
+- 以太收斂 = "Field Substrate Convergence" — the intersection of bioelectric + EM + quantum-coherent field layers. Physical, not metaphysical.
