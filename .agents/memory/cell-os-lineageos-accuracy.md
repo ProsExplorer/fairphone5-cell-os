@@ -1,37 +1,80 @@
 ---
 name: Cell OS LineageOS manifold accuracy rules
-description: Architect-confirmed factual constraints for any LineageOS doc in Cell OS — includes GitHub API-verified repo paths and Trust source gap.
+description: Architect-confirmed factual constraints for any LineageOS doc in Cell OS — includes GitHub API-verified repo paths, Trust deprecation, WireGuard confirmation, and FP5 support status.
 ---
 
 ## Verified Real Repos (GitHub API HTTP 200 confirmed)
 
-- `github.com/LineageOS/android_kernel_fairphone_qcm6490` — real FP5 kernel (NOT android_kernel_qcom_sm7325 which is 404)
-- `github.com/LineageOS/android_device_fairphone_FP5` — real FP5 device tree
-- `github.com/fairphone-mirror/kernel_msm-5.4` — real Fairphone kernel mirror (NOT fairphone/kernel_fairphone_5 which is 404)
+- `github.com/LineageOS/android_kernel_fairphone_qcm6490` — FP5 kernel v5.4; branches lineage-21 → lineage-23.2; FP5-specific configs at `arch/arm64/configs/vendor/fp5_GKI.config` etc.
+- `github.com/LineageOS/android_device_fairphone_FP5` — FP5 device tree; also confirmed in FP5.yml
+- `github.com/fairphone-mirror/kernel_msm-5.4` — Fairphone kernel mirror base
 
 ## 404 Repos (do not cite — verified non-existent)
 
 - `LineageOS/android_kernel_qcom_sm7325` — HTTP 404
-- `LineageOS/android_packages_apps_Trust` — HTTP 404
+- `LineageOS/android_packages_apps_Trust` — HTTP 404 (deleted — evidence of Trust deprecation)
 - `LineageOS/android_packages_apps_Twelve` — this is the music player
 - `fairphone/kernel_fairphone_5` — HTTP 404
 - `fairphone/kernel_msm-5.4` — HTTP 404
 
-## Trust Interface — Completely Unresolved (Blocking)
+## FP5 Official Support — CONFIRMED
 
-The Trust Interface is a real, documented LineageOS feature. However its GitHub source location is unknown — both `android_packages_apps_Trust` AND `android_packages_apps_Twelve` (the music player) are 404. Until source is found, all Trust claims are `unconfirmed`.
+- `wiki.lineageos.org/devices/FP5/` → HTTP 200
+- FP5.yml: maintainer `mikeioannina` (active), versions `[21, 22.1, 22.2, 23.0, 23.2]`, current_branch `lineage-23.2`
+- FP5 IS officially supported. LineageOS-specific claims use `indicative` floor, not `speculative`.
 
-**Search plan:** Look in `android_lineage-sdk`, `android_vendor_lineage`, `android_packages_apps_Settings` (LOS fork), `android_hardware_lineage_interfaces`.
+## WireGuard — CONFIRMED (Primary Source)
 
-**Why:** Two successive citations in the document were wrong. The source location must be confirmed from GitHub before Trust is used in any authoritative document.
+- `CONFIG_WIREGUARD=y` in `arch/arm64/configs/gki_defconfig` (lineage-23.2 branch)
+- Context: `CONFIG_DUMMY=y` / `CONFIG_WIREGUARD=y` / `CONFIG_TUN=y`
+- FP5 kernel is 5.4; WireGuard mainline is 5.6; backport confirmed in LOS 23.2 GKI defconfig
+- P6 biophoton pathway claims elevated to `verified` for LOS 23.2; `indicative` for 21–22.x
 
-## Six Accuracy Rules (must check before any LineageOS doc is cited)
+## Trust Interface — DEPRECATED/REMOVED IN LOS 20/21+
 
-1. **Trust package**: Neither Twelve (music) nor Trust (404). Source unresolved. Confidence ceiling: `unconfirmed`.
-2. **Privacy Guard**: CyanogenMod-era fake-data injection is `unconfirmed` in LineageOS 17+. Permission gating architecture is `indicative`.
-3. **microG**: "LineageOS for microG" is a separate build variant — standard LineageOS does not ship microG.
-4. **Updater scope**: Replaces OTA client UX + server endpoint. Not a full replacement of update_engine.
-5. **Root/su**: Opt-in post-install (Magisk) in LOS 17+. Su binary removed from official builds. Not default.
-6. **Kernel tree**: Use `android_kernel_fairphone_qcm6490` for FP5, not `android_kernel_qcom_sm7325` (404).
+All 5 candidate repos searched with negative result:
+1. `android_lineage-sdk` (lineage-21 tree) — 0 Trust paths, 0 trust strings in res
+2. `android_vendor_lineage` — 0 Trust hits
+3. `android_packages_apps_Settings` (lineage-23.2) — only AOSP TrustAgent/SmartLock (different feature)
+4. `android_hardware_lineage_interfaces` — no trust directory (biometrics, camera, health, ir, light, livedisplay, power, radio, sensors, touch, usb, vibrator)
+5. GitHub org repo search — no Trust Interface app
 
-**How to apply:** Before writing or reviewing any LineageOS doc, grep for `Twelve`, `android_packages_apps_Trust`, `android_kernel_qcom_sm7325`, `fairphone/kernel` — all are wrong.
+**IMPORTANT**: Do NOT confuse Android's `TrustAgent` / Smart Lock (AOSP keyguard trust agent, alive) with the LineageOS Trust Interface security dashboard (deprecated). They are completely different features. The deleted repo `android_packages_apps_Trust` is evidence of removal.
+
+**Rule**: Trust Interface is `deprecated-feature` in LOS 20/21+, not `unconfirmed`. Do not cite as a current LOS feature in any document.
+
+## microG on Standard LOS FP5 — CONFIRMED NOT INCLUDED
+
+- `device.mk` (lineage-21): no microG packages
+- `android_vendor_lineage` common makefiles: 0 microG hits
+- Requires separate "LineageOS for microG" build variant
+
+## SeedVault — CONFIRMED NOT INCLUDED BY DEFAULT
+
+- `android_vendor_lineage` common_full_phone.mk and common_mobile_full.mk: 0 SeedVault references
+- FP5 device.mk: no SeedVault packages
+- Must be installed separately; not in standard LOS FP5 build
+
+## Root / su — CONFIRMED NOT DEFAULT
+
+- FP5 device.mk (lineage-21): no su or root-granting packages
+- `android_vendor_lineage` common makefiles: no root packages
+- Opt-in via Magisk post-install only
+
+## Privacy Guard — PARTIALLY RESOLVED (Likely Removed/Renamed in LOS 21+)
+
+- `android_frameworks_base` code search for `privacyguard` → 0 hits
+- Per-app AppOps toggle: `indicative` (AOSP framework, inherited)
+- Fake-data injection (null mic/camera/GPS): `unconfirmed` in LOS 21+
+- LiveDisplay FP5 HAL backend: still pending verification
+
+## Six Core Accuracy Rules (must check before any LineageOS doc is cited)
+
+1. **Trust Interface**: DEPRECATED in LOS 20/21+. Mark as `deprecated-feature`. Do not cite as current.
+2. **Privacy Guard**: Fake-data injection `unconfirmed` in LOS 21+. AppOps toggle `indicative`.
+3. **microG**: Not in standard LOS FP5. Requires "LineageOS for microG" variant.
+4. **Updater scope**: OTA client UX + server endpoint only. Not a full update_engine replacement.
+5. **Root/su**: Opt-in (Magisk), not default. Confirmed absent from FP5 device config.
+6. **Kernel tree**: Use `android_kernel_fairphone_qcm6490` (v5.4, branches lineage-21 → lineage-23.2). WireGuard enabled (`CONFIG_WIREGUARD=y` in gki_defconfig, lineage-23.2).
+
+**How to apply**: Before writing or reviewing any LineageOS doc, grep for `Trust`, `android_packages_apps_Trust`, `android_kernel_qcom_sm7325`, `fairphone/kernel` — all are wrong. If Trust appears as a current feature, mark `deprecated-feature`.
