@@ -54,10 +54,11 @@ What the transition map is permitted to change:
 |---|---|
 | LineageOS GitHub organisation | `github.com/LineageOS` |
 | LineageOS Android tree | `github.com/LineageOS/android` (manifest) |
-| LineageOS kernel (msm-5.4 base) | `github.com/LineageOS/android_kernel_qcom_sm7325` ⚠ **candidate/closest** — not Tier 1 verified for FP5; use as starting point only (see §9.2) |
+| LineageOS FP5 kernel — **verified real** | `github.com/LineageOS/android_kernel_fairphone_qcm6490` ✓ HTTP 200 confirmed |
+| LineageOS FP5 device tree — **verified real** | `github.com/LineageOS/android_device_fairphone_FP5` ✓ HTTP 200 confirmed |
 | LineageOS framework patches | `github.com/LineageOS/android_frameworks_base` |
 | LineageOS packages | `github.com/LineageOS/android_packages_apps_*` |
-| Fairphone kernel tree | `github.com/fairphone/kernel_fairphone_5` |
+| Fairphone kernel mirror | `github.com/fairphone-mirror/kernel_msm-5.4` ✓ HTTP 200 confirmed (replaces `fairphone/kernel_fairphone_5` which is 404) |
 | LineageOS wiki / device page | `wiki.lineageos.org` |
 
 ### LineageOS Secondary Sources (Tier 2 — use for `indicative`)
@@ -121,7 +122,7 @@ The nucleus is the cell's control centre. It houses the genome (DNA), orchestrat
 |---|---|---|
 | **Primary source** | `system/core/init/init.cpp` | `github.com/LineageOS/android_system_core` — same file, minimal delta |
 | **Kernel init** | `init` (PID 1), `init.rc` | Identical; LineageOS `init.lineage.rc` extends base `init.rc` with Lineage-specific services |
-| **Kernel tree** | `kernel/msm-5.4` (AOSP / CAF) | `android_kernel_qcom_sm7325` (closest LineageOS tree) + FP5-specific `kernel/fairphone_5` patches |
+| **Kernel tree** | `kernel/msm-5.4` (AOSP / CAF) | `android_kernel_fairphone_qcm6490` ✓ (real LineageOS FP5 kernel repo, HTTP 200 verified) + `fairphone-mirror/kernel_msm-5.4` ✓ (real Fairphone kernel mirror, HTTP 200 verified) |
 | **Kernel additions** | Standard CAF patches | LineageOS kernel patches: additional security hardening, `schedutil` governor tuning, possible eBPF extensions — all build-config and device-maintainer dependent; `unconfirmed` for FP5 specifically until kernel config verified |
 | **Root / su** | Not present by default | Root access is **opt-in only** and **not enabled by default** in modern LineageOS (17+). The traditional su binary has been removed from official builds; users wanting root must use Magisk or similar post-install tools. LineageOS adbd root mode (developer options) provides limited adb-only root |
 | **Boot verification** | Android Verified Boot 2.0 (AVB2) | LineageOS supports AVB2; ships with AVB enforcing on many devices. FP5 support: `indicative` |
@@ -165,8 +166,8 @@ The nucleus is the cell's control centre. It houses the genome (DNA), orchestrat
 | **SELinux policy** | `system/sepolicy/` | `github.com/LineageOS/android_system_sepolicy` — adds Lineage-specific type contexts for Lineage apps (Trust, LineageParts, Trebuchet, su daemon) |
 | **Keystore / TEE** | `system/security/keystore/`, Strongbox | **Identical** — TEE is hardware-enforced (ARM TrustZone); cannot be changed by OS fork |
 | **NNAPI boundary** | `frameworks/ml/nn/` | **Identical** |
-| **Trust Interface** | ❌ Not present | `packages/apps/Trust` [citation needed — `android_packages_apps_Trust`; **not** `packages/apps/Twelve` which is the LineageOS music player] — a unified security posture dashboard reading SELinux status, USB debug state, root state, key attestation. This is an **additional nuclear pore** — a new channel type through which security signals pass |
-| **Confidence** | `verified` | `verified` (inherited) · `unconfirmed` (Trust Interface package path requires source-level confirmation before being cited as authoritative — see §9.8) |
+| **Trust Interface** | ❌ Not present | ⚠ **Source location unresolved**: `android_packages_apps_Trust` does NOT exist in the LineageOS GitHub org (HTTP 404 confirmed). Trust Interface is a known LineageOS feature but its source implementation location has not been identified. Likely candidates: `android_lineage-sdk`, `android_vendor_lineage`, or `android_packages_apps_Settings` fork. Until the source is found: all Trust claims are `unconfirmed`. Feature description: unified security posture dashboard (SELinux status, USB debug, root status, key health). |
+| **Confidence** | `verified` | `verified` (inherited) · `unconfirmed` (Trust Interface source location not found in LineageOS org — see §9.8 and §9.12) |
 
 **LineageOS biological refinement**: The Trust Interface is a new class of nuclear pore — a dedicated security signal channel that did not exist in the AOSP nucleus. In cell biology, nuclear pores have specificity: not all molecules can pass. The Trust Interface adds an **immune checkpoint** that audits the state of the other pores in real time, analogous to an MHC class I presentation complex — it surfaces internal state for external immune scrutiny.
 
@@ -464,7 +465,7 @@ These features have no AOSP equivalent. They represent **emergent organelles** �
 
 ### 7.1 Trust Interface → **Immune Checkpoint Complex**
 
-**Source**: `packages/apps/Trust` [citation needed — verify against `github.com/LineageOS/android_packages_apps_Trust`; **note**: `packages/apps/Twelve` is the LineageOS music player, not Trust]
+**Source**: ⚠ **UNRESOLVED** — `android_packages_apps_Trust` does NOT exist in the LineageOS GitHub org (HTTP 404 verified by GitHub API). Trust Interface is a real LineageOS feature but the source repository has not been located. Candidate locations: `android_lineage-sdk`, `android_vendor_lineage`, `android_packages_apps_Settings` LineageOS fork, or a private/renamed package. **Verification required before citing.** Previous document had `packages/apps/Twelve` (the music player) — that was wrong. The corrected path is also unverified. See §9.12.
 **Zone**: membrane (membrane zone — security boundary layer)
 
 **Biological analogy**: The Trust Interface is the cell's **immune checkpoint complex** — analogous to MHC class I presentation at the surface of a nucleated cell. MHC I does not filter molecules itself; it presents peptide fragments of everything inside the cell to passing immune cells (cytotoxic T lymphocytes), which then decide whether the cell is healthy or should be eliminated. The Trust Interface performs the same role: it does not block or filter IPC itself, but it continuously samples the internal security state (SELinux status, USB debug state, root presence, key health) and surfaces that presentation to the user — who acts as the immune system's decision layer.
@@ -616,13 +617,18 @@ This section documents where the LineageOS translation is weaker than the AOSP o
 **Gap**: Whether LineageOS officially supports the Fairphone 5 (with an active device maintainer publishing builds to the LineageOS download server) requires verification against `wiki.lineageos.org/devices/`. If FP5 is not an officially supported device, all LineageOS-specific claims are downgraded from `indicative` to `speculative`.
 **Action required**: Check `wiki.lineageos.org/devices/FP5/` before setting any LineageOS-specific confidence above `speculative`.
 
-### 9.2 Kernel Branch Specificity
-**Gap**: The exact LineageOS kernel branch for QCM6490 / FP5 has not been verified in this document. The `android_kernel_qcom_sm7325` reference is the closest publicly known tree; the FP5-specific kernel may be a different branch or maintained separately by Fairphone.
-**Confidence floor**: All LineageOS kernel patch claims are `indicative` until the exact branch is confirmed.
+### 9.2 Kernel Branch — Real Repos Now Verified
+**Update**: GitHub API verification (HTTP 200) confirms two real FP5 kernel repositories:
+- `github.com/LineageOS/android_kernel_fairphone_qcm6490` ✓ — the actual LineageOS kernel for FP5 (QCM6490)
+- `github.com/fairphone-mirror/kernel_msm-5.4` ✓ — the Fairphone kernel mirror base
+
+**Corrected**: All prior references to `android_kernel_qcom_sm7325` (HTTP 404 — does not exist) have been replaced in this document.
+**Remaining gap**: The exact branch and specific patches within `android_kernel_fairphone_qcm6490` that apply to FP5 have not been read from source. WireGuard backport presence and eBPF extensions remain `unconfirmed` for FP5.
+**Confidence floor**: LineageOS kernel framework `indicative`; FP5-specific patch claims `unconfirmed` until the kernel config is read.
 
 ### 9.3 Trust Interface HAL Depth
-**Gap**: The Trust HAL interface (`lineageos/trust`) is documented at the package level but the HAL implementation depth — specifically which security posture signals are polled and at what frequency — requires source-level verification.
-**Confidence**: `indicative` (not `verified`).
+**Gap**: This gap is now subsumed by §9.12 (Trust source location completely unresolved). Until the Trust source is found, HAL depth cannot be evaluated at all. The prior claim that Trust HAL was "documented at the package level" was based on the incorrect package name (`android_packages_apps_Twelve`).
+**Confidence**: `unconfirmed` — blocked by §9.12.
 
 ### 9.4 Privacy Guard AppOps Integration Depth
 **Gap**: Privacy Guard's integration into `AppOpsManager` has evolved across LineageOS versions. The fake data injection capability (synthetic camera/mic/location) may not be available in all builds. This is `indicative` not `verified`.
@@ -636,9 +642,10 @@ This section documents where the LineageOS translation is weaker than the AOSP o
 ### 9.7 LineageOS Updater Long-term Support Horizon
 **Gap**: Fairphone's 8-year software support commitment applies to Fairphone-published Android builds. LineageOS support duration depends on community maintainers — historically more variable. The Golgi's 8-year vesicle delivery guarantee does not automatically carry over to the LineageOS coordinate system.
 
-### 9.8 Trust Interface Package Name — Corrected But Unverified
-**Gap**: The original LINEAGEOS_MANIFOLD.md incorrectly cited `packages/apps/Twelve` as the Trust Interface source. `Twelve` is the LineageOS music player. The corrected path is `packages/apps/Trust` / `github.com/LineageOS/android_packages_apps_Trust` — but this corrected path has not yet been source-verified. All Trust Interface entries throughout this document carry `unconfirmed` confidence until verified.
-**Action required**: Open `github.com/LineageOS/android_packages_apps_Trust` and confirm the package exists and implements the Trust dashboard features described.
+### 9.8 Trust Interface Package Name — Original Error; Corrected Path Also Wrong
+**History**: The original document cited `packages/apps/Twelve` (LineageOS music player) as the Trust Interface source — that was wrong.
+**Current status**: The corrected path `android_packages_apps_Trust` has been checked via GitHub API and also returns **HTTP 404** — that repository does not exist in the LineageOS org either.
+**Status**: Trust Interface source location is **completely unresolved**. The feature exists (documented on LineageOS wiki and in device behaviour), but its source implementation has not been found in any LineageOS GitHub repository. See §9.12 for the full gap entry and search plan.
 
 ### 9.9 Privacy Guard Legacy Status
 **Gap**: Privacy Guard's fake-data-injection capability (blank camera, null location, silent mic) originated in CyanogenMod and was present in early LineageOS builds. In LineageOS 17+ (Android 10+), much of this functionality was superseded by AOSP's own AppOps / Privacy Dashboard. The synthetic-effector feature (the pharmacologically precise competitive antagonist model) is `unconfirmed` in current LineageOS builds.
@@ -650,7 +657,24 @@ This section documents where the LineageOS translation is weaker than the AOSP o
 
 ### 9.11 WireGuard — Build-Config Dependent, Not Universal
 **Gap**: WireGuard has been in the mainline Linux kernel since 5.6, but the Qualcomm msm-5.4 kernel branch used by QCM6490 requires a specific backport patch. Whether the LineageOS kernel tree for FP5 includes this backport is build-maintainer-dependent and has not been verified.
+**Action required**: Read the kernel config at `github.com/LineageOS/android_kernel_fairphone_qcm6490` and search for `CONFIG_WIREGUARD` to confirm presence or absence.
 **Confidence**: `unconfirmed` for FP5. P6 biophoton pathway WireGuard claims are conditioned on this verification.
+
+### 9.12 Trust Interface Source Location — Completely Unresolved (Blocking)
+**Gap**: This is the most critical unresolved citation in the entire document. Two paths have now been checked and both return HTTP 404:
+- `LineageOS/android_packages_apps_Twelve` — wrong (LineageOS music player)
+- `LineageOS/android_packages_apps_Trust` — also wrong (repo does not exist)
+
+The Trust Interface is a real, documented LineageOS feature — it appears in LineageOS Wiki device pages and in user-facing OS behaviour. However, its source implementation has not been found in the LineageOS GitHub organisation.
+
+**Search plan** (must be executed before any Trust claim is elevated above `unconfirmed`):
+1. Search `github.com/LineageOS/android_lineage-sdk` for Trust-related classes or APIs
+2. Search `github.com/LineageOS/android_vendor_lineage` for Trust app or Trust HAL
+3. Search `github.com/LineageOS/android_packages_apps_Settings` (LineageOS fork of Settings) for Trust UI integration
+4. Search `github.com/LineageOS/android_hardware_lineage_interfaces` for Trust HAL HIDL/AIDL definition
+5. Check whether Trust was removed from LineageOS in a specific version (it may have been deprecated)
+
+**Confidence**: All Trust Interface claims in this document are `unconfirmed` until source is located. This is a **blocking gap** for any document version that claims authority on Trust.
 
 ---
 
@@ -666,15 +690,17 @@ A complete LINEAGEOS_MANIFOLD.md entry must satisfy:
 - [ ] Spectral priority channels confirmed unchanged
 - [ ] All 9 LineageOS-native additions have a biological analogy and confidence tag (§7.1–7.9)
 - [ ] FP5 hardware invariants are preserved
-- [ ] All 11 honest gaps are documented with confidence downgrade instructions (§9.1–9.11)
+- [ ] All 12 honest gaps are documented with confidence downgrade instructions (§9.1–9.12)
 - [ ] No claim is marked `verified` without a primary source path that has been confirmed open
 - [ ] No claim uses `packages/apps/Twelve` for Trust Interface — that is the music player (see §9.8)
 - [ ] Privacy Guard fake-data claims are marked `unconfirmed` pending current-build verification (§9.9)
 - [ ] Root/su entries are framed as opt-in, not default (§9.10)
 - [ ] WireGuard claims are build-config-conditional, not universal (§9.11)
 - [ ] microG entries distinguish "standard LineageOS" from "LineageOS for microG" build variant (§9.5, §7.7)
-- [ ] Kernel tree `android_kernel_qcom_sm7325` is labelled as candidate/closest, not Tier 1 verified (§9.2)
+- [ ] Kernel tree is `android_kernel_fairphone_qcm6490` (HTTP 200 verified) — not the non-existent `android_kernel_qcom_sm7325` (§9.2)
 - [ ] Updater entries do not claim "complete replacement" of update_engine — scope is OTA client UX + server endpoint (§7.4)
+- [ ] Trust Interface source location is marked ❌ UNRESOLVED — both known paths (Twelve, Trust) are HTTP 404 (§9.12)
+- [ ] All repo paths in Appendix A have been API-verified or explicitly flagged as unverified
 
 ---
 
@@ -685,8 +711,8 @@ A complete LINEAGEOS_MANIFOLD.md entry must satisfy:
 | Framework base | `github.com/LineageOS/android_frameworks_base` |
 | System core (init) | `github.com/LineageOS/android_system_core` |
 | SELinux policy | `github.com/LineageOS/android_system_sepolicy` |
-| Trust Interface | `github.com/LineageOS/android_packages_apps_Trust` ⚠ [citation needed — previous reference to `android_packages_apps_Twelve` (LineageOS music player) was an error; this corrected path requires source verification] |
-| Privacy Guard | Integrated in `android_frameworks_base` |
+| Trust Interface | ❌ **SOURCE NOT FOUND** — `android_packages_apps_Trust` HTTP 404; `android_packages_apps_Twelve` is music player. Source location unresolved. See §9.12 for search plan. |
+| Privacy Guard | Integrated in `android_frameworks_base` (permission hooks; fake-data injection status `unconfirmed`) |
 | LiveDisplay HAL | `github.com/LineageOS/android_hardware_lineage_livedisplay` |
 | Trebuchet | `github.com/LineageOS/android_packages_apps_Trebuchet` |
 | LineageOS Updater | `github.com/LineageOS/android_packages_apps_Updater` |
@@ -694,7 +720,9 @@ A complete LINEAGEOS_MANIFOLD.md entry must satisfy:
 | Lineage interfaces | `github.com/LineageOS/android_hardware_lineage_interfaces` |
 | SeedVault | `github.com/seedvault-app/seedvault` |
 | microG (external) | `github.com/microg/GmsCore` |
-| Kernel (QCM6490 family — candidate) | `github.com/LineageOS/android_kernel_qcom_sm7325` ⚠ candidate/closest known tree — not Tier 1 verified for FP5; FP5-specific branch may differ or be maintained separately. See §9.2 |
+| FP5 kernel ✓ | `github.com/LineageOS/android_kernel_fairphone_qcm6490` HTTP 200 verified |
+| FP5 device tree ✓ | `github.com/LineageOS/android_device_fairphone_FP5` HTTP 200 verified |
+| Fairphone kernel mirror ✓ | `github.com/fairphone-mirror/kernel_msm-5.4` HTTP 200 verified |
 | Manifest | `github.com/LineageOS/android` |
 | Device wiki | `wiki.lineageos.org` |
 
@@ -704,13 +732,17 @@ A complete LINEAGEOS_MANIFOLD.md entry must satisfy:
 
 The following claims require primary source verification before being elevated to `verified`:
 
-| Claim | Verification action |
-|---|---|
-| FP5 official LineageOS support | Check `wiki.lineageos.org/devices/FP5/` |
-| Exact FP5 kernel branch | Check `github.com/LineageOS` for FP5-specific kernel |
-| Trust Interface package + HAL mechanism | Verify `github.com/LineageOS/android_packages_apps_Trust` exists and read source — previous erroneous citation of `android_packages_apps_Twelve` (music player) has been corrected but not yet source-confirmed |
-| Privacy Guard fake data injection | Read LineageOS `android_frameworks_base` AppOps fork |
-| LiveDisplay FP5 HAL backend | Check `android_hardware_lineage_livedisplay` for QCM6490 |
-| Root/su availability on FP5 builds | Check LineageOS FP5 device config and Trust integration |
-| SeedVault default inclusion | Check FP5 LineageOS device makefile |
-| microG signature spoofing on FP5 builds | Check device `*.mk` config for `LineageOS/GmsCore` or `PRODUCT_PACKAGES` |
+| Claim | Verification action | Status |
+|---|---|---|
+| FP5 official LineageOS support | Check `wiki.lineageos.org/devices/FP5/` | ⏳ pending |
+| FP5 kernel repo identity | ~~`android_kernel_qcom_sm7325`~~ → use `android_kernel_fairphone_qcm6490` ✓ HTTP 200 | ✓ corrected |
+| FP5 device tree | `github.com/LineageOS/android_device_fairphone_FP5` ✓ HTTP 200 | ✓ confirmed real |
+| Fairphone kernel mirror | `github.com/fairphone-mirror/kernel_msm-5.4` ✓ HTTP 200 | ✓ corrected |
+| WireGuard in FP5 kernel | Search `CONFIG_WIREGUARD` in `android_kernel_fairphone_qcm6490` config | ⏳ pending (see §9.11) |
+| Trust Interface source location | ~~`android_packages_apps_Trust`~~ HTTP 404. Search: `android_lineage-sdk`, `android_vendor_lineage`, `android_packages_apps_Settings` fork, `android_hardware_lineage_interfaces` | ❌ BLOCKING — both known paths are 404 (see §9.12) |
+| Privacy Guard fake data injection (current builds) | Read LineageOS `android_frameworks_base` AppOps fork — confirm whether fake-data injection is present in LOS 20/21 | ⏳ pending (see §9.9) |
+| Privacy Guard legacy vs current | Diff CyanogenMod Privacy Guard against current LOS AppOps hook — confirm what survives | ⏳ pending |
+| LiveDisplay FP5 HAL backend | Check `android_hardware_lineage_livedisplay` for QCM6490/FP5 HAL backend presence | ⏳ pending |
+| Root/su availability on FP5 builds | Check `android_device_fairphone_FP5` device config for AVB unlock and Magisk compatibility | ⏳ pending (see §9.10) |
+| SeedVault default inclusion | Check FP5 device makefile in `android_device_fairphone_FP5` for `PRODUCT_PACKAGES` SeedVault | ⏳ pending |
+| microG signature spoofing on FP5 builds | Check `android_device_fairphone_FP5` `*.mk` for `PRODUCT_PACKAGES` microG or spoofing patch | ⏳ pending (see §9.5) |

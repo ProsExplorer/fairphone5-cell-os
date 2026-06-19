@@ -1,44 +1,37 @@
 ---
 name: Cell OS LineageOS manifold accuracy rules
-description: Six architect-confirmed factual errors in LINEAGEOS_MANIFOLD.md — corrected constraints that must hold in any future LineageOS documentation.
+description: Architect-confirmed factual constraints for any LineageOS doc in Cell OS — includes GitHub API-verified repo paths and Trust source gap.
 ---
 
-## Rules (must be checked before any LineageOS doc is cited as authoritative)
+## Verified Real Repos (GitHub API HTTP 200 confirmed)
 
-**1. Trust Interface package name**
-- `packages/apps/Twelve` = LineageOS **music player**. Never cite it for Trust.
-- Trust Interface = `packages/apps/Trust` / `android_packages_apps_Trust` [citation needed — not yet source-verified].
-- Confidence ceiling: `unconfirmed` until the repository is opened and confirmed.
-- Biological analogy: **immune checkpoint complex** (MHC class I presentation), not "gap junction".
+- `github.com/LineageOS/android_kernel_fairphone_qcm6490` — real FP5 kernel (NOT android_kernel_qcom_sm7325 which is 404)
+- `github.com/LineageOS/android_device_fairphone_FP5` — real FP5 device tree
+- `github.com/fairphone-mirror/kernel_msm-5.4` — real Fairphone kernel mirror (NOT fairphone/kernel_fairphone_5 which is 404)
 
-**Why:** The original document copied the wrong package name. The music player and the security dashboard are entirely different apps in the LineageOS org.
+## 404 Repos (do not cite — verified non-existent)
 
-**2. Privacy Guard is largely CyanogenMod-era**
-- Fake-data injection (blank camera / null location / silent mic) was present in CM and early LineageOS.
-- LineageOS 17+ (Android 10+): AOSP AppOps + PermissionController absorbed much of this. Synthetic effector is `unconfirmed` in current builds.
-- The receptor-level gating concept (biological analogy) remains valid; only the specific fake-data claim is in dispute.
+- `LineageOS/android_kernel_qcom_sm7325` — HTTP 404
+- `LineageOS/android_packages_apps_Trust` — HTTP 404
+- `LineageOS/android_packages_apps_Twelve` — this is the music player
+- `fairphone/kernel_fairphone_5` — HTTP 404
+- `fairphone/kernel_msm-5.4` — HTTP 404
 
-**3. microG = separate build variant, not standard LineageOS**
-- "LineageOS for microG" (`lineage.microg.org`) is a distinct official build with signature spoofing + microG pre-installed.
-- Standard LineageOS does NOT ship microG and does NOT include signature spoofing by default.
-- Always distinguish between "standard LineageOS" and "LineageOS for microG" build variant.
+## Trust Interface — Completely Unresolved (Blocking)
 
-**4. LineageOS Updater scope**
-- `packages/apps/Updater` replaces the OTA client UX and server endpoint.
-- The A/B update platform mechanism (`update_engine`) may still operate underneath — it is NOT a "complete replacement".
-- Correct framing: "trans-Golgi network route change" (re-addressing), not replacement of the dispatch machinery.
+The Trust Interface is a real, documented LineageOS feature. However its GitHub source location is unknown — both `android_packages_apps_Trust` AND `android_packages_apps_Twelve` (the music player) are 404. Until source is found, all Trust claims are `unconfirmed`.
 
-**5. Root / su — opt-in, not default**
-- In LineageOS 17+, the su binary has been removed from official builds.
-- Root requires post-install tools (Magisk or similar). `adbd` root (developer options) = limited shell root only.
-- All biological analogies for root must frame it as **inducible, not constitutive** nuclear import.
-- WireGuard is also build-config dependent (msm-5.4 needs a backport) — `unconfirmed` for FP5.
+**Search plan:** Look in `android_lineage-sdk`, `android_vendor_lineage`, `android_packages_apps_Settings` (LOS fork), `android_hardware_lineage_interfaces`.
 
-**6. Kernel repo is a candidate, not Tier 1 verified**
-- `android_kernel_qcom_sm7325` = closest publicly known tree for QCM6490 family.
-- FP5-specific kernel may be a different branch or maintained separately by Fairphone.
-- Always label as "candidate/closest" — never as authoritative for FP5.
+**Why:** Two successive citations in the document were wrong. The source location must be confirmed from GitHub before Trust is used in any authoritative document.
 
-**How to apply:**
-Before writing or reviewing any LineageOS documentation, check each of these six points.
-Run a grep for `Twelve` in any LineageOS doc to catch the package name error.
+## Six Accuracy Rules (must check before any LineageOS doc is cited)
+
+1. **Trust package**: Neither Twelve (music) nor Trust (404). Source unresolved. Confidence ceiling: `unconfirmed`.
+2. **Privacy Guard**: CyanogenMod-era fake-data injection is `unconfirmed` in LineageOS 17+. Permission gating architecture is `indicative`.
+3. **microG**: "LineageOS for microG" is a separate build variant — standard LineageOS does not ship microG.
+4. **Updater scope**: Replaces OTA client UX + server endpoint. Not a full replacement of update_engine.
+5. **Root/su**: Opt-in post-install (Magisk) in LOS 17+. Su binary removed from official builds. Not default.
+6. **Kernel tree**: Use `android_kernel_fairphone_qcm6490` for FP5, not `android_kernel_qcom_sm7325` (404).
+
+**How to apply:** Before writing or reviewing any LineageOS doc, grep for `Twelve`, `android_packages_apps_Trust`, `android_kernel_qcom_sm7325`, `fairphone/kernel` — all are wrong.
