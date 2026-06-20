@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { BioplasmaFieldSection } from "../components/BioplasmaFieldSection";
 import { CodeSnippet } from "../components/CodeSnippet";
 
 const GATE_POSITIONS = Array.from({ length: 8 }, (_, i) => {
@@ -171,7 +172,7 @@ export function NucleusPanel() {
           >{INIT_NATIVE_SNIPPET}</CodeSnippet>
         </div>
       </div>
-
+      <BioplasmaFieldSection zoneId="nucleus" />
     </div>
   );
 }

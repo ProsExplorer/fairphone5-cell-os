@@ -1,4 +1,5 @@
 import { Cpu, Fingerprint, Shield } from "lucide-react";
+import { BioplasmaFieldSection } from "../components/BioplasmaFieldSection";
 import { CodeSnippet } from "../components/CodeSnippet";
 
 const HAL_NATIVE_SNIPPET = `interface IDevice extends @1.2::IDevice {
@@ -123,6 +124,7 @@ export function MembranePanel() {
           Nucleus → Cytoplasm → Cytoskeleton → Ribosomes → Mitochondria → Golgi → ER → Membrane
         </p>
       </div>
+      <BioplasmaFieldSection zoneId="membrane" />
     </div>
   );
 }

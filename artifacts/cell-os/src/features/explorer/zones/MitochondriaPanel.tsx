@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { BioplasmaFieldSection } from "../components/BioplasmaFieldSection";
 import { EdgeNodeSection } from "../components/EdgeNodeSection";
 import { CodeSnippet } from "../components/CodeSnippet";
 import { QUANTIZATION_LAYERS } from "@/domain/content/quantizationBiology";
@@ -310,7 +311,7 @@ export function MitochondriaPanel() {
           </div>
         </div>
       </div>
-
+      <BioplasmaFieldSection zoneId="mitochondria" />
     </div>
   );
 }

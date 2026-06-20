@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { BioplasmaFieldSection } from "../components/BioplasmaFieldSection";
 import { CellDiagram } from "@/components/CellDiagram";
 import { InfoPanel } from "../components/InfoPanel";
 import { CodeSnippet } from "../components/CodeSnippet";
@@ -209,6 +210,7 @@ export function CytoplasmPanel({ view, perceive }: Props) {
           >{BINDER_NATIVE_SNIPPET}</CodeSnippet>
         </div>
       </div>
+      <BioplasmaFieldSection zoneId="cytoplasm" />
     </div>
   );
 }

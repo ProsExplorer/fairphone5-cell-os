@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { BioplasmaFieldSection } from "../components/BioplasmaFieldSection";
 import { CELL_MAPPINGS } from "@/lib/data";
 import { FractalNavigator } from "../components/FractalNavigator";
 import { CodeSnippet } from "../components/CodeSnippet";
@@ -141,6 +142,7 @@ export function GolgiPanel({ view, perceive }: Props) {
           <FractalNavigator />
         </div>
       )}
+      <BioplasmaFieldSection zoneId="golgi" />
     </div>
   );
 }

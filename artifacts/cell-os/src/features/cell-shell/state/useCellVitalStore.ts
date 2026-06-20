@@ -1,15 +1,17 @@
 import { create } from "zustand";
-import type { CellZoneId } from "@/domain/types";
+import type { CellZoneId, BioplasmaPathway } from "@/domain/types";
+import { getZoneForOrganelle } from "@/features/learning/hebbianAdapter";
 
 // ─── Signal types ─────────────────────────────────────────────────────────────
 
 export type SignalType =
-  | "pulse"     // generic zone activity
-  | "sacred"    // SHA-256 breath seal — nucleus
-  | "inference" // EdgeNode start/wave
-  | "atp"       // mitochondria token production
-  | "token"     // ribosome/golgi token emission
-  | "error";    // ER stress / membrane attenuation
+  | "pulse"      // generic zone activity
+  | "sacred"     // SHA-256 breath seal — nucleus
+  | "inference"  // EdgeNode start/wave
+  | "atp"        // mitochondria token production
+  | "token"      // ribosome/golgi token emission
+  | "error"      // ER stress / membrane attenuation
+  | "bioplasma"; // endogenous EM field signal (BP1–BP9)
 
 export type InferencePhase = "idle" | "loading" | "running" | "complete" | "error";
 
@@ -67,6 +69,28 @@ export type CellVitalState = {
 
   /** Inference error — ER stress pulse, membrane attenuation. */
   inferenceError: () => void;
+
+  /**
+   * Emit a bioplasma field signal for a given pathway.
+   *
+   * Guards (both enforced here — never remove):
+   *   1. status === "reserved" → return immediately (BP8: no runtime logic)
+   *   2. direction === "readonly" → return immediately (BP9: diagnostic only)
+   *
+   * Intensity is σ-weighted: the biological confidence score scales the
+   * visual intensity so verified pathways glow more strongly than speculative ones.
+   *
+   * ttlMs defaults to 1500ms. Pass Infinity for always-on signals (BP1 baseline).
+   */
+  bioplasmaSignal: (pathway: BioplasmaPathway, intensity?: number, ttlMs?: number) => void;
+
+  /**
+   * Initialise the BP1 resting potential baseline.
+   * Called once on mount — creates a non-expiring membrane glow (Infinity TTL).
+   * The Infinity value is intentional: clearExpiredSignals() keeps signals
+   * where expiresAt > Date.now(), and Infinity satisfies that condition always.
+   */
+  initBP1Baseline: () => void;
 };
 
 // ─── Store ────────────────────────────────────────────────────────────────────
@@ -150,6 +174,49 @@ export const useCellVitalStore = create<CellVitalState>((set) => ({
         ...s.signals,
         "endoplasmic-reticulum": { type: "error", intensity: 1, expiresAt: Date.now() + 3500 },
         membrane: { type: "error", intensity: 0.7, expiresAt: Date.now() + 2500 },
+      },
+    })),
+
+  bioplasmaSignal: (pathway, intensity = 1.0, ttlMs = 1500) => {
+    if (pathway.status === "reserved") return;
+    if (pathway.organelleRoute.direction === "readonly") return;
+
+    const weightedIntensity = intensity * pathway.sigma;
+    const sourceZone = getZoneForOrganelle(pathway.organelleRoute.source) as CellZoneId | null;
+    const targetZone =
+      pathway.organelleRoute.target !== "broadcast"
+        ? getZoneForOrganelle(pathway.organelleRoute.target) as CellZoneId | null
+        : null;
+
+    set((s) => {
+      const next = { ...s.signals };
+      if (sourceZone) {
+        next[sourceZone] = {
+          type: "bioplasma",
+          intensity: weightedIntensity,
+          expiresAt: Date.now() + ttlMs,
+        };
+      }
+      if (targetZone && pathway.organelleRoute.direction !== "broadcast") {
+        next[targetZone] = {
+          type: "bioplasma",
+          intensity: weightedIntensity * 0.7,
+          expiresAt: Date.now() + ttlMs + 500,
+        };
+      }
+      return { signals: next };
+    });
+  },
+
+  initBP1Baseline: () =>
+    set((s) => ({
+      signals: {
+        ...s.signals,
+        membrane: {
+          type: "bioplasma",
+          intensity: 0.22,
+          expiresAt: Infinity,
+        },
       },
     })),
 }));

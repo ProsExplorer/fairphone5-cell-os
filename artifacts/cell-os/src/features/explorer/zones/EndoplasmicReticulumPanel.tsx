@@ -1,4 +1,5 @@
 import { DeepLineageTimeline } from "../components/DeepLineageTimeline";
+import { BioplasmaFieldSection } from "../components/BioplasmaFieldSection";
 import { CodeSnippet } from "../components/CodeSnippet";
 
 const ION_NATIVE_SNIPPET = `int ion_alloc(int fd, size_t len, size_t align,
@@ -55,6 +56,7 @@ export function EndoplasmicReticulumPanel() {
           >{ION_NATIVE_SNIPPET}</CodeSnippet>
         </div>
       </div>
+      <BioplasmaFieldSection zoneId="endoplasmic-reticulum" />
     </div>
   );
 }

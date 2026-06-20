@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { useLearningStore } from "./useLearningStore";
 import { getZoneForOrganelle } from "./hebbianAdapter";
+import { useCellVitalStore } from "@/features/cell-shell/state/useCellVitalStore";
+import { BP2_ACTION_POTENTIAL } from "@/domain/content/bioplasmaPathways";
 import type { ExplorerView } from "@/features/explorer/useExplorerFlow";
 
 /**
@@ -29,6 +31,7 @@ export function useMembraneObserver(view: ExplorerView, activeZoneId: string) {
   const recordOrganelleVisit      = useLearningStore((s) => s.recordOrganelleVisit);
   const recordSubstrateEngagement = useLearningStore((s) => s.recordSubstrateEngagement);
   const recordZonePhase           = useLearningStore((s) => s.recordZonePhase);
+  const bioplasmaSignal           = useCellVitalStore((s) => s.bioplasmaSignal);
 
   // P — Perception: navigating to a zone is the act of receiving it.
   // The zone boundary crossing is the membrane event at the zone scale.
@@ -39,12 +42,16 @@ export function useMembraneObserver(view: ExplorerView, activeZoneId: string) {
 
   // A — Affect: click-lock is deliberate engagement — the user is transforming
   // their model of the structure. Hover is transient; only locks are recorded.
+  // BP2 fires here: organelle click-lock is the "Binder BC_TRANSACTION" moment —
+  // a directed ionic depolarisation wave (action potential) from the interaction
+  // site toward the nucleus. σ=0.90 weighted intensity → visible bioplasma pulse.
   useEffect(() => {
     if (!view.isLocked) return;
     if (view.activeOrganelle) {
       recordOrganelleVisit(view.activeOrganelle.id);
       const zoneId = getZoneForOrganelle(view.activeOrganelle.id);
       if (zoneId) recordZonePhase(zoneId, "affect");
+      bioplasmaSignal(BP2_ACTION_POTENTIAL, 0.7, 1200);
     }
     if (view.activeSubstrate) {
       recordSubstrateEngagement(view.activeSubstrate.id);

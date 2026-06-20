@@ -6,8 +6,10 @@ import {
   getLearnedBiophotonWeights,
   getConfidenceBoosts,
   getZonePhaseIntensity,
+  applyBioplasmaManifoldModulation,
 } from "./hebbianAdapter";
 import type { CellZoneId } from "@/domain/types";
+import { BIOPLASMA_ZONE_REGISTRY } from "@/domain/content/organelles";
 
 /**
  * The learned state of the manifold — adaptations derived from the
@@ -33,6 +35,13 @@ export type LearnedManifold = {
    * explored across its P→A→E triad.
    */
   zonePhaseIntensity: Record<string, { perception: number; affect: number; expression: number }>;
+  /**
+   * Bioplasma-modulated zone weights — Hebbian visit weights boosted by
+   * active bioplasma pathway density per zone.
+   * Verified pathways (σ ≥ 0.75) contribute up to +18%; indicative +14%; speculative +9%.
+   * Used to subtly increase baseline ring opacity/glow in CellMapNav.
+   */
+  bioplasmaZoneWeights: Record<CellZoneId, number>;
   /** Total click-lock interactions observed across all sessions. */
   totalInteractions: number;
   /** True once ≥ 5 intentional interactions have been recorded. */
@@ -46,13 +55,17 @@ export function useLearnedManifold(): LearnedManifold {
   const zonePhaseExploration = useLearningStore((s) => s.zonePhaseExploration);
   const totalInteractions    = useLearningStore((s) => s.totalInteractions);
 
-  return useMemo(() => ({
-    organelleVisitIntensity: getOrganelleVisitIntensity(organelleVisits),
-    zoneVisitWeights:        getZoneVisitWeights(organelleVisits),
-    learnedBiophotonWeights: getLearnedBiophotonWeights(coActivations),
-    confidenceBoosts:        getConfidenceBoosts(substrateEngagement, totalInteractions),
-    zonePhaseIntensity:      getZonePhaseIntensity(zonePhaseExploration),
-    totalInteractions,
-    isAdapted: totalInteractions >= 5,
-  }), [organelleVisits, coActivations, substrateEngagement, zonePhaseExploration, totalInteractions]);
+  return useMemo(() => {
+    const zoneVisitWeights = getZoneVisitWeights(organelleVisits);
+    return {
+      organelleVisitIntensity: getOrganelleVisitIntensity(organelleVisits),
+      zoneVisitWeights,
+      learnedBiophotonWeights: getLearnedBiophotonWeights(coActivations),
+      confidenceBoosts:        getConfidenceBoosts(substrateEngagement, totalInteractions),
+      zonePhaseIntensity:      getZonePhaseIntensity(zonePhaseExploration),
+      bioplasmaZoneWeights:    applyBioplasmaManifoldModulation(zoneVisitWeights, BIOPLASMA_ZONE_REGISTRY),
+      totalInteractions,
+      isAdapted: totalInteractions >= 5,
+    };
+  }, [organelleVisits, coActivations, substrateEngagement, zonePhaseExploration, totalInteractions]);
 }

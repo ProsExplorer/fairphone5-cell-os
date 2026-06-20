@@ -1,4 +1,4 @@
-import type { CellZoneId } from "@/domain/types";
+import type { CellZoneId, BioplasmaPathway } from "@/domain/types";
 
 /**
  * Hebbian Adapter — pure functions that translate the epigenome's raw
@@ -173,6 +173,38 @@ export function parseRateRangeProxy(rateRange: string): number {
  */
 export function blendAttentionWeight(base: number, learnedWeight: number): number {
   return base + (1 - base) * learnedWeight * 0.5;
+}
+
+/**
+ * Apply bioplasma manifold modulation to zone weights.
+ *
+ * Boosts zone weights based on which bioplasma pathways are active in each zone.
+ * Verified pathways (σ ≥ 0.75) boost by up to 18%; indicative by 14%; speculative by 9%.
+ * Reserved pathways (BP8) are skipped entirely.
+ *
+ * The result is bounded to [0, 1] so no zone can saturate from bioplasma alone.
+ * This modulation is additive on top of Hebbian visit weights — the two learning
+ * channels are complementary, not competitive.
+ *
+ * @param zoneWeights  Existing zone visit weights from getZoneVisitWeights()
+ * @param zoneRegistry BIOPLASMA_ZONE_REGISTRY from organelles.ts
+ */
+export function applyBioplasmaManifoldModulation(
+  zoneWeights: Record<CellZoneId, number>,
+  zoneRegistry: Partial<Record<CellZoneId, BioplasmaPathway[]>>
+): Record<CellZoneId, number> {
+  const modulated = { ...zoneWeights };
+  const allZones = Object.keys(modulated) as CellZoneId[];
+  for (const zoneId of allZones) {
+    const pathways = zoneRegistry[zoneId];
+    if (!pathways || pathways.length === 0) continue;
+    for (const pw of pathways) {
+      if (pw.status === "reserved") continue;
+      const boostFactor = pw.sigma >= 0.75 ? 0.18 : pw.sigma >= 0.50 ? 0.14 : 0.09;
+      modulated[zoneId] = Math.min(1.0, modulated[zoneId] + pw.sigma * boostFactor);
+    }
+  }
+  return modulated;
 }
 
 /**

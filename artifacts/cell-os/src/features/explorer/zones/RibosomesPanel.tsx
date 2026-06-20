@@ -1,4 +1,5 @@
 import { NineScaleFlow } from "../components/NineScaleFlow";
+import { BioplasmaFieldSection } from "../components/BioplasmaFieldSection";
 import { CodeSnippet } from "../components/CodeSnippet";
 
 const NNAPI_NATIVE_SNIPPET = `int ANeuralNetworksModel_addOperation(
@@ -55,6 +56,7 @@ export function RibosomesPanel() {
           >{NNAPI_NATIVE_SNIPPET}</CodeSnippet>
         </div>
       </div>
+      <BioplasmaFieldSection zoneId="ribosomes" />
     </div>
   );
 }

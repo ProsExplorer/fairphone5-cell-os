@@ -1,4 +1,5 @@
 import { SubstrateAtlas } from "../components/SubstrateAtlas";
+import { BioplasmaFieldSection } from "../components/BioplasmaFieldSection";
 import { CodeSnippet } from "../components/CodeSnippet";
 import type { ExplorerView, ExplorerPerception } from "../useExplorerFlow";
 
@@ -56,6 +57,7 @@ export function CytoskeletonPanel({ view, perceive }: Props) {
           >{SCHED_NATIVE_SNIPPET}</CodeSnippet>
         </div>
       </div>
+      <BioplasmaFieldSection zoneId="cytoskeleton" />
     </div>
   );
 }

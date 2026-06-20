@@ -253,3 +253,49 @@ export type FractalCycle = {
   cycleDescription: string;
   phases: readonly [FractalPhase, FractalPhase, FractalPhase];
 };
+
+// ─── Bioplasma Pathways ──────────────────────────────────────────────────────
+
+/**
+ * Classification of how literally plasma physics criteria apply
+ * to the biological medium.
+ */
+export type PlasmaLiteralness =
+  | "literal-quasi-plasma"     // BP1: membrane sheath (genuine charge separation)
+  | "electrolyte-analogy"      // BP2, BP3, BP7: structured ion flux
+  | "field-coherence-analogy"; // BP4, BP5, BP6, BP8, BP9: EM field coupling
+
+/** Evidence-calibrated confidence tiers for bioplasma phenomena. */
+export type BioplasmaStatus =
+  | "verified"    // σ ≥ 0.75: established electrophysiology
+  | "indicative"  // 0.50–0.75: replicated in-vivo/in-vitro results
+  | "speculative" // 0.30–0.50: theoretical models with limited data
+  | "reserved";   // < 0.30: architectural placeholder, no runtime implementation
+
+/**
+ * A bioplasma pathway (BP1–BP9) representing an endogenous electric
+ * or electromagnetic field interaction and its LineageOS software analogue.
+ *
+ * Source of truth for σ values: BIOPLASMA_RESEARCH.md.
+ * Source of truth for lineageosPath: LineageOSv2_Manifold.md §5.
+ *
+ * Invariants enforced at runtime:
+ *   - status === "reserved" → bioplasmaSignal() returns early (BP8)
+ *   - organelleRoute.direction === "readonly" → never drives routing (BP9)
+ */
+export interface BioplasmaPathway {
+  code: "BP1" | "BP2" | "BP3" | "BP4" | "BP5" | "BP6" | "BP7" | "BP8" | "BP9";
+  sigma: number;
+  status: BioplasmaStatus;
+  carrier: string;
+  frequencyRange: string;
+  plasmaLiteralness: PlasmaLiteralness;
+  lineageosPath: string | null;
+  organelleRoute: {
+    source: string;
+    target: string;
+    direction: "inward" | "outward" | "bidirectional" | "broadcast" | "readonly";
+  };
+  ipcAnalogue: string;
+  isMetaphor: boolean;
+}

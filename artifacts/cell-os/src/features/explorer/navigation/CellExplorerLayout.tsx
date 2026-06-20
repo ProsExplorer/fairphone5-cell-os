@@ -8,6 +8,9 @@ import { ZoneContentViewport } from "./ZoneContentViewport";
 import { CELL_ZONES } from "@/features/cell-shell/CellShellProvider";
 import { useCellVitalStore } from "@/features/cell-shell/state/useCellVitalStore";
 import { useMembraneObserver } from "@/features/learning/useMembraneObserver";
+import { useWoundFieldBroadcast } from "@/features/cell-shell/hooks/useWoundFieldBroadcast";
+import { useELFResonance } from "@/features/cell-shell/hooks/useELFResonance";
+import { useThermalHAL } from "@/features/cell-shell/hooks/useThermalHAL";
 import type { CellZoneId } from "@/domain/types";
 
 /**
@@ -28,9 +31,23 @@ export function CellExplorerLayout() {
   const { activeZone, selectZone, goInward, goOutward, canGoInward, canGoOutward } =
     useExplorerNavigation("cytoplasm");
   const { view, perceive } = useExplorerFlow();
-  const setActiveZone = useCellVitalStore((s) => s.setActiveZone);
-  const emitSignal    = useCellVitalStore((s) => s.emitSignal);
+  const setActiveZone   = useCellVitalStore((s) => s.setActiveZone);
+  const emitSignal      = useCellVitalStore((s) => s.emitSignal);
+  const initBP1Baseline = useCellVitalStore((s) => s.initBP1Baseline);
   const [ringExpanded, setRingExpanded] = useState(true);
+
+  // BP1 resting potential — always-on membrane baseline glow (Infinity TTL).
+  // Fired once on mount; never re-fires (Infinity expiresAt survives clearExpiredSignals).
+  useEffect(() => {
+    initBP1Baseline();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // BP3 wound field, BP4 ELF resonance, BP5 thermal HAL
+  // All three are passive listeners registered once at layout mount.
+  useWoundFieldBroadcast();
+  useELFResonance();
+  useThermalHAL();
 
   // Sync active zone to the vital store so the living cell diagram reacts.
   // Also emit a brief zone-pulse signal so the navigated-to ring brightens.

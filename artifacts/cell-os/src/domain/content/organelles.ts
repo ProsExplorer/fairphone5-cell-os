@@ -1,4 +1,15 @@
-import type { Organelle } from "@/domain/types";
+import type { Organelle, BioplasmaPathway, CellZoneId } from "@/domain/types";
+import {
+  BP1_RESTING_POTENTIAL,
+  BP2_ACTION_POTENTIAL,
+  BP3_WOUND_FIELD,
+  BP4_ELF_COUPLING,
+  BP5_RF_MMW,
+  BP6_FROHLICH,
+  BP7_VMEM_PATTERN,
+  BP8_QED_WATER,
+  BP9_THZ_TELEMETRY,
+} from "./bioplasmaPathways";
 
 /**
  * The fifteen biological-to-OS mappings. This is the source of truth for the
@@ -126,3 +137,35 @@ export const CELL_MAPPINGS: Organelle[] = [
     color: "hsl(50, 100%, 60%)" // Gold
   }
 ];
+
+// ─── Bioplasma Registries ────────────────────────────────────────────────────
+
+/**
+ * Maps organelle IDs to their bioplasma pathways.
+ * Used by BioplasmaFieldSection and bioplasmaSignal() routing.
+ */
+export const BIOPLASMA_REGISTRY: Record<string, BioplasmaPathway[]> = {
+  "cell-membrane":         [BP1_RESTING_POTENTIAL, BP2_ACTION_POTENTIAL, BP3_WOUND_FIELD, BP4_ELF_COUPLING, BP5_RF_MMW],
+  "membrane-receptors":    [BP1_RESTING_POTENTIAL, BP5_RF_MMW],
+  "mitochondria":          [BP1_RESTING_POTENTIAL, BP6_FROHLICH],
+  "endoplasmic-reticulum": [BP4_ELF_COUPLING],
+  "nucleus":               [BP5_RF_MMW, BP7_VMEM_PATTERN],
+  "cytoskeleton":          [BP6_FROHLICH, BP9_THZ_TELEMETRY],
+  "cytoplasm":             [BP8_QED_WATER, BP9_THZ_TELEMETRY],
+};
+
+/**
+ * Maps CellZoneId to bioplasma pathways active in that zone.
+ * Zone-level aggregation of BIOPLASMA_REGISTRY for panel display.
+ * Used directly by BioplasmaFieldSection.tsx.
+ */
+export const BIOPLASMA_ZONE_REGISTRY: Record<CellZoneId, BioplasmaPathway[]> = {
+  "membrane":              [BP1_RESTING_POTENTIAL, BP2_ACTION_POTENTIAL, BP3_WOUND_FIELD, BP4_ELF_COUPLING, BP5_RF_MMW],
+  "mitochondria":          [BP1_RESTING_POTENTIAL, BP6_FROHLICH],
+  "endoplasmic-reticulum": [BP4_ELF_COUPLING],
+  "nucleus":               [BP5_RF_MMW, BP7_VMEM_PATTERN],
+  "cytoskeleton":          [BP6_FROHLICH, BP9_THZ_TELEMETRY],
+  "cytoplasm":             [BP8_QED_WATER, BP9_THZ_TELEMETRY],
+  "ribosomes":             [],
+  "golgi":                 [],
+};
