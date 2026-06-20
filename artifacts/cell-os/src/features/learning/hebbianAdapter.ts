@@ -180,7 +180,14 @@ export function blendAttentionWeight(base: number, learnedWeight: number): numbe
  *
  * Boosts zone weights based on which bioplasma pathways are active in each zone.
  * Verified pathways (σ ≥ 0.75) boost by up to 18%; indicative by 14%; speculative by 9%.
- * Reserved pathways (BP8) are skipped entirely.
+ *
+ * Invariants enforced here (matching bioplasmaSignal() guards):
+ *   - status === "reserved" → skipped (BP8: no runtime logic)
+ *   - direction === "readonly" → skipped (BP9: diagnostic telemetry, must not drive weights)
+ *
+ * Cold-start protection: total boost per zone is capped at MAX_ZONE_BIOPLASMA_BOOST (0.20).
+ * Without this cap, a zone with 5 verified pathways (e.g. membrane) could accumulate
+ * ~0.65 boost and visually dominate before any user interaction has occurred.
  *
  * The result is bounded to [0, 1] so no zone can saturate from bioplasma alone.
  * This modulation is additive on top of Hebbian visit weights — the two learning
@@ -189,6 +196,8 @@ export function blendAttentionWeight(base: number, learnedWeight: number): numbe
  * @param zoneWeights  Existing zone visit weights from getZoneVisitWeights()
  * @param zoneRegistry BIOPLASMA_ZONE_REGISTRY from organelles.ts
  */
+const MAX_ZONE_BIOPLASMA_BOOST = 0.20;
+
 export function applyBioplasmaManifoldModulation(
   zoneWeights: Record<CellZoneId, number>,
   zoneRegistry: Partial<Record<CellZoneId, BioplasmaPathway[]>>
@@ -198,11 +207,15 @@ export function applyBioplasmaManifoldModulation(
   for (const zoneId of allZones) {
     const pathways = zoneRegistry[zoneId];
     if (!pathways || pathways.length === 0) continue;
+    let zoneBoost = 0;
     for (const pw of pathways) {
-      if (pw.status === "reserved") continue;
+      if (pw.status === "reserved") continue;              // BP8 guard
+      if (pw.organelleRoute.direction === "readonly") continue; // BP9 guard
       const boostFactor = pw.sigma >= 0.75 ? 0.18 : pw.sigma >= 0.50 ? 0.14 : 0.09;
-      modulated[zoneId] = Math.min(1.0, modulated[zoneId] + pw.sigma * boostFactor);
+      zoneBoost += pw.sigma * boostFactor;
     }
+    // Cap total bioplasma contribution per zone to prevent cold-start dominance.
+    modulated[zoneId] = Math.min(1.0, modulated[zoneId] + Math.min(MAX_ZONE_BIOPLASMA_BOOST, zoneBoost));
   }
   return modulated;
 }

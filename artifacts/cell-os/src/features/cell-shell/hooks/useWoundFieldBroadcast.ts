@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useCellVitalStore } from "@/features/cell-shell/state/useCellVitalStore";
 import { BP3_WOUND_FIELD } from "@/domain/content/bioplasmaPathways";
 
@@ -20,52 +20,56 @@ import { BP3_WOUND_FIELD } from "@/domain/content/bioplasmaPathways";
  *      (closest analogue to physiological low-energy wound state)
  *
  * Does NOT fire on tab blur — attention loss is not a health stress event.
+ *
+ * Battery cleanup race: getBattery() is async. A `mounted` ref guards against
+ * attaching listeners after the component has already unmounted.
  */
 export function useWoundFieldBroadcast(): void {
   const bioplasmaSignal = useCellVitalStore((s) => s.bioplasmaSignal);
+  // Persist batteryCleanup across the async getBattery() resolution.
+  const batteryCleanupRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    function fireWoundField(reason: string) {
-      void reason;
+    let mounted = true;
+
+    function fireWoundField(_reason: string) {
       bioplasmaSignal(BP3_WOUND_FIELD, 1.0, 4000);
     }
 
-    function handleError() {
-      fireWoundField("js-error");
-    }
-
-    function handleRejection() {
-      fireWoundField("unhandled-rejection");
-    }
-
-    function handleOffline() {
-      fireWoundField("network-offline");
-    }
+    function handleError()      { fireWoundField("js-error"); }
+    function handleRejection()  { fireWoundField("unhandled-rejection"); }
+    function handleOffline()    { fireWoundField("network-offline"); }
 
     window.addEventListener("error", handleError);
     window.addEventListener("unhandledrejection", handleRejection);
     window.addEventListener("offline", handleOffline);
 
-    let batteryCleanup: (() => void) | null = null;
-
     if ("getBattery" in navigator) {
-      (navigator as Navigator & { getBattery: () => Promise<{
-        level: number;
-        charging: boolean;
-        addEventListener: (event: string, handler: () => void) => void;
-        removeEventListener: (event: string, handler: () => void) => void;
-      }> })
+      (navigator as Navigator & {
+        getBattery: () => Promise<{
+          level: number;
+          charging: boolean;
+          addEventListener:    (event: string, handler: () => void) => void;
+          removeEventListener: (event: string, handler: () => void) => void;
+        }>;
+      })
         .getBattery()
         .then((battery) => {
+          // Guard: if the component unmounted before the promise resolved,
+          // do not attach any listeners — there is no cleanup path for them.
+          if (!mounted) return;
+
           function checkBattery() {
             if (battery.level < 0.15 && !battery.charging) {
               fireWoundField("battery-critical");
             }
           }
-          battery.addEventListener("levelchange", checkBattery);
+
+          battery.addEventListener("levelchange",    checkBattery);
           battery.addEventListener("chargingchange", checkBattery);
-          batteryCleanup = () => {
-            battery.removeEventListener("levelchange", checkBattery);
+
+          batteryCleanupRef.current = () => {
+            battery.removeEventListener("levelchange",    checkBattery);
             battery.removeEventListener("chargingchange", checkBattery);
           };
         })
@@ -73,10 +77,12 @@ export function useWoundFieldBroadcast(): void {
     }
 
     return () => {
-      window.removeEventListener("error", handleError);
+      mounted = false;
+      window.removeEventListener("error",             handleError);
       window.removeEventListener("unhandledrejection", handleRejection);
-      window.removeEventListener("offline", handleOffline);
-      batteryCleanup?.();
+      window.removeEventListener("offline",           handleOffline);
+      batteryCleanupRef.current?.();
+      batteryCleanupRef.current = null;
     };
   }, [bioplasmaSignal]);
 }

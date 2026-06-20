@@ -28,6 +28,19 @@ Full bioplasma layer (BP1–BP9) from LineageOSv2_Manifold.md §8–§10 roadmap
 - `src/features/explorer/navigation/CellExplorerLayout.tsx` — BP1 init on mount, wires useWoundFieldBroadcast/useELFResonance/useThermalHAL
 - All 8 zone panels — added BioplasmaFieldSection at end of each
 
+## Architect-flagged fixes (all resolved)
+
+| # | Issue | Fix |
+|---|-------|-----|
+| 1 | Broadcast pathways emitted nothing (BP1/BP3 source="broadcast" → getZoneForOrganelle null) | `bioplasmaSignal()` checks `direction === "broadcast"` → fans out to ALL 8 zones at 0.55× intensity; real-organelle source gets full intensity |
+| 2 | BP1 Infinity TTL baseline overwritten by any finite membrane signal | Added `bioplasmaBaseline: Partial<Record<CellZoneId, number>>` to store; `clearExpiredSignals()` restores baseline signals after transients expire |
+| 3 | BP9 readonly skipped by signal guard but NOT by Hebbian modulation | `applyBioplasmaManifoldModulation()` now skips `direction === "readonly"` |
+| 4 | Cold-start membrane zone boost ≈0.65 (5 verified pathways) dominated Hebbian | `MAX_ZONE_BIOPLASMA_BOOST = 0.20` cap per zone in modulation |
+| 5 | `bioplasmaZoneWeights` computed but not consumed | `CellMapNav` calls `useLearnedManifold()`, passes weights to `CellRingSvg`; drives `fillOpacity` and `strokeOpacity` on inactive rings |
+| 6 | `useBioplasmaVmem` (BP7) dead loop — persisted but nothing read it | VmemProfile switcher in `BioplasmaFieldSection` when BP7 present; profile change fires BP7 signal + `initBP1Baseline(profileIntensity)` |
+| 7 | Battery cleanup race — getBattery() async, no unmount guard | `mounted` ref; `if (!mounted) return` before attaching battery listeners |
+| 8 | Route endpoints as plain `string` — silent no-ops | `BioplasmaRouteEndpoint` union type in `types.ts`; `BioplasmaPathway.organelleRoute.source/target` typed |
+
 ## Key implementation decisions
 
 ### BP1 always-on glow

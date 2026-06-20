@@ -1,5 +1,8 @@
 import type { CellZoneId } from "@/domain/types";
 import { BIOPLASMA_ZONE_REGISTRY } from "@/domain/content/organelles";
+import { useBioplasmaVmem, type VmemProfile } from "@/features/cell-shell/hooks/useBioplasmaVmem";
+import { useCellVitalStore } from "@/features/cell-shell/state/useCellVitalStore";
+import { BP7_VMEM_PATTERN } from "@/domain/content/bioplasmaPathways";
 
 /**
  * BioplasmaFieldSection — displays active bioplasma pathways for a given zone.
@@ -14,23 +17,42 @@ import { BIOPLASMA_ZONE_REGISTRY } from "@/domain/content/organelles";
  *   - IPC analogue (marked "metaphor" if isMetaphor === true)
  *   - Route direction + read-only / reserved flags
  *
+ * BP7 Vmem closed loop: when BP7 is present in the zone's pathways, a profile
+ * switcher appears below the card grid. Switching the profile:
+ *   1. Persists the selection to localStorage (useBioplasmaVmem)
+ *   2. Fires a BP7 pulse signal (bioplasmaSignal)
+ *   3. Updates the BP1 membrane baseline glow intensity (initBP1Baseline)
+ *
  * Uses only inline styles — Tailwind dynamic class interpolation is
  * invisible to JIT (Cell OS convention from MEMORY.md).
  */
 
 const STATUS_COLORS: Record<string, string> = {
-  verified:   "#22d3ee",   // cyan
-  indicative: "#86efac",   // green
+  verified:    "#22d3ee",  // cyan
+  indicative:  "#86efac",  // green
   speculative: "#fbbf24",  // amber
-  reserved:   "#6b7280",   // gray
+  reserved:    "#6b7280",  // gray
 };
 
 const DIRECTION_GLYPHS: Record<string, string> = {
-  inward:       "→ inward",
-  outward:      "← outward",
+  inward:        "→ inward",
+  outward:       "← outward",
   bidirectional: "↔ bidirectional",
-  broadcast:    "⊕ broadcast",
-  readonly:     "◎ read-only",
+  broadcast:     "⊕ broadcast",
+  readonly:      "◎ read-only",
+};
+
+/** BP1 baseline intensities per Vmem profile. */
+const VMEM_BASELINE: Record<VmemProfile, number> = {
+  cool:        0.10,  // hyperpolarised — minimal glow
+  balanced:    0.22,  // homeostatic default
+  performance: 0.38,  // depolarised — brighter baseline
+};
+
+const VMEM_LABELS: Record<VmemProfile, { label: string; description: string; color: string }> = {
+  cool:        { label: "Cool",        description: "Hyperpolarised · minimal dissipation",  color: "#38bdf8" },
+  balanced:    { label: "Balanced",    description: "Homeostatic · resting Vmem",            color: "#86efac" },
+  performance: { label: "Performance", description: "Depolarised · elevated metabolic pump", color: "#fb923c" },
 };
 
 interface Props {
@@ -40,7 +62,24 @@ interface Props {
 export function BioplasmaFieldSection({ zoneId }: Props) {
   const pathways = BIOPLASMA_ZONE_REGISTRY[zoneId] ?? [];
 
+  // Always call hooks unconditionally — gate rendering, not hooks.
+  const { vmemProfile, setVmemProfile } = useBioplasmaVmem();
+  const bioplasmaSignal = useCellVitalStore((s) => s.bioplasmaSignal);
+  const initBP1Baseline = useCellVitalStore((s) => s.initBP1Baseline);
+
+  const hasVmem = pathways.some((p) => p.code === "BP7");
+
   if (pathways.length === 0) return null;
+
+  function handleVmemChange(profile: VmemProfile) {
+    setVmemProfile(profile);
+    // Fire BP7 signal at the profile-scaled intensity.
+    // Intensity passed = baseline / sigma so the σ-weighting in bioplasmaSignal
+    // produces exactly the target baseline intensity as the visual output.
+    bioplasmaSignal(BP7_VMEM_PATTERN, VMEM_BASELINE[profile] / BP7_VMEM_PATTERN.sigma, 3000);
+    // Update the BP1 membrane baseline to match the new profile.
+    initBP1Baseline(VMEM_BASELINE[profile]);
+  }
 
   return (
     <section style={{ marginTop: "3rem", marginBottom: "2rem" }}>
@@ -208,6 +247,94 @@ export function BioplasmaFieldSection({ zoneId }: Props) {
           );
         })}
       </div>
+
+      {/* BP7 Vmem Profile Switcher — shown only in zones that have BP7 */}
+      {hasVmem && (
+        <div style={{
+          marginTop: "1.5rem",
+          padding: "1rem 1.25rem",
+          background: "rgba(134,239,172,0.04)",
+          border: "1px solid rgba(134,239,172,0.12)",
+          borderRadius: "0.5rem",
+        }}>
+          <div style={{ marginBottom: "0.875rem" }}>
+            <span style={{
+              fontFamily: "monospace",
+              fontSize: "0.7rem",
+              fontWeight: 700,
+              color: "rgba(134,239,172,0.8)",
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+            }}>
+              BP7 Vmem Profile
+            </span>
+            <p style={{
+              fontSize: "0.65rem",
+              color: "rgba(255,255,255,0.28)",
+              fontFamily: "monospace",
+              margin: "0.25rem 0 0 0",
+              lineHeight: 1.4,
+            }}>
+              Morphogenetic membrane potential · persists across sessions
+            </p>
+          </div>
+
+          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+            {(["cool", "balanced", "performance"] as VmemProfile[]).map((profile) => {
+              const meta = VMEM_LABELS[profile];
+              const isSelected = vmemProfile === profile;
+              return (
+                <button
+                  key={profile}
+                  onClick={() => handleVmemChange(profile)}
+                  style={{
+                    flex: "1 1 120px",
+                    padding: "0.625rem 0.75rem",
+                    borderRadius: "0.375rem",
+                    border: `1px solid ${isSelected ? `${meta.color}55` : "rgba(255,255,255,0.07)"}`,
+                    background: isSelected ? `${meta.color}12` : "transparent",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  <div style={{
+                    fontFamily: "monospace",
+                    fontSize: "0.7rem",
+                    fontWeight: isSelected ? 700 : 400,
+                    color: isSelected ? meta.color : "rgba(255,255,255,0.4)",
+                    marginBottom: "0.2rem",
+                    transition: "color 0.3s ease",
+                  }}>
+                    {meta.label}
+                  </div>
+                  <div style={{
+                    fontFamily: "monospace",
+                    fontSize: "0.58rem",
+                    color: isSelected ? `${meta.color}80` : "rgba(255,255,255,0.2)",
+                    lineHeight: 1.3,
+                    transition: "color 0.3s ease",
+                  }}>
+                    {meta.description}
+                  </div>
+                  {isSelected && (
+                    <div style={{
+                      marginTop: "0.35rem",
+                      height: "2px",
+                      background: meta.color,
+                      borderRadius: "1px",
+                      opacity: 0.6,
+                      width: `${VMEM_BASELINE[profile] * 200}%`,
+                      maxWidth: "100%",
+                      transition: "width 0.4s ease",
+                    }} />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </section>
   );
 }

@@ -257,6 +257,32 @@ export type FractalCycle = {
 // ─── Bioplasma Pathways ──────────────────────────────────────────────────────
 
 /**
+ * Typed union of all legal bioplasma route endpoints.
+ *
+ * Using this type (rather than plain `string`) for organelleRoute.source/target
+ * prevents silent no-ops caused by misspelled or unregistered organelle IDs.
+ * "broadcast" is a special sentinel meaning "all zones simultaneously"
+ * (handled by bioplasmaSignal() broadcast fan-out logic).
+ */
+export type BioplasmaRouteEndpoint =
+  | "broadcast"
+  | "cell-membrane"
+  | "membrane-receptors"
+  | "mitochondria"
+  | "endoplasmic-reticulum"
+  | "nucleus"
+  | "nucleolus"
+  | "dna"
+  | "nuclear-pores"
+  | "cytoplasm"
+  | "cytoskeleton"
+  | "ribosomes"
+  | "golgi-apparatus"
+  | "vesicles"
+  | "lysosomes"
+  | "vacuole";
+
+/**
  * Classification of how literally plasma physics criteria apply
  * to the biological medium.
  */
@@ -292,8 +318,8 @@ export interface BioplasmaPathway {
   plasmaLiteralness: PlasmaLiteralness;
   lineageosPath: string | null;
   organelleRoute: {
-    source: string;
-    target: string;
+    source: BioplasmaRouteEndpoint;
+    target: BioplasmaRouteEndpoint;
     direction: "inward" | "outward" | "bidirectional" | "broadcast" | "readonly";
   };
   ipcAnalogue: string;

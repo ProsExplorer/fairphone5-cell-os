@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Link } from "wouter";
 import { CELL_ZONES } from "@/features/cell-shell/CellShellProvider";
 import { useCellVitalStore } from "@/features/cell-shell/state/useCellVitalStore";
+import { useLearnedManifold } from "@/features/learning/useLearnedManifold";
 import { ZONE_DEPTH_ORDER } from "./useExplorerNavigation";
 import type { CellZoneId } from "@/domain/types";
 
@@ -59,12 +60,20 @@ function CellRingSvg({
   activeZone,
   onSelectZone,
   signals,
+  bioplasmaZoneWeights,
   maxSize,
   showLabels = false,
 }: {
   activeZone: CellZoneId;
   onSelectZone: (zone: CellZoneId) => void;
   signals: ReturnType<typeof useCellVitalStore.getState>["signals"];
+  /**
+   * bioplasmaZoneWeights: normalized 0–1 weights from the learned manifold.
+   * Used to subtly increase baseline ring fill and stroke opacity on zones
+   * with high bioplasma pathway density, even when no transient signal is active.
+   * Max boost is 0.20 (capped in applyBioplasmaManifoldModulation).
+   */
+  bioplasmaZoneWeights: Record<CellZoneId, number>;
   maxSize: number;
   /** Show glyph labels around every ring — used in compact mode for legibility. */
   showLabels?: boolean;
@@ -143,6 +152,14 @@ function CellRingSvg({
         const breathDelay = `${((RINGS.length - 1 - ringIndex) * 0.2).toFixed(1)}s`;
         const breathDuration = `${(5.5 + ringIndex * 0.7).toFixed(1)}s`;
 
+        // Bioplasma weight drives a subtle baseline glow on non-active rings.
+        // bpWeight ∈ [0, 0.20] (capped by applyBioplasmaManifoldModulation).
+        // fillOpacity: inactive rings range 0.02 (no pathways) → 0.06 (max boost).
+        // strokeOpacity: inactive rings range 0.35 → 0.65 with bioplasma weight.
+        const bpWeight = bioplasmaZoneWeights[zoneId] ?? 0;
+        const bpFillOpacity    = isActive ? 0.08 : 0.02 + bpWeight * 0.20;
+        const bpStrokeOpacity  = isActive ? 1    : 0.35 + bpWeight * 1.50;
+
         // Label position — staggered at 45° per ring so they never overlap.
         const labelAngle = LABEL_ANGLES_DEG[ringIndex];
         const labelRad = (labelAngle * Math.PI) / 180;
@@ -157,14 +174,15 @@ function CellRingSvg({
               cx={110}
               cy={110}
               r={r}
-              fill={isActive ? `${z.color}14` : `${z.color}04`}
+              fill={z.color}
+              fillOpacity={bpFillOpacity}
               stroke={z.color}
               strokeWidth={isActive ? 2 : 0.75}
+              strokeOpacity={bpStrokeOpacity}
               style={{
                 cursor: "pointer",
                 transition: "all 0.777s ease",
                 filter: isActive ? `drop-shadow(0 0 5px ${z.color}70)` : "none",
-                strokeOpacity: isActive ? 1 : undefined,
                 animationName: isActive ? undefined : "cell-ring-breathe",
                 animationDuration: breathDuration,
                 animationDelay: breathDelay,
@@ -273,6 +291,7 @@ function CellRingSvg({
 export function CellMapNav({ activeZone, onSelectZone, compact = false }: Props) {
   const signals = useCellVitalStore((s) => s.signals);
   const clearExpiredSignals = useCellVitalStore((s) => s.clearExpiredSignals);
+  const { bioplasmaZoneWeights } = useLearnedManifold();
 
   useEffect(() => {
     const id = setInterval(clearExpiredSignals, 500);
@@ -287,6 +306,7 @@ export function CellMapNav({ activeZone, onSelectZone, compact = false }: Props)
         activeZone={activeZone}
         onSelectZone={onSelectZone}
         signals={signals}
+        bioplasmaZoneWeights={bioplasmaZoneWeights}
         maxSize={160}
         showLabels
       />
@@ -306,6 +326,7 @@ export function CellMapNav({ activeZone, onSelectZone, compact = false }: Props)
           activeZone={activeZone}
           onSelectZone={onSelectZone}
           signals={signals}
+          bioplasmaZoneWeights={bioplasmaZoneWeights}
           maxSize={200}
         />
       </div>
@@ -318,6 +339,7 @@ export function CellMapNav({ activeZone, onSelectZone, compact = false }: Props)
           const isOuter = i === ZONE_DEPTH_ORDER.length - 1;
           const sig = signals[zoneId];
           const hasSignal = !!sig && sig.expiresAt > now;
+          const bpWeight = bioplasmaZoneWeights[zoneId] ?? 0;
 
           return (
             <button
@@ -334,11 +356,13 @@ export function CellMapNav({ activeZone, onSelectZone, compact = false }: Props)
                 className="w-1.5 h-1.5 rounded-full shrink-0 transition-all duration-[777ms]"
                 style={{
                   backgroundColor: z.color,
-                  opacity: isActive ? 1 : hasSignal ? 0.7 : 0.25,
+                  opacity: isActive ? 1 : hasSignal ? 0.7 : 0.25 + bpWeight * 0.35,
                   boxShadow: isActive
                     ? `0 0 6px ${z.color}`
                     : hasSignal
                     ? `0 0 4px ${z.color}90`
+                    : bpWeight > 0.05
+                    ? `0 0 ${Math.round(2 + bpWeight * 4)}px ${z.color}60`
                     : "none",
                 }}
               />
