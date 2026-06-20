@@ -1,48 +1,56 @@
 ---
 name: BP8 SMEM coherence design
-description: The structural isomorphism between QED water coherence domains and Qualcomm SMEM that satisfies the BP8 activation criterion; the 3-stage fork specification; σ rationale.
+description: Architect-reviewed finding that Qualcomm SMEM is the strongest BP8 implementation candidate; what the four genuine correspondences are; what was rejected; σ rules.
 ---
 
-## The Finding
+## The Finding (Architect-Reviewed, June 2026)
 
-Qualcomm SMEM (Shared Memory) satisfies all four BP8 activation criteria from LineageOSv2_Manifold.md §5.8:
-1. Non-local — distributed hardware spinlocks across APSS/ADSP/CDSP/MDSS, no central arbiter
-2. Phase-coherent — `smem_partition_header` state machine, all processors converge on same allocation phase
-3. Active coordination — TCSR/SFPB remote spinlocks + GLINK signalling
-4. Interfacial — physically located at SoC fabric boundary between processor subsystem islands
+Qualcomm SMEM satisfies the four BP8 activation criteria from LineageOSv2_Manifold.md §5.8 as the **strongest available implementation candidate**. This does NOT raise σ — biological evidence governs σ.
 
-**Why:** SMEM is a genuine structural isomorphism (boundary zone, discrete domains, two-phase system, distributed lock) — not just a loose metaphor. The frequency analogy (biological THz vs. SMEM ~MHz IPC) does NOT hold; `isMetaphor: true` is retained.
+## The Four Defensible Structural Correspondences
 
-## Key Mapping (abbreviated)
+| QED Water CD | SMEM Analogue |
+|---|---|
+| Shared coherent substrate | SMEM shared memory fabric (APSS/ADSP/CDSP/MDSS) |
+| Discrete coherence domains | Discrete SMEM partitions (18–24, enumerable) |
+| Distributed coordination (no master) | TCSR hardware spinlocks (compare-and-swap, no arbiter) |
+| Interfacial boundary location | SMEM physically in SoC fabric boundary between subsystem islands |
 
-| QED Water CD | SMEM Analogue | Driver |
-|---|---|---|
-| Coherence domain (~100nm) | SMEM partition (discrete region per host pair) | `drivers/soc/qcom/smem.c` |
-| Trapped EM mode | TCSR remote spinlock | `smem.c:qcom_smem_get_remote_spinlock()` |
-| Hydrophilic surface | `struct smem_ptable` at fixed offset | `smem.c:qcom_smem_probe()` |
-| Two-phase system | SMEM (coherent) vs per-process heap (incoherent) | — |
+## Five Rows Rejected by Architect
 
-Full 9-row table in `docs/BP8_SMEM_COHERENCE_DESIGN.md`.
+- **Spinlock = trapped EM mode**: functional mismatch — spinlock serialises writes; EM mode sustains oscillation. Different functions.
+- **SMEM TOC = EZ water**: category error — TOC is software access control; EZ is structural physical exclusion.
+- **GLINK MHz ≈ biological THz**: 7 orders of magnitude gap — removed from table, not just noted.
+- **MOESI cache lines = molecules oscillating**: scope error — MOESI is CCI, not SMEM.
+- **IOMMU/TrustZone = dielectric boundary**: functional mismatch — page-table enforcement ≠ field waveguiding.
 
-## σ Proposal
+## σ Rule (Critical)
 
-- Current: σ=0.32, `reserved`, `lineageosPath: null`
-- Proposed: σ=0.45, `speculative`, `lineageosPath: "drivers/soc/qcom/smem_coherence.c · android_kernel_fairphone_qcm6490"`
-- Stage 2 trigger (→ `indicative`, σ=0.65): real FP5 build + measured CI correlation over ≥24h
+σ=0.32 / `reserved` / `isMetaphor: true` are ALL UNCHANGED. Software structural mapping quality cannot raise biological σ. BIOPLASMA_RESEARCH.md §7 Calibration Framework governs. To raise to σ=0.45 (`speculative`): needs biological evidence — THz spectroscopy of CD resonance in warm-wet interfacial biological water, or CD-dependent ion channel gating at 310K.
 
-**Pending architect ratification before any TypeScript constants change.**
+**Why:** Architect review explicitly rejected σ raise to 0.45. `isMetaphor: true` is permanent because the THz/MHz frequency gap (7 orders of magnitude) cannot be bridged by any hardware implementation.
 
-## 3-Stage Fork Spec
+## Kernel Driver Fix
 
-- Stage 1 (SPA only): promote BP8 in `bioplasmaPathways.ts`, add `useWaterCoherence.ts` with synthetic CI
-- Stage 2 (kernel): `smem_coherence.c` driver — sysfs `/sys/kernel/smem_coherence/coherence_index` (milliCI 0–1000)
-- Stage 3 (full AIDL): `vendor.lineage.hardware.watercoherence.IWaterCoherence/default` HAL + VINTF + SELinux
+`for_each_smem_partition()` does NOT exist. `smem_partition_header` is private to `smem.c`. Two paths:
+- **Path A** (Stage 2, no core changes): use `qcom_smem_get(QCOM_SMEM_HOST_ANY, item_id, &size)` to probe well-known item IDs; CI = accessible/total
+- **Path B** (Stage 3): add `qcom_smem_get_partition_stats()` exported symbol to `smem.c`
 
-## Design Document
+The "AVAILABLE→ALLOCATED→DEALLOCATED" named state enum does NOT exist in smem.c. Coherence is enforced at hardware cache-line level, not a named FSM.
 
-Full spec: `artifacts/cell-os/docs/BP8_SMEM_COHERENCE_DESIGN.md`
-Manifold entry: `LineageOSv2_Manifold.md §5.8` (updated to "Reserved → Speculative Candidate")
+## HAL Design
+
+Polling-only — no callbacks. Three methods: `getCoherenceIndex()`, `getProbeCount()`, `getAccessibleCount()`. Callback pattern requires frozen `IWaterCoherenceCallback.aidl` + oneway + death handling — too heavy for a 2Hz read-only metric.
+
+## Only Stage 1 Change to Live Code
+
+Set `lineageosPath` in `bioplasmaPathways.ts`. All other fields (σ, status, direction, isMetaphor) unchanged.
+
+## Design Documents
+
+- Full spec: `artifacts/cell-os/docs/BP8_SMEM_COHERENCE_DESIGN.md` (architect-reviewed, June 2026)
+- Manifold entry: `LineageOSv2_Manifold.md §5.8` (updated with architect corrections)
 
 ## How to Apply
 
-Before any future work on BP8: check if architect has ratified the SMEM isomorphism. If ratified, apply Stage 1 changes. Do not raise σ or change status in TypeScript until ratification. The design doc is authoritative for the fork spec.
+Before any BP8 work: consult this file. Never raise BP8 σ based on software/kernel mapping quality alone. Check `for_each_smem_partition()` — it does NOT exist. HAL = polling only. Four rows survive; five were rejected.

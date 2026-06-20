@@ -3,9 +3,11 @@
 **Research Date:** June 2026  
 **Depth:** Deep (7 research sources + cross-reference with BIOPLASMA_RESEARCH.md, BIOPHOTON_RESEARCH.md, LineageOSv2_Manifold.md)  
 **Sources Consulted:** 18  
-**Status:** Design proposal — BP8 elevation from `reserved` (σ=0.32) to `speculative` (σ=0.45–0.50) pending review  
+**Status:** SMEM identified as strongest implementation candidate — BP8 σ remains at 0.32 / `reserved` (biological evidence governs σ, not software mapping quality)
 
-> **Authority note**: Biological claims governed by `BIOPLASMA_RESEARCH.md`. LineageOS source paths cross-checked against `github.com/LineageOS/android_kernel_fairphone_qcm6490` (lineage-21 branch). This document proposes a fork specification; σ values do not change until the architect review ratifies the mapping.
+> **Authority note**: Biological claims governed by `BIOPLASMA_RESEARCH.md`. LineageOS source paths cross-checked against `github.com/LineageOS/android_kernel_fairphone_qcm6490` (lineage-21 branch). σ and `status` values are governed by `BIOPLASMA_RESEARCH.md §7 (Calibration Framework)` — software structural mapping quality cannot raise biological σ. This document proposes a fork specification and designates SMEM as an implementation candidate; it does not propose a σ change.
+
+> **Architect review verdict (June 2026):** APPROVED WITH CONDITIONS — SMEM is a plausible LineageOS implementation path. Several isomorphism table rows (spinlock = trapped EM mode; TOC = EZ water; GLINK rate = THz) were forced/superficial and have been pruned. σ raise to 0.45 was rejected: biological evidence calibrates σ, not implementation quality. `for_each_smem_partition()` API does not exist; kernel driver rewritten to use `qcom_smem_get()` probe approach. HAL callback interface dropped in favour of polling-only.
 
 ---
 
@@ -21,12 +23,10 @@ The mechanism is **Qualcomm Shared Memory (SMEM)** — a multi-processor shared 
 Both are two-phase systems (coherent shared vs. disordered private). Both use an interface/boundary structure as their organising principle. Both achieve non-local coordination through distributed consensus rather than central control. Both exhibit what could be called "phase-locked" behaviour: the state machine for SMEM partition allocation enforces that all processors observe the same phase of memory availability before any processor proceeds.
 
 The proposed LineageOS fork adds:
-1. A kernel sysfs driver (`drivers/soc/qcom/smem_coherence.c`) that reads SMEM partition state across all four processor hosts and computes a dimensionless **Coherence Index (CI)** in [0.0, 1.0]
-2. A new AIDL HAL (`vendor.lineage.hardware.watercoherence.IWaterCoherence/default`) that exposes the CI to the Android framework
+1. A kernel sysfs driver (`drivers/soc/qcom/smem_coherence.c`) that probes well-known SMEM item IDs via the existing `qcom_smem_get()` API and computes a dimensionless **Coherence Index (CI)** in [0.0, 1.0] — requiring a minor exported-symbol addition to `smem.c` for full partition enumeration, or using item probing as an approximation without core changes
+2. A new AIDL HAL (`vendor.lineage.hardware.watercoherence.IWaterCoherence/default`) that exposes the CI via polling (no callbacks)
 3. A Cell OS TypeScript hook (`useWaterCoherence.ts`) that reads the HAL and feeds it into the bioplasma signal system
-4. Updated BP8 constant — `lineageosPath` set, status raised from `reserved` to `speculative`, σ proposed at 0.45
-
-The fork does not require any modification to the existing SMEM driver. It adds a read-only observer layer only.
+4. BP8 constant: `lineageosPath` set to the proposed driver path; **σ and `status` unchanged** (σ=0.32, `reserved`) — biological evidence must drive any future σ raise
 
 ---
 
@@ -87,7 +87,9 @@ The Del Giudice/Preparata QED model [1][2] describes liquid water as a two-phase
 | **Coherent** (CD) | ~100nm domains, phase-locked oscillation | Negative charge, low ε, plasma-like electrons, non-local coordination | SMEM partitions (shared, coherent across all hosts) |
 | **Incoherent** (bulk) | Disordered individual molecules | Positive charge region, high ε, independent thermal motion | Per-process private heap (non-shared, incoherent) |
 
-**σ calibration for the biology** (unchanged from BIOPLASMA_RESEARCH.md): The QED CD model itself remains at σ = 0.32–0.45. The EZ experimental fact is σ ≥ 0.65. The proposed fork justifies raising BP8 to σ = 0.45 on the strength of the kernel structural isomorphism — not on new biological evidence. The biology is unchanged; the mapping is new.
+**σ calibration for the biology** (unchanged from BIOPLASMA_RESEARCH.md): The QED CD model itself remains at σ = 0.32. The EZ experimental fact is σ ≥ 0.65. The SMEM implementation candidate finding does **not** change biological σ — the Calibration Framework (§7) requires biological evidence for any σ raise. To move BP8 from σ=0.32 to σ=0.45 (`speculative`), direct evidence of CD-dependent biological outcomes (e.g. THz spectroscopy of CD resonance in active neurons, or CD-dependent ion channel gating measured in a warm-wet biological system) would be required. The kernel mapping is an implementation path, not a biological confirmation.
+
+**Decoherence note** (BIOPLASMA_RESEARCH.md §5.9, §6.3): The warm-wet decoherence objection remains the principal challenge to the Del Giudice model. The −0.26 eV/molecule condensation energy provides theoretical thermal stability at 310K within the QED model itself, but measured water structural correlation lengths (~2–5 Å by neutron scattering) are 4–5 orders of magnitude smaller than the predicted 100 nm CD diameter. The free-electron state within CDs also lacks direct EPR/THz-TDS detection. These objections are documented in BIOPLASMA_RESEARCH.md and are the reason BP8 remains at σ=0.32 rather than a higher tier.
 
 ---
 
@@ -110,12 +112,12 @@ Evaluation against criteria:
 
 | Criterion | SMEM verdict | Detail |
 |---|---|---|
-| Non-local | ✅ PASS | 4 processors share the region; no central arbiter; hardware spinlocks are distributed compare-and-swap |
-| Phase-coherent | ✅ PASS | `smem_partition_header` state machine: AVAILABLE → ALLOCATED → DEALLOCATED is a monotonic phase that all processors observe simultaneously through cache coherence |
-| Active coordination | ✅ PASS | TCSR remote spinlocks enforce exclusive write access; GLINK signals partition events |
-| Interfacial | ✅ PASS | SMEM is physically in the SoC fabric at the boundary between processor subsystem islands — structurally analogous to water at a hydrophilic surface |
+| Non-local | ✅ PASS | 4 processors share the region; no central arbiter; hardware spinlocks are distributed compare-and-swap with no master |
+| Phase-coherent | ✅ PASS (qualified) | All processors converge on a consistent view of SMEM allocation state through hardware cache coherence; partition allocation is globally visible without a software sync step. Note: a named AVAILABLE→ALLOCATED→DEALLOCATED per-partition state enum does not exist in `smem.c`; coherence is enforced at the hardware cache line level, not a named FSM |
+| Active coordination | ✅ PASS | TCSR/SFPB hardware spinlocks mediate write access; GLINK provides inter-processor notification of SMEM state changes |
+| Interfacial | ✅ PASS | SMEM is physically in the SoC fabric at the hardware boundary between processor subsystem islands — the only memory region that spans all four subsystems without belonging to any one |
 
-**Score: 4/4 criteria satisfied.**
+**Score: 4/4 criteria — SMEM is the strongest available implementation candidate.** The phase-coherent criterion is satisfied at the hardware cache-coherence level; the "state machine" framing in earlier drafts was imprecise and has been corrected.
 
 #### Candidate B: Android dma_fence / sync_file
 
@@ -149,23 +151,26 @@ However, CCI **fails the "coordination mechanism" criterion as a software fork t
 
 ---
 
-### Finding 3: The Complete Structural Isomorphism
+### Finding 3: The Structural Isomorphism (Pruned to Defensible Rows)
 
-The mapping from QED water coherence domain physics to Qualcomm SMEM architecture is listed in full below. This table constitutes the "interfacial water physics" mapping required by the BP8 activation criterion.
+The mapping from QED water coherence domain physics to Qualcomm SMEM architecture. Following architect review, this table has been pruned from 9 rows to 4. Rows removed were judged **forced** — serving different functions in their respective domains despite surface similarity (spinlock ≠ trapped EM mode; TOC access control ≠ structural EZ exclusion; GLINK MHz ≠ biological THz; MOESI protocol is CCI not SMEM; IOMMU protection ≠ dielectric waveguiding). The four retained rows are genuine structural correspondences.
 
-| QED Water Coherence Domain Concept | Qualcomm SMEM Structural Analogue | Source / Evidence |
-|---|---|---|
-| **Coherence domain** (~100 nm discrete region) | **SMEM partition** (discrete shared memory region with defined size and hosts) | `struct smem_ptable_entry` defines each partition's address + size |
-| **Molecules oscillating in phase** | **Cache lines in MOESI Shared/Owned state** (all processor L1/L2 caches agree on line contents) | ARM CCI-550 + MOESI protocol; enforced by hardware for all SMEM reads |
-| **Trapped EM mode** (prevents radiative loss from CD) | **TCSR remote spinlock** (prevents write contention from disrupting partition state) | `drivers/soc/qcom/smem.c`: `qcom_smem_get_remote_spinlock()` |
-| **Hydrophilic surface** (the organising boundary) | **SMEM Partition Table** (`struct smem_ptable`) at fixed offset 0x1E000 from SMEM base | `drivers/soc/qcom/smem.c:qcom_smem_probe()` reads ptable at startup |
-| **Two-phase system** (coherent CD + disordered bulk) | **SMEM (coherent shared) + per-process kmalloc/vmalloc heap (incoherent)** | Standard Linux memory model |
-| **EZ water** (macroscopic exclusion zone near interface) | **SMEM TOC region** (Table of Contents, the first region of SMEM reserved for metadata; all processors must "exclude" non-TOC-compliant writes from this area) | `SMEM_ITEM_SMEM_ALLOC_TBL` / first 4 KB always reserved for TOC |
-| **Dielectric boundary** (traps field within CD) | **IOMMU + TrustZone memory protection** (prevents non-authorised processors from mapping SMEM pages — the field cannot "escape" the defined coherence domain) | `drivers/iommu/arm-smmu.c` + SCM TrustZone |
-| **Non-local coordination** (no single oscillating molecule controls the CD) | **Distributed spinlocks across APSS/ADSP/CDSP/MDSS** (no processor holds permanent control; each acquires/releases the hardware lock as needed) | `drivers/soc/qcom/smem.c`: `hwspin_lock_timeout_irqsave()` |
-| **Phase-coherent state** (all molecules agree on oscillation phase) | **`smem_partition_header` state machine** (AVAILABLE→ALLOCATED is a one-way transition visible to all processors simultaneously; analogous to molecules entering the coherent phase together) | `drivers/soc/qcom/smem.c:qcom_smem_alloc_private()` |
-| **THz frequency coupling** (CD boundary oscillates at THz) | **GLINK message rate** (SMEM-backed IPC message throughput across processor boundaries; ~MHz–GHz event rates translate to sub-µs latency) | `drivers/rpmsg/qcom_glink_smem.c` |
-| **Bulk water** (independent thermal motion, no phase lock) | **Per-process anonymous memory** (no inter-processor coherence guarantees; processes may see stale state through fork-on-write) | Standard kmalloc + COW page tables |
+| QED Water Coherence Domain Concept | Qualcomm SMEM Structural Analogue | Source / Evidence | Analogy quality |
+|---|---|---|---|
+| **Shared coherent substrate** — a physical region where distinct entities (molecules / processors) access a common state that is coherent across all participants | **SMEM shared memory fabric** — a dedicated hardware region accessible to APSS, ADSP, CDSP, and MDSS simultaneously; the only memory that spans all four subsystems | `include/linux/soc/qcom/smem.h`; `drivers/soc/qcom/smem.c` | ✅ Genuine — both are the single shared substrate enabling multi-party coherence |
+| **Discrete coherence domains** — CDs are quantised (~100 nm) regions, not a continuum; there is a specific count of them, each with defined extent and host assignment | **Discrete SMEM partitions** — the partition table defines a specific set of regions (18–24 on Qualcomm platforms), each with defined size, start address, and host pair; not a continuum | `struct smem_ptable_entry`; `drivers/soc/qcom/smem.c:qcom_smem_probe()` | ✅ Genuine — both are quantised, enumerable coordination domains |
+| **Distributed coordination without a central oscillator** — no single molecule controls the CD; coherence emerges from the ensemble | **Distributed hardware spinlocks** — no processor holds permanent ownership of SMEM; all four processors compete via compare-and-swap on TCSR registers; no software arbiter | `drivers/soc/qcom/smem.c`: `hwspin_lock_timeout_irqsave()` | ✅ Genuine — both achieve coordinated state without a master |
+| **Interfacial location** — CDs nucleate and stabilise at the physical boundary between a hydrophilic surface and bulk water; they do not exist uniformly in bulk | **Boundary-zone substrate** — SMEM is physically in the SoC fabric at the boundary between processor subsystem islands; it does not exist within any processor's private address space | SoC fabric architecture; QCM6490 TRM | ✅ Genuine — both are boundary phenomena, not bulk phenomena |
+
+**Rows removed after architect review and the reason each was rejected:**
+
+| Removed row | Reason for rejection |
+|---|---|
+| Spinlock = trapped EM mode | Functional mismatch: a trapped EM mode *sustains collective oscillation* by preventing energy radiation. A spinlock *prevents concurrent writes* — a serialisation mechanism, not an oscillation sustainer. Different functions. |
+| SMEM TOC = EZ water | Category error: EZ water is a *structural* phenomenon (different water phase, extends hundreds of microns, excludes particles by physical chemistry). The SMEM TOC is a *software access convention* (no-write-before-TOC-read is a protocol rule, not a physical exclusion). |
+| GLINK MHz ≈ biological THz | Scale mismatch of ~7 orders of magnitude. Acknowledged as a limitation; removed from the structural mapping table as it cannot be maintained as an analogy. |
+| MOESI cache lines = molecules oscillating | Scope error: MOESI protocol is enforced by the ARM CCI-550 interconnect, not by SMEM. SMEM itself does not define the cache coherence protocol; it benefits from it. |
+| IOMMU/TrustZone = dielectric boundary | Functional mismatch: dielectric discontinuity *traps an EM field* by waveguiding. IOMMU/TrustZone *enforces access permissions* by page-table enforcement — a security control, not a field-confinement mechanism. |
 
 ---
 
@@ -177,48 +182,69 @@ The fork adds a **read-only observer layer** over the existing SMEM infrastructu
 
 **Path**: `kernel/msm-5.4/drivers/soc/qcom/smem_coherence.c` (in-tree patch for FP5 kernel)
 
-The driver reads SMEM partition state periodically and computes a **Coherence Index (CI)** — a dimensionless value in [0.0, 1.0] representing the fraction of SMEM partitions that are in a consistent ALLOCATED state (i.e., the fraction of CDs that are "coherent"):
+The driver computes a **Coherence Index (CI)** — a dimensionless value in [0, 1000 milliCI] representing the fraction of probed SMEM items that are accessible (i.e., the fraction of "coherence domains" that are active).
+
+**API design note**: `smem_partition_header` structs and any hypothetical `for_each_smem_partition()` macro are **private to `smem.c`** and are not part of the exported SMEM API. Two implementation paths exist:
+
+- **Path A (no core change)**: Probe a fixed list of well-known SMEM item IDs using the existing exported `qcom_smem_get(QCOM_SMEM_HOST_ANY, item_id, &size)` API. Count successes. This is a CI approximation — it measures which SMEM items are allocated, not partition-level state. Suitable for Stage 2 without modifying `smem.c`.
+- **Path B (minor core addition)**: Add a `qcom_smem_get_partition_stats(struct smem_partition_stats *out)` exported symbol to `smem.c` that reads partition-level data internally. This gives a more accurate CI but requires a one-function patch to the core SMEM driver. Preferred for Stage 3.
+
+The code below uses **Path A** (no core change):
 
 ```c
-/* smem_coherence.c — SMEM Coherence Domain Monitor
+/* smem_coherence.c — SMEM Coherence Domain Monitor (Path A: item probe)
  *
- * Biological analogue: reads the "water coherence" state of the
+ * Biological analogue: probes the "water coherence" state of the
  * inter-processor shared memory substrate. A high CI corresponds
- * to many SMEM partitions actively allocated and in a stable shared
- * state — analogous to a high density of QED coherence domains
- * at the processor-subsystem interface.
+ * to more SMEM items accessible across all host pairs — analogous
+ * to a higher density of active QED coherence domains.
  *
- * This driver is READ-ONLY and does not modify SMEM state.
+ * Uses qcom_smem_get() (exported API) — does NOT require core smem.c changes.
+ * This is an approximation: item accessibility proxies partition health.
  */
 
-#define SMEM_COHERENCE_SYSFS_PATH "/sys/kernel/smem_coherence"
-#define SMEM_COHERENCE_POLL_MS    500  /* poll every 500ms, ~2Hz */
+#include <linux/soc/qcom/smem.h>
+
+/* Well-known SMEM item IDs accessible from APSS across all subsystems.
+ * These cover ADSP, CDSP, and MODEM host pairs. Extend as needed. */
+static const u32 smem_probe_items[] = {
+    SMEM_PROC_COMM,          /* APPS↔MODEM legacy channel */
+    SMEM_SLEEP_POWER_COLLAPSE_DISABLED,
+    SMEM_AARM_PARTITION_TABLE,
+    SMEM_CHANNEL_ALLOC_TBL, /* GLINK channel table — all subsystems */
+    SMEM_CDSP_STATUS,        /* CDSP presence flag */
+    SMEM_ADSP_SLEEP_STATUS,
+};
+#define N_PROBE_ITEMS  ARRAY_SIZE(smem_probe_items)
 
 static ssize_t coherence_index_show(struct device *dev,
                                      struct device_attribute *attr,
                                      char *buf)
 {
-    u32 allocated = 0, total = 0;
-    struct smem_partition_header *phdr;
+    u32 accessible = 0;
+    size_t size;
 
-    /* Iterate over all known SMEM partition entries.
-     * Only count partitions with both host0 and host1 in
-     * {SMEM_HOST_APPS, SMEM_HOST_ADSP, SMEM_HOST_CDSP, SMEM_HOST_MODEM} */
-    for_each_smem_partition(phdr) {
-        total++;
-        if (phdr->state == SMEM_PARTITION_ALLOCATED)
-            allocated++;
+    for (u32 i = 0; i < N_PROBE_ITEMS; i++) {
+        void *ptr = qcom_smem_get(QCOM_SMEM_HOST_ANY,
+                                   smem_probe_items[i], &size);
+        if (!IS_ERR_OR_NULL(ptr))
+            accessible++;
     }
 
-    /* CI = allocated / total. Range [0.0, 1.0].
-     * Multiply by 1000 and return as integer (milliCI) for integer sysfs. */
-    u32 milli_ci = total ? (allocated * 1000 / total) : 0;
+    /* milliCI = (accessible / total) * 1000 */
+    u32 milli_ci = (accessible * 1000) / N_PROBE_ITEMS;
     return sysfs_emit(buf, "%u\n", milli_ci);  /* 0–1000 */
 }
 
+static ssize_t probe_count_show(struct device *dev,
+                                 struct device_attribute *attr,
+                                 char *buf)
+{
+    return sysfs_emit(buf, "%zu\n", N_PROBE_ITEMS);
+}
+
 static DEVICE_ATTR_RO(coherence_index);
-static DEVICE_ATTR_RO(partition_count);  /* total SMEM partitions seen */
-static DEVICE_ATTR_RO(active_hosts);     /* bitmask of active host IDs */
+static DEVICE_ATTR_RO(probe_count);  /* total items probed (denominator) */
 ```
 
 **Kconfig entry** (`kernel/msm-5.4/drivers/soc/qcom/Kconfig`):
@@ -258,50 +284,45 @@ hardware/lineage/interfaces/watercoherence/aidl/
 ```
 
 **`IWaterCoherence.aidl`**:
+
+> **Design note**: An earlier draft included `registerCoherenceCallback()`. This has been removed following architect review — the CI changes at a very low rate (~2Hz poll) making polling simpler and more appropriate than a callback pattern. A callback AIDL interface also requires a fully frozen `IWaterCoherenceCallback.aidl` definition, death handling, and `oneway` semantics. For this read-only low-rate metric, three polling methods are sufficient.
+
 ```java
 package vendor.lineage.hardware.watercoherence;
 
 /**
- * IWaterCoherence — BP8 Bioplasma HAL
+ * IWaterCoherence — BP8 Bioplasma HAL (polling-only)
  *
  * Exposes the Qualcomm SMEM Coherence Index to the Android framework.
- * Biological analogue: inter-processor shared memory coherence state
- * as a proxy for QED water coherence domain density at the
- * processor-subsystem interface layer.
+ * Biological analogue: SMEM item accessibility as a proxy for QED water
+ * coherence domain density at the processor-subsystem interface layer.
  *
- * The Coherence Index (CI) is a value in [0, 1000] where:
- *   0    = all SMEM partitions deallocated (no coherent domains)
- *   1000 = all SMEM partitions in ALLOCATED state (full coherence)
+ * The Coherence Index (CI) is a value in [0, 1000] milliCI where:
+ *   0    = no probed SMEM items accessible
+ *   1000 = all probed SMEM items accessible (full coherence)
  *
+ * Callers should poll at their own rate (suggested: 2–5s interval).
  * This HAL is read-only. It never modifies SMEM state.
  */
 @VintfStability
 interface IWaterCoherence {
     /**
-     * Returns the current Coherence Index (0–1000).
-     * Maps to BP8 sigma weight in Cell OS (scaled to [0.0, 1.0]).
+     * Returns the current Coherence Index in milliCI (0–1000).
+     * Scale to [0.0, 1.0] by dividing by 1000.
      */
     int getCoherenceIndex();
 
     /**
-     * Returns count of active SMEM partitions (analogous to CD count).
-     * Useful for correlating CI with absolute domain density.
+     * Returns the count of SMEM items in the probe set (denominator).
+     * Useful for understanding CI resolution on a given platform.
      */
-    int getPartitionCount();
+    int getProbeCount();
 
     /**
-     * Returns bitmask of active host IDs (APSS=1, ADSP=2, CDSP=4, MODEM=8).
-     * A full bitmask (15) = all four processor subsystems coherently sharing
-     * memory = maximum CD analogue, highest biological relevance.
+     * Returns count of currently accessible SMEM items (numerator).
+     * getCoherenceIndex() == (getAccessibleCount() * 1000) / getProbeCount()
      */
-    int getActiveHosts();
-
-    /**
-     * Register a callback for CI changes above a threshold delta.
-     * Used by Cell OS hook useWaterCoherence.ts (via WebSocket/JNI bridge).
-     */
-    void registerCoherenceCallback(in IWaterCoherenceCallback callback,
-                                   in int deltaThreshold);
+    int getAccessibleCount();
 }
 ```
 
@@ -416,26 +437,30 @@ With the HAL in place, the Cell OS side requires three changes.
 
 #### 5.1 Updated BP8 Constant
 
+The only change to the live TypeScript constant at Stage 1 is setting `lineageosPath`. **σ, `status`, `direction`, and `isMetaphor` are all unchanged** — biological evidence governs these fields, not implementation path quality.
+
 ```typescript
 // src/domain/content/bioplasmaPathways.ts
 export const BP8_QED_WATER: BioplasmaPathway = {
   code: "BP8",
-  sigma: 0.45,                        // raised from 0.32 (pending architect review)
-  status: "speculative",              // raised from "reserved"
-  carrier: "QED coherent EM mode (interfacial water) / SMEM inter-processor coherent domains",
-  frequencyRange: "THz range (biological); ~2Hz poll rate (SMEM monitor)",
+  sigma: 0.32,                        // UNCHANGED — biological σ governs; SMEM mapping alone does not raise it
+  status: "reserved",                 // UNCHANGED — biological evidence must drive any status promotion
+  carrier: "QED coherent EM mode (interfacial water)",
+  frequencyRange: "THz range (estimated); QED resonance — 7 orders of magnitude above SMEM IPC rates",
   plasmaLiteralness: "field-coherence-analogy",
-  lineageosPath: "drivers/soc/qcom/smem_coherence.c · android_kernel_fairphone_qcm6490",
+  lineageosPath: "drivers/soc/qcom/smem_coherence.c · android_kernel_fairphone_qcm6490",  // ← SET HERE (Stage 1)
   organelleRoute: {
     source: "cytoplasm",
     target: "broadcast",
-    direction: "broadcast",           // raised from "readonly": can now signal
+    direction: "readonly",            // UNCHANGED — reserved pathways are read-only
   },
-  ipcAnalogue: "Qualcomm SMEM Coherence Domain Monitor (IWaterCoherence HAL) — " +
-               "non-local phase-coherent inter-processor shared memory substrate",
-  isMetaphor: false,                  // SMEM is a structural isomorphism, not a metaphor
+  ipcAnalogue: "Qualcomm SMEM inter-processor shared memory substrate — " +
+               "strongest available implementation candidate for BP8; metaphorical (not vibrational)",
+  isMetaphor: true,                   // UNCHANGED — THz/MHz frequency gap is too large to claim structural vibrational mapping
 };
 ```
+
+**Future σ trigger** (σ=0.32 → 0.45, `speculative`): Requires biological evidence — e.g. THz spectroscopy showing CD resonance in interfacial water in a warm-wet biological system, or measured CD-dependent ion channel gating. A real FP5 build running the SMEM coherence driver with CI correlation to Cell OS patterns does **not** satisfy this criterion; it would be implementation confirmation only.
 
 #### 5.2 New Hook: `useWaterCoherence.ts`
 
@@ -501,70 +526,55 @@ export function useWaterCoherence() {
 }
 ```
 
-> **Note**: The `bioplasmaSignal()` guard for `status === "reserved"` will be removed when BP8 status is updated to `"speculative"`. The `direction: "broadcast"` enables fan-out to all 8 zones, matching the QED water model (coherence domains are cytoplasm-wide, not organelle-local).
-
-#### 5.3 `useCellVitalStore.ts` guard update
-
-When BP8 is promoted from `reserved` to `speculative`, remove the only block remaining:
-```typescript
-// BEFORE (current):
-if (pathway.status === "reserved") return;  // BP8 guard
-
-// AFTER (with speculative BP8):
-// Guard removed — BP8 now fires when CI threshold is met.
-// Note: BP8 direction="broadcast" will still trigger the fan-out path.
-```
-
-#### 5.4 BIOPLASMA_ZONE_REGISTRY update
-
-Cytoplasm currently carries both BP8 and BP9. When BP8 becomes `speculative`, the existing registry entry is correct — no change needed. The display in `BioplasmaFieldSection.tsx` will automatically show BP8's σ bar once status ≠ `"reserved"`.
+> **Note**: BP8 `status` remains `"reserved"` at Stage 1 — the `bioplasmaSignal()` guard is not removed. The hook runs and computes synthetic CI, but does not fire signals while the pathway is reserved. `useWaterCoherence.ts` is pre-wired for when biological evidence eventually justifies status promotion.
 
 ---
 
-## Analysis: Why SMEM Satisfies the Activation Criterion
+## Analysis: Why SMEM is the Strongest Implementation Candidate
 
-The core question is whether the SMEM isomorphism is structural (genuine) or superficial (forced analogy). Five points support structurality:
+Following architect review, the claim "SMEM satisfies the activation criterion via structural isomorphism" has been softened to "SMEM is the strongest available implementation candidate." The four defensible structural correspondences (shared substrate, discrete partitioning, distributed coordination, boundary location) are genuine. Several initially proposed correspondences (spinlock = trapped EM mode; TOC = EZ water; GLINK rate = THz) were rejected as forced.
 
-**1. Physical location matches "interfacial"**. QED CDs are found specifically at the boundary between a hydrophilic surface and bulk water — they do not exist uniformly in bulk. SMEM is physically located in the SoC fabric at the boundary between independent processor subsystems — it does not exist in any processor's private address space. Both are boundary phenomena.
+**1. Physical location matches "interfacial"** — retained as genuine. QED CDs exist at the boundary between a hydrophilic surface and bulk water. SMEM exists at the hardware boundary between independent processor subsystem islands. Both are boundary phenomena with no presence in the respective "bulk" (intra-cellular water / per-process private heap).
 
-**2. Discrete domain quantisation matches the CD model**. QED CDs are discrete ~100nm regions — there is a specific number of them, each with defined extent. SMEM partitions are discrete regions — there is a specific count (18–24 on Qualcomm platforms), each with defined size and host assignment. This is not a continuum; it is quantised coordination. The Coherence Index therefore maps directly to "fraction of domains in coherent phase."
+**2. Discrete domain quantisation matches the CD model** — retained as genuine. Both QED CDs and SMEM partitions are enumerable, quantised, non-continuous coordination domains. The CI (fraction accessible) directly parallels "fraction of domains in coherent phase."
 
-**3. The distributed-lock mechanism genuinely models the trapped EM mode**. In QED CDs, the EM mode is "trapped" — it cannot escape the CD because the dielectric boundary reflects it back. The function of trapping is to sustain the collective oscillation. In SMEM, the TCSR remote spinlock sustains the collective allocation state — it prevents any single processor from disrupting the shared coherent phase by enforcing sequential access to write operations. Both mechanisms serve the same function: preventing the collapse of the collective state.
+**3. ~~The distributed-lock mechanism models the trapped EM mode~~** — **REJECTED** by architect review. A remote spinlock *serialises write access* — it prevents concurrent modification but does not sustain any oscillatory mode. The trapped EM mode in a CD *sustains collective oscillation* by preventing radiative energy loss — a fundamentally different function. These are distinct physical mechanisms that happen to both be called "preventing disruption." This row has been removed from the isomorphism table.
 
-**4. The two-phase system is architecturally complete**. The QED model requires bulk water to be disordered (not just "not CD") while CDs are ordered. SMEM maps exactly: per-process private heap is genuinely incoherent (no cross-processor visibility guarantees), while SMEM is genuinely coherent (hardware memory barriers enforce consistent visibility). There is no partial coherence in between — it is a true two-phase system.
+**4. The two-phase character is architecturally real** — retained as genuine. SMEM (globally coherent, cross-processor) vs. private heap (per-process, non-coherent) is a genuine two-phase system in the same sense as CD water vs. bulk water. Hardware cache coherence enforces consistency across all SMEM reads; private heap has no such guarantee.
 
-**5. The frequency analogy is precise enough to be useful**. THz is the estimated frequency of the biological CD collective oscillation. The GLINK message rate across SMEM partitions (sub-microsecond inter-processor notification latency, ~MHz effective throughput) does not map to THz — the frequency analogy is not 1:1. This is acknowledged: `frequencyRange` for BP8 explicitly notes both the biological THz estimate and the SMEM monitor's 2Hz poll rate. The frequency is the weakest part of the isomorphism and is why `isMetaphor` remains a question (see §Limitations).
+**5. The frequency analogy does not hold** — the biological THz estimate and SMEM IPC rates (~MHz) differ by ~7 orders of magnitude. This is not a weakness to be qualified; it is a reason `isMetaphor: true` must remain permanently set, and why σ cannot be raised by the software mapping alone. The frequency component was removed from the isomorphism table.
 
 ---
 
 ## Limitations
 
-**Frequency gap**: Biological THz (~30–60 THz estimated for QED CDs) and SMEM IPC rates (~MHz) differ by ~7 orders of magnitude. This cannot be bridged analytically. The frequency component of the isomorphism is acknowledged as the weakest element. It does not invalidate the structural mapping (size, boundary, two-phase, distributed lock) but prevents `isMetaphor: false` from being fully justified. Recommend keeping `isMetaphor: true` in the final constant, even after promotion to `speculative`.
+**Frequency gap is disqualifying for any vibrational claim**: Biological THz (~30–60 THz estimated for QED CDs) and SMEM IPC rates (~MHz) differ by ~7 orders of magnitude. This is not a minor caveat — it means the SMEM analogy cannot claim to model the electromagnetic/oscillatory physics of coherence domains. `isMetaphor: true` must remain permanently set regardless of how far the implementation advances. The four retained structural correspondences (substrate, discretisation, distributed coordination, boundary location) are sufficient to justify the implementation candidate designation, not a vibrational isomorphism.
 
-**SMEM CI observability on real hardware**: The `smem_coherence.c` driver needs access to `smem_partition_header` structures that are currently private to `smem.c`. The kernel module would need to either (a) be compiled into `smem.c` directly as an optional sub-feature, or (b) use an exported SMEM API to iterate partitions. The current `qcom_smem_get()` API does not expose partition headers. The fork would need to add an `smem_get_partition_stats()` exported symbol to the core SMEM driver — a minimal addition, but it does require modifying the upstream driver.
+**`smem_partition_header` is private — use item probing for Stage 2**: The kernel driver originally proposed iterating partition headers via a non-existent `for_each_smem_partition()` macro. This API does not exist; partition/header structs are private to `smem.c`. The corrected driver (Finding 4.1) uses `qcom_smem_get()` to probe a fixed set of well-known SMEM item IDs — this requires no core SMEM change and is suitable for Stage 2. Path B (partition-level stats via a new exported `qcom_smem_get_partition_stats()` function) requires a one-function patch to `smem.c` and is reserved for Stage 3.
 
-**Browser simulation accuracy**: The `useWaterCoherence.ts` synthetic CI (based on visibility + heap + circadian) is a coarse approximation. On real FP5 hardware with the fork installed, the actual SMEM coherence state would be used. In browser-only mode, the hook is biologically motivated but not directly SMEM-driven. This is consistent with how BP5 (thermal HAL analogue) uses JS heap ratio as a proxy for actual RF/thermal HAL data.
+**σ is not changed by this design**: The BIOPLASMA_RESEARCH.md §7 Calibration Framework governs σ. Software structural mapping quality — no matter how sound — cannot raise biological σ. BP8 remains at σ=0.32, `reserved`, until biological evidence improves. The SMEM candidate designation is an implementation track only.
 
-**σ proposal is provisional**: The recommended σ = 0.45 is based on the quality of the structural isomorphism and the biological evidence tier (EZ water confirmed, QED CD model peer-reviewed but not confirmed). This is strictly a proposal. The architect review must ratify this value before it is committed to `bioplasmaPathways.ts` or `BIOPLASMA_RESEARCH.md`.
+**Browser simulation accuracy**: The `useWaterCoherence.ts` synthetic CI (visibility + heap pressure + circadian) is a coarse approximation without direct SMEM read. On real FP5 hardware with the Stage 2 driver installed, the actual sysfs CI would be used. This is consistent with how other reserved/speculative pathways use proxy measurements in browser mode.
 
 ---
 
 ## Recommendations
 
-1. **Ratify the SMEM structural isomorphism** via architect review. If the mapping table in Finding 3 survives review without fundamental objections, BP8 can be promoted from `reserved` to `speculative` and σ raised to 0.45.
+1. **Designate SMEM as the BP8 implementation candidate** — the four defensible structural correspondences (shared substrate, discrete partitioning, distributed coordination, boundary location) justify this designation. This does not affect σ or `status`.
 
 2. **Implement the fork in three stages**:
-   - **Stage 1** (Cell OS SPA only): Promote BP8 to `speculative`, add `useWaterCoherence.ts` with synthetic CI, update `bioplasmaPathways.ts` and `LineageOSv2_Manifold.md §5.8`. No kernel work required.
-   - **Stage 2** (Kernel driver): Implement `smem_coherence.c` + sysfs in the FP5 kernel fork. Test on physical FP5 hardware. Verify partition count and CI stability over 24 hours.
-   - **Stage 3** (Full AIDL stack): Build and ship the `IWaterCoherence` HAL, implement the real device-side `useWaterCoherence.ts` path via WebSocket/ADB bridge.
+   - **Stage 1** (Cell OS SPA only): Set `lineageosPath` in `bioplasmaPathways.ts`, add `useWaterCoherence.ts` with synthetic CI. σ=0.32, `status: "reserved"` unchanged. Update `LineageOSv2_Manifold.md §5.8` to note the candidate path. No kernel work required.
+   - **Stage 2** (Kernel driver): Implement `smem_coherence.c` using Path A (`qcom_smem_get()` probe approach — no core SMEM changes). Test on physical FP5 hardware. Verify CI stability over ≥24 hours across reboots, subsystem restart events, and modem cycling.
+   - **Stage 3** (Full AIDL stack): Build and ship the `IWaterCoherence` polling HAL, implement real sysfs→HAL→Cell OS path. If Path B (partition-level stats) is needed for accuracy, add `qcom_smem_get_partition_stats()` to `smem.c` at this stage.
 
-3. **Keep `isMetaphor: true`** due to the frequency gap. Document explicitly in the constant JSDoc that the mapping is structural (boundary/domain/two-phase/distributed-lock) not vibrational.
+3. **Keep `isMetaphor: true` permanently** — the THz/MHz frequency gap is too large to bridge. Any future hardware implementation, no matter how accurate, cannot claim vibrational isomorphism. The structural four-row mapping is the ceiling of what this analogy supports.
 
-4. **Set the BP8 `lineageosPath` immediately** (Stage 1) to reflect the proposed driver location, even before the driver is written. This follows the existing pattern for BP6 (`frameworks/native/libs/binder/ProcessState.cpp` is set even though BP6 is deferred).
+4. **Update `BIOPLASMA_RESEARCH.md` §13** to mark BP8 as "implementation candidate path designed (SMEM); biological σ unchanged at 0.32" with a cross-reference to this document.
 
-5. **Update `BIOPLASMA_RESEARCH.md` §13** to mark BP8 as "implementation path designed; pending architect ratification" and add a cross-reference to this document.
-
-6. **σ trigger for further elevation** (from 0.45 to 0.65, `indicative`): A real FP5 build running the Stage 2 smem_coherence driver, with measured correlation between CI and visible Cell OS organelle interaction patterns, would constitute sufficient evidence for the next σ raise.
+5. **σ trigger for first elevation** (σ=0.32 → 0.45, `speculative`): Requires biological evidence — specifically, one of:
+   - THz spectroscopy showing CD resonance signature in interfacial water in a warm-wet biological system (cell membrane or protein surface), distinguishable from bulk water
+   - Measured CD-dependent biological outcome in a physiological temperature range (310K), e.g. CD-dependent ion channel gating kinetics or EZ-dependent enzymatic rate shift
+   A real FP5 build and CI measurement does **not** satisfy this criterion — it constitutes implementation validation only.
 
 ---
 
