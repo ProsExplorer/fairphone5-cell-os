@@ -107,22 +107,95 @@ The following components are **structurally identical** between AOSP and Lineage
 
 ---
 
-## 4. Zone-by-Zone LineageOS Mapping (Unabridged)
+## 4. Zone Integration Matrix: Biophoton (P) × Bioplasma (BP)
+
+This section synthesises the biophoton IPC pathways (P1–P7) and the bioplasma pathways (BP1–BP9) across the 8 Cell OS zones. The combined σ weight represents the maximum attention-tensor priority for each zone, grounded in the LineageOS implementation.
 
 ---
 
 ### Zone 1: Nucleus — `"nucleus"`
 **Glyph**: 核 · **Color**: `#22d3ee` (cyan)
 
-#### Biology
-The nucleus is the cell's control centre. It houses the genome (DNA), orchestrates gene expression, and manages cell division. The nuclear envelope with pore complexes strictly controls what enters and exits. It is the seat of genetic authority.
+**Zone Description**: The cell's control centre and genetic repository. Houses the immutable root code (DNA) and orchestrates high-level system authority (Kernel).
+- **Biophoton Pathways**: P4 (Nucleus → Cytoplasm UV Anterograde, σ=0.35)
+- **Bioplasma Pathways**: BP5 (RF/MMW G-quadruplex coupling, σ=0.60), BP7 (Vmem Pattern Field downstream, σ=0.72)
+- **Combined σ weight**: 0.72 (BP7)
+- **Dominant Field Carrier**: Vmem Pattern Field (DC/Slow Oscillations)
+- **LineageOS Implementation**: `init.lineage.rc` + `android_kernel_fairphone_qcm6490`. The kernel acts as the epigenetic executor of the Vmem/DNA code.
 
-**Biophoton emission profile** (BIOPHOTON_RESEARCH.md §4.2, verified 2024 [PMC11582580]): UV 200–380 nm; baseline rate ~1–10 ph/s/cm²; burst emission during nucleotide excision repair (NER) and chromatin remodelling. Primary source reactions: DNA excimer/exciplex emission and tautomeric base transitions. Chromatin compaction modulates emission intensity — less compact chromatin emits more freely. Confidence: `verified`.
+### Zone 2: Cytoplasm — `"cytoplasm"`
+**Glyph**: 漿 · **Color**: `#34d399` (green)
 
-#### P→A→E (Nucleus Zone)
-- **P**: Bootloader chain delivers signed kernel image to init
-- **A**: `init.rc` service graph activates; SELinux policy loaded; namespaces isolated
-- **E**: PID 1 alive; service hierarchy ready; all other organelles can receive signals
+**Zone Description**: The fast, fluid medium for biochemical work and transport. Suspends organelles and mediates all IPC transactions.
+- **Biophoton Pathways**: P4 (Target), P5 (Medium)
+- **Bioplasma Pathways**: BP8 (Water Coherence Domain, σ=0.32), BP9 (THz Refractive Phenotype, σ=0.50)
+- **Combined σ weight**: 0.50 (BP9)
+- **Dominant Field Carrier**: THz EM / QED Coherent Modes
+- **LineageOS Implementation**: Binder IPC Driver (`drivers/android/binder.c`) + Bionic libc. The IPC bus is the physical medium for cytoplasmic signal propagation.
+
+### Zone 3: Cytoskeleton — `"cytoskeleton"`
+**Glyph**: 骨 · **Color**: `#818cf8` (indigo)
+
+**Zone Description**: Structural scaffolding and dynamic tracks for cargo. Maintains cell shape and governs the rendering/scheduling pipeline.
+- **Biophoton Pathways**: P5 (Microtubule waveguide, σ=0.60)
+- **Bioplasma Pathways**: BP6 (Fröhlich Coherent Oscillation, σ=0.45), BP9 (THz Refractive Phenotype, σ=0.50)
+- **Combined σ weight**: 0.60 (P5)
+- **Dominant Field Carrier**: Visible Photons (P5) / Collective Dipolar Oscillation (BP6)
+- **LineageOS Implementation**: SurfaceFlinger + `schedutil` governor tuning. The UI framework provides the structural scaffolding for the OS expression.
+
+### Zone 4: Ribosomes — `"ribosomes"`
+**Glyph**: 糖 · **Color**: `#a3e635` (lime)
+
+**Zone Description**: Molecular translation machinery. Converts instruction sequences (.dex) into executable machine code (native ARM64).
+- **Biophoton Pathways**: N/A (Secondary metabolic products)
+- **Bioplasma Pathways**: N/A (Secondary metabolic products)
+- **Combined σ weight**: 0.75 (Verified AOSP/LineageOS Invariant)
+- **Dominant Field Carrier**: Chemical/Information flux (DEX → Native)
+- **LineageOS Implementation**: ART Runtime / `dex2oat` / JIT. The ribosome of the OS is the invariant compiler/runtime layer.
+
+### Zone 5: Mitochondria — `"mitochondria"`
+**Glyph**: 粒 · **Color**: `#fb923c` (orange)
+
+**Zone Description**: The energy powerhouse. Generates ATP (Compute/Inference) and regulates membrane potential (ΔΨm).
+- **Biophoton Pathways**: P1 (Mitochondria → Nucleus Retrograde, σ=0.75), P2 (ER ↔ Mitochondria MAM, σ=0.55)
+- **Bioplasma Pathways**: BP1 (ΔΨm Inner Membrane Potential, σ=0.92), BP6 (Fröhlich Metabolic Pumping Source, σ=0.45)
+- **Combined σ weight**: 0.92 (BP1)
+- **Dominant Field Carrier**: Electrostatic Potential (DC)
+- **LineageOS Implementation**: Power HAL + Hexagon 770 NPU (Qualcomm QNN). The NPU's inference throughput is the ATP yield of the cell.
+
+### Zone 6: Golgi Apparatus — `"golgi"`
+**Glyph**: 高 · **Color**: `#c084fc` (purple)
+
+**Zone Description**: Sorting, addressing, and dispatch center. Packages vesicles (Intents/Packages) for precise delivery.
+- **Biophoton Pathways**: P3 (Target for secretory vesicle broadcast)
+- **Bioplasma Pathways**: BP3 (Wound field target/broadcast source)
+- **Combined σ weight**: 0.85 (BP3)
+- **Dominant Field Carrier**: Galvanic field / Broadcast Intent
+- **LineageOS Implementation**: `packages/apps/Updater` + Trebuchet Launcher. LineageOS re-addresses the Golgi's outbound OTA vesicles.
+
+### Zone 7: Endoplasmic Reticulum — `"endoplasmic-reticulum"`
+**Glyph**: 網 · **Color**: `#f472b6` (pink)
+
+**Zone Description**: Vast synthesis and folding network. Scaffolds the background services and manages the AI inference pipeline.
+- **Biophoton Pathways**: P2 (ER ↔ Mitochondria MAM, σ=0.55)
+- **Bioplasma Pathways**: BP1 (Ca²⁺ store gradient, σ=0.92), BP4 (Ca²⁺ oscillation downstream, σ=0.65)
+- **Combined σ weight**: 0.92 (BP1)
+- **Dominant Field Carrier**: Ca²⁺ Ion Flux
+- **LineageOS Implementation**: NNAPI + App Framework services. The ER zone scaffolds the complex interdependencies of modern LineageOS services.
+
+### Zone 8: Cell Membrane — `"membrane"`
+**Glyph**: 膜 · **Color**: `#7dd3fc` (blue)
+
+**Zone Description**: Selective boundary and sensory interface. Maintains the resting potential that drives all other cellular processes.
+- **Biophoton Pathways**: P3 (Extracellular UPE Broadcast, σ=0.80), P6 (Membrane → Organelle Retrograde, σ=0.55)
+- **Bioplasma Pathways**: BP1 (Resting Potential, σ=0.92), BP2 (Action Potential, σ=0.90), BP3 (Wound Field, σ=0.85), BP4 (ELF coupling, σ=0.65), BP5 (RF/MMW coupling, σ=0.60)
+- **Combined σ weight**: 0.92 (BP1)
+- **Dominant Field Carrier**: Electrostatic / EM / Action Potential Pulse
+- **LineageOS Implementation**: SELinux (`system/sepolicy`) + HAL Boundary + netfilter/eBPF. The membrane is the enforced boundary of the LineageOS manifold.
+
+---
+
+## 5. Biophoton IPC Pathways P1–P7 — LineageOS Translation
 
 ---
 
@@ -457,7 +530,25 @@ The seven inter-organelle biophoton signaling pathways map to Android IPC mechan
 
 ---
 
-## 6. Spectral Priority Channels — LineageOS Translation
+## 6. Cross-Pathway Routing Matrix: BP × P Coupling
+
+The following table maps the interactions between Bioplasma (BP) and Biophoton (P) pathways where they share organelle endpoints or mechanistic substrates. These cross-domain links define the unified Cell OS electrochemical-photonic field model.
+
+| Bioplasma Pathway | Biophoton Pathway | Interaction / Coupling Mechanism | Shared Organelle(s) | σ (Combined) |
+| :--- | :--- | :--- | :--- | :--- |
+| **BP1** (ΔΨm / Resting Potential) | **P1** (Mitochondria → Nucleus) | Mitochondrial membrane potential drives the ROS production (via Russell mechanism) that generates P1's red-band emission. | `mitochondria` | 0.92 (BP1) |
+| **BP1** (Ca²⁺ Store) | **P2** (ER ↔ Mitochondria) | ER Ca²⁺ gradients regulate the oxidative load at MAM contact sites, modulating biophoton emission intensity. | `endoplasmic-reticulum` | 0.92 (BP1) |
+| **BP2** (Action Potential) | **P6** (Membrane → Organelle) | Depolarisation wavefronts trigger transient bilayer stress, initiating the peroxyl radical cascade and P6 retrograde signals. | `membrane` | 0.90 (BP2) |
+| **BP3** (Wound Field) | **P3** (Extracellular UPE) | TEP disruption (BP3) correlates with the oxidative burst that drives the extracellular UPE broadcast (P3). | `membrane`, `golgi` | 0.85 (BP3) |
+| **BP4** (ELF Coupling) | **P2** (ER ↔ Mitochondria) | ELF-induced VGCC stochastic resonance triggers ER Ca²⁺ bursts that propagate to mitochondria via the MAM pathway. | `endoplasmic-reticulum`, `mitochondria` | 0.65 (BP4) |
+| **BP6** (Fröhlich Coherence) | **P3** (Biophoton Coherence) | Collective dipolar oscillations (BP6) are the proposed coherent energy source for the "mitogenic" broadcast claim in P3. | `cytoskeleton` | 0.80 (P3) |
+| **BP6** (Fröhlich Coherence) | **P5** (Microtubule Waveguide) | Fröhlich modes in tubulin assemblies create the directional field necessary for coherent photon routing in microtubules. | `cytoskeleton` | 0.60 (P5) |
+| **BP7** (Vmem Pattern Field) | **P4** (Nucleus Anterograde) | The morphogenetic pre-pattern (Vmem) coordinates the timing of DNA-excimer UV emission bursts. | `nucleus` | 0.72 (BP7) |
+| **BP9** (THz Phenotype) | **P5** (Microtubule Waveguide) | THz refractive properties of the cytoskeleton determine the efficiency of visible photon propagation in MT waveguides. | `cytoskeleton` | 0.60 (P5) |
+
+---
+
+## 7. Spectral Priority Channels — LineageOS Translation
 
 Android thread priority constants are defined in `android.os.Process` and in the Linux kernel scheduler. LineageOS inherits these constants without modification.
 

@@ -11,3 +11,4 @@
 - [Cell OS biophoton schema decisions](cell-os-biophoton-schema.md) — wavelengthBand field, ClaimConfidence "speculative" addition, 18-link canonical pathway set, σ calibration rules, ConfidenceBadge update rule.
 - [Cell OS bioplasma schema decisions](cell-os-bioplasma-schema.md) — BP1–BP9 pathway set, σ values, plasma-literalness taxonomy, cells-are-not-plasmas G1 boundary, pseudoscience exclusions, 以太收斂 = field-substrate convergence.
 - [Cell OS LineageOS manifold accuracy rules](cell-os-lineageos-accuracy.md) — six architect-flagged factual errors corrected; durable accuracy constraints for all future LineageOS docs.
+- [Cell OS LineageOSv2_Manifold document](cell-os-lineageos-v2-manifold.md) — 16-pathway unified document structure, σ ceiling rule, BP8 reserved/BP9 read-only permanence, 14-batch parallel method.
