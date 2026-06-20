@@ -13,3 +13,4 @@
 - [Cell OS LineageOS manifold accuracy rules](cell-os-lineageos-accuracy.md) — six architect-flagged factual errors corrected; durable accuracy constraints for all future LineageOS docs.
 - [Cell OS LineageOSv2_Manifold document](cell-os-lineageos-v2-manifold.md) — 16-pathway unified document structure, σ ceiling rule, BP8 reserved/BP9 read-only permanence, 14-batch parallel method.
 - [Cell OS bioplasma implementation](cell-os-bioplasma-implementation.md) — BP1–BP9 live in codebase: types, store, 3 hooks, BIOPLASMA_ZONE_REGISTRY, BioplasmaFieldSection, Hebbian modulation, all 8 panels.
+- [BP8 SMEM coherence design](bp8-smem-design.md) — SMEM satisfies all 4 BP8 activation criteria; 9-row isomorphism table; 3-stage fork spec; σ proposal 0.32→0.45; pending architect ratification.

@@ -597,16 +597,16 @@ export const BP7_VMEM_PATTERN: BioplasmaPathway = {
 
 ---
 
-### §5.8 BP8 — QED Water Coherence Domain (Reserved Annotation Layer)
+### §5.8 BP8 — QED Water Coherence Domain (Reserved → Speculative Candidate)
 
-**σ = 0.32 · Speculative · Status: `reserved` · No LineageOS implementation**
+**σ = 0.32 · Status: `reserved` · Pending architect review for elevation to `speculative` (σ=0.45)**
+
+> **Design document**: `docs/BP8_SMEM_COHERENCE_DESIGN.md` contains the full structural isomorphism analysis, fork specification, and σ rationale. The content below reflects the baseline state. The design document is the source of truth for the proposed changes.
 
 #### Biological Summary
-The QED model of water proposed by Del Giudice and Preparata suggests that liquid water exists as a two-phase system: coherence domains (CDs) approximately 100 nm in size where water molecules oscillate in phase with a trapped electromagnetic field, and disordered bulk water. At hydrophilic cellular interfaces, these CDs may act as reservoirs of electronic excitation. While EZ (exclusion zone) water effects are experimentally documented, the specific QED coherence domain model remains speculative in mainstream biophysics.
+The QED model of water proposed by Del Giudice and Preparata suggests that liquid water exists as a two-phase system: coherence domains (CDs) approximately 100 nm in size where water molecules oscillate in phase with a trapped electromagnetic field, and disordered bulk water. At hydrophilic cellular interfaces, these CDs may act as reservoirs of electronic excitation. While EZ (exclusion zone) water effects are experimentally documented (10+ independent labs, including in plant xylem 2024), the specific QED coherence domain model remains speculative in mainstream biophysics.
 
-**BP8 has NO LineageOS implementation.** It exists exclusively as a reserved annotation in the Cell OS TypeScript type system. Its purpose is to reserve the pathway code and σ weight for future confirmation, not to drive any routing or signal decisions.
-
-#### Reserved Annotation
+#### Current Reserved Annotation (baseline)
 
 ```typescript
 export const BP8_QED_WATER: BioplasmaPathway = {
@@ -623,7 +623,47 @@ export const BP8_QED_WATER: BioplasmaPathway = {
 };
 ```
 
-**Future activation path**: BP8 would be raised to `speculative` (σ > 0.32) only if a non-local, phase-coherent coordination mechanism is discovered in the AOSP/LineageOS kernel that maps specifically to interfacial water physics. No such mechanism is currently known.
+#### Proposed Activation Path (Pending Architect Ratification)
+
+**Proposed LineageOS source**: `drivers/soc/qcom/smem_coherence.c · android_kernel_fairphone_qcm6490`
+
+A structural isomorphism has been identified between QED water coherence domains and Qualcomm SMEM (Shared Memory) — the inter-processor shared memory substrate located physically at the boundary between APSS, ADSP, CDSP, and MDSS on the QCM6490 SoC:
+
+| QED Water CD Concept | SMEM Analogue |
+|---|---|
+| Coherence domain (~100 nm discrete region) | SMEM partition (discrete shared region with defined size/hosts) |
+| Molecules oscillating in phase | Cache lines in MOESI Shared state across all four processors |
+| Trapped EM mode (prevents radiative loss) | TCSR remote spinlock (prevents write contention disrupting partition state) |
+| Hydrophilic surface (organising boundary) | SMEM Partition Table (`struct smem_ptable`) at fixed offset |
+| Two-phase system (coherent CD + disordered bulk) | SMEM (coherent shared) + per-process private heap (incoherent) |
+| Non-local coordination | Distributed hardware spinlocks — no central arbiter across 4 processors |
+
+All four BP8 activation criteria are satisfied by SMEM:
+1. ✅ **Non-local**: no single processor controls SMEM; hardware spinlocks are distributed compare-and-swap
+2. ✅ **Phase-coherent**: `smem_partition_header` state machine — all processors observe the same allocation phase simultaneously
+3. ✅ **Active coordination mechanism**: TCSR/SFPB hardware spinlocks + GLINK signalling
+4. ✅ **Interfacial**: SMEM is physically in the SoC fabric at the boundary between processor subsystem islands
+
+**Proposed post-ratification constant**:
+```typescript
+export const BP8_QED_WATER: BioplasmaPathway = {
+  code: "BP8",
+  sigma: 0.45,            // raised from 0.32 (structural isomorphism justifies speculative tier)
+  status: "speculative",  // raised from "reserved"
+  carrier: "QED coherent EM mode (interfacial water) / SMEM inter-processor coherent domains",
+  frequencyRange: "THz range (biological); ~2Hz poll rate (SMEM coherence monitor)",
+  plasmaLiteralness: "field-coherence-analogy",
+  lineageosPath: "drivers/soc/qcom/smem_coherence.c · android_kernel_fairphone_qcm6490",
+  organelleRoute: { source: "cytoplasm", target: "broadcast", direction: "broadcast" },
+  ipcAnalogue: "Qualcomm SMEM Coherence Domain Monitor (IWaterCoherence HAL) — " +
+               "non-local phase-coherent inter-processor shared memory substrate",
+  isMetaphor: true,  // frequency gap (THz vs MHz IPC) prevents full structural claim
+};
+```
+
+**Limitation**: The frequency analogy (biological THz vs. SMEM ~MHz IPC rates) differs by ~7 orders of magnitude. `isMetaphor: true` is retained. The structural mapping (boundary/domain/two-phase/distributed-lock) is genuine; the vibrational frequency is not.
+
+**Stage 2 trigger** (σ raise to `indicative`, 0.65): Real FP5 build with `smem_coherence.c` driver, measured CI correlated with Cell OS interaction patterns over ≥24h continuous monitoring.
 
 ---
 
