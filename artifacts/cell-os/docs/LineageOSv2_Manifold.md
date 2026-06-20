@@ -10,6 +10,7 @@
 > **Confidence framework**: `verified` (σ ≥ 0.75) · `indicative` (σ 0.50–0.75) · `speculative` (σ 0.30–0.50) · `unconfirmed` (< 0.30) · `deprecated-feature` (confirmed removed) · `reserved` (placeholder, no implementation)
 >
 > **Last updated**: June 2026
+> **Implementation status**: Phases 1–3 complete (all BP1–BP9 TypeScript constants, hooks, store extensions, and UI display implemented). Immune checkpoint organelle (`SecurityStatusOrganelle.tsx`) remains outstanding future work (see §10 Phase 3).
 
 ---
 
@@ -771,18 +772,45 @@ The Trust Interface was the **immune checkpoint complex** for bioplasma pathway 
 
 ## 8. TypeScript Implementation Contract
 
+> **Status**: All items in this section reflect the **as-built implementation** as of June 2026. The planned code sketches from the original roadmap have been superseded by the actual source files listed below. Planned file names that differ from the final names are noted inline.
+
 ### §8.1 BioplasmaPathway Type Definition
 
-Add to `src/domain/types.ts`:
+**Implemented in**: `src/domain/types.ts`
+
+The `organelleRoute.source` and `.target` fields are typed as `BioplasmaRouteEndpoint` — a 16-member union that catches invalid endpoint strings at compile time. The original roadmap used plain `string`; this union was introduced during the architect review phase.
 
 ```typescript
+/**
+ * Type-safe organelle endpoints for bioplasma route fields.
+ * "broadcast" is the sentinel for field-wide emissions (BP1, BP3, BP7).
+ * Mistyped IDs are caught at compile time.
+ */
+export type BioplasmaRouteEndpoint =
+  | "broadcast"
+  | "cell-membrane"
+  | "membrane-receptors"
+  | "mitochondria"
+  | "endoplasmic-reticulum"
+  | "nucleus"
+  | "nucleolus"
+  | "dna"
+  | "nuclear-pores"
+  | "cytoplasm"
+  | "cytoskeleton"
+  | "ribosomes"
+  | "golgi-apparatus"
+  | "vesicles"
+  | "lysosomes"
+  | "vacuole";
+
 /**
  * Classification of how literally plasma physics criteria apply
  * to the biological medium.
  */
 export type PlasmaLiteralness =
-  | "literal-quasi-plasma"    // BP1: membrane sheath (genuine charge separation)
-  | "electrolyte-analogy"     // BP2, BP3, BP7: structured ion flux
+  | "literal-quasi-plasma"     // BP1: membrane sheath (genuine charge separation)
+  | "electrolyte-analogy"      // BP2, BP3, BP7: structured ion flux
   | "field-coherence-analogy"; // BP4, BP5, BP6, BP8, BP9: EM field coupling
 
 /** Evidence-calibrated confidence tiers for bioplasma phenomena. */
@@ -790,117 +818,237 @@ export type BioplasmaStatus =
   | "verified"    // σ ≥ 0.75: established electrophysiology
   | "indicative"  // 0.50–0.75: replicated in-vivo/in-vitro results
   | "speculative" // 0.30–0.50: theoretical models with limited data
-  | "reserved";   // < 0.30: architectural placeholder, no implementation
+  | "reserved";   // < 0.30: architectural placeholder, no runtime implementation
 
 /**
  * A bioplasma pathway (BP1–BP9) representing an endogenous electric
  * or electromagnetic field interaction and its LineageOS software analogue.
+ *
+ * Source of truth for σ values: BIOPLASMA_RESEARCH.md.
+ * Source of truth for lineageosPath: LineageOSv2_Manifold.md §5.
+ *
+ * Invariants enforced at runtime:
+ *   - status === "reserved" → bioplasmaSignal() returns early (BP8)
+ *   - organelleRoute.direction === "readonly" → never drives routing (BP9)
  */
 export interface BioplasmaPathway {
   code: "BP1" | "BP2" | "BP3" | "BP4" | "BP5" | "BP6" | "BP7" | "BP8" | "BP9";
-  sigma: number;                  // 0–1 evidence-calibrated weight (from BIOPLASMA_RESEARCH.md)
+  sigma: number;                     // 0–1 from BIOPLASMA_RESEARCH.md; ceiling for impl. confidence
   status: BioplasmaStatus;
-  carrier: string;                // physical field carrier description
-  frequencyRange: string;         // e.g. "DC" | "0.01–300 Hz" | "30–300 GHz"
+  carrier: string;                   // physical field carrier description
+  frequencyRange: string;            // e.g. "DC (steady-state)" | "0.01–300 Hz" | "30 MHz–300 GHz"
   plasmaLiteralness: PlasmaLiteralness;
-  lineageosPath: string | null;   // verified GitHub source path or null if no impl.
+  lineageosPath: string | null;      // verified GitHub source path or null if no impl.
   organelleRoute: {
-    source: string;               // organelle ID or "broadcast"
-    target: string | "broadcast";
+    source: BioplasmaRouteEndpoint;  // typed union — compile-time safety
+    target: BioplasmaRouteEndpoint;
     direction: "inward" | "outward" | "bidirectional" | "broadcast" | "readonly";
   };
-  ipcAnalogue: string;            // Android/LineageOS IPC mechanism name
-  isMetaphor: boolean;            // true if IPC analogue is architectural metaphor only
+  ipcAnalogue: string;               // Android/LineageOS IPC mechanism name
+  isMetaphor: boolean;               // true if IPC analogue is architectural metaphor only
 }
 ```
 
-### §8.2 BIOPLASMA_REGISTRY in organelles.ts
+### §8.2 Pathway Constants and Registries
 
-Add to `src/domain/content/organelles.ts`:
+**Implemented in**: `src/domain/content/bioplasmaPathways.ts` · `src/domain/content/organelles.ts`
+
+> **Name correction**: The roadmap specified `BP5_RF_COUPLING`. The implemented constant is `BP5_RF_MMW` (reflecting the full RF/millimetre-wave carrier range). All other BP names match the roadmap.
 
 ```typescript
+// src/domain/content/bioplasmaPathways.ts
+export const BP1_RESTING_POTENTIAL: BioplasmaPathway = { /* σ=0.92, verified */ };
+export const BP2_ACTION_POTENTIAL:  BioplasmaPathway = { /* σ=0.90, verified */ };
+export const BP3_WOUND_FIELD:       BioplasmaPathway = { /* σ=0.85, verified */ };
+export const BP4_ELF_COUPLING:      BioplasmaPathway = { /* σ=0.65, indicative */ };
+export const BP5_RF_MMW:            BioplasmaPathway = { /* σ=0.60, indicative — was BP5_RF_COUPLING in roadmap */ };
+export const BP6_FROHLICH:          BioplasmaPathway = { /* σ=0.45, speculative, deferred */ };
+export const BP7_VMEM_PATTERN:      BioplasmaPathway = { /* σ=0.72, indicative */ };
+export const BP8_QED_WATER:         BioplasmaPathway = { /* σ=0.32, reserved, annotation-only */ };
+export const BP9_THZ_TELEMETRY:     BioplasmaPathway = { /* σ=0.50, indicative, readonly */ };
+
+export const BIOPLASMA_PATHWAYS:             BioplasmaPathway[];  // all 9
+export const BIOPLASMA_BY_CODE:              Record<string, BioplasmaPathway>; // lookup by "BP1"..
+export const IMPLEMENTED_BIOPLASMA_PATHWAYS: BioplasmaPathway[];  // excludes BP6 (deferred) and BP8 (reserved)
+```
+
+Two registries are exported from `organelles.ts`. The original roadmap specified one (`BIOPLASMA_REGISTRY`); the implementation added a second zone-level view used directly by `BioplasmaFieldSection.tsx`:
+
+```typescript
+// src/domain/content/organelles.ts
+
+/**
+ * BIOPLASMA_REGISTRY — keyed by organelle ID (BioplasmaRouteEndpoint string).
+ * Used by bioplasmaSignal() routing and low-level organelle lookups.
+ */
 export const BIOPLASMA_REGISTRY: Record<string, BioplasmaPathway[]> = {
-  "cell-membrane": [BP1_RESTING_POTENTIAL, BP2_ACTION_POTENTIAL, BP3_WOUND_FIELD, BP4_ELF_COUPLING, BP5_RF_COUPLING],
-  "mitochondria":  [BP1_RESTING_POTENTIAL, BP6_FROHLICH],
+  "cell-membrane":         [BP1_RESTING_POTENTIAL, BP2_ACTION_POTENTIAL, BP3_WOUND_FIELD, BP4_ELF_COUPLING, BP5_RF_MMW],
+  "membrane-receptors":    [BP1_RESTING_POTENTIAL, BP5_RF_MMW],
+  "mitochondria":          [BP1_RESTING_POTENTIAL, BP6_FROHLICH],
   "endoplasmic-reticulum": [BP4_ELF_COUPLING],
-  "nucleus":       [BP5_RF_COUPLING, BP7_VMEM_PATTERN],
-  "cytoskeleton":  [BP6_FROHLICH, BP9_THZ_TELEMETRY],
-  "cytoplasm":     [BP8_QED_WATER, BP9_THZ_TELEMETRY],
+  "nucleus":               [BP5_RF_MMW, BP7_VMEM_PATTERN],
+  "cytoskeleton":          [BP6_FROHLICH, BP9_THZ_TELEMETRY],
+  "cytoplasm":             [BP8_QED_WATER, BP9_THZ_TELEMETRY],
+};
+
+/**
+ * BIOPLASMA_ZONE_REGISTRY — keyed by CellZoneId (all 8 zones always present).
+ * Zone-level aggregation of BIOPLASMA_REGISTRY for panel display.
+ * Used directly by BioplasmaFieldSection.tsx.
+ */
+export const BIOPLASMA_ZONE_REGISTRY: Record<CellZoneId, BioplasmaPathway[]> = {
+  "membrane":              [BP1_RESTING_POTENTIAL, BP2_ACTION_POTENTIAL, BP3_WOUND_FIELD, BP4_ELF_COUPLING, BP5_RF_MMW],
+  "mitochondria":          [BP1_RESTING_POTENTIAL, BP6_FROHLICH],
+  "endoplasmic-reticulum": [BP4_ELF_COUPLING],
+  "nucleus":               [BP5_RF_MMW, BP7_VMEM_PATTERN],
+  "cytoskeleton":          [BP6_FROHLICH, BP9_THZ_TELEMETRY],
+  "cytoplasm":             [BP8_QED_WATER, BP9_THZ_TELEMETRY],
+  "ribosomes":             [],
+  "golgi":                 [],
 };
 ```
 
 ### §8.3 Vital Store Bioplasma Extension
 
-Extend `src/features/cell-shell/state/useCellVitalStore.ts`:
+**Implemented in**: `src/features/cell-shell/state/useCellVitalStore.ts`
+
+The as-built `bioplasmaSignal()` differs from the roadmap sketch in three ways:
+1. **Broadcast fan-out**: `direction === "broadcast"` emits to **all 8 zones** at `weightedIntensity × 0.55`. If the source is a real organelle (not the `"broadcast"` sentinel), its zone receives full intensity. This corrects the original sketch which would have silently emitted nothing for BP1 and BP3 (both have `source: "broadcast"`).
+2. **Intensity clamp**: `Math.min(1, Math.max(0, intensity × sigma))` before any routing.
+3. **`bioplasmaBaseline` map** + **`initBP1Baseline()`**: a separate store field that persists the BP1 membrane intensity across transient signal overwrites.
 
 ```typescript
-bioplasmaSignal: (pathway: BioplasmaPathway, intensity: number = 1.0) => {
-  if (pathway.status === "reserved") return; // BP8: never fires
-  if (pathway.organelleRoute.direction === "readonly") return; // BP9: diagnostic only
+// State shape additions (CellVitalState)
+bioplasmaBaseline: Partial<Record<CellZoneId, number>>;
+// ^ Set by initBP1Baseline(); restored by clearExpiredSignals() whenever a
+//   transient signal expires over a zone that has a recorded baseline.
 
-  const weightedIntensity = intensity * pathway.sigma;
-  const sourceZone = ORGANELLE_TO_ZONE[pathway.organelleRoute.source];
+bioplasmaSignal: (pathway: BioplasmaPathway, intensity?: number, ttlMs?: number) => void;
+initBP1Baseline: (profileIntensity?: number) => void;
+// ^ profileIntensity defaults to 0.22 (balanced Vmem). Also accepts 0.10 (cool) or 0.38 (performance).
+//   Reads persisted VmemProfile on layout boot via readVmemFromStorage().
+
+// ─── bioplasmaSignal() implementation ────────────────────────────────────────
+bioplasmaSignal: (pathway, intensity = 1.0, ttlMs = 1500) => {
+  // Guard 1 — reserved pathways never fire (BP8).
+  if (pathway.status === "reserved") return;
+  // Guard 2 — read-only pathways never drive routing (BP9).
+  if (pathway.organelleRoute.direction === "readonly") return;
+
+  // σ-weighted intensity, clamped to [0, 1].
+  const weightedIntensity = Math.min(1, Math.max(0, intensity * pathway.sigma));
 
   set((s) => {
-    const nextSignals = { ...s.signals };
-    if (sourceZone) {
-      nextSignals[sourceZone] = {
-        type: "pulse",
-        intensity: weightedIntensity,
-        expiresAt: Date.now() + 1500,
-      };
-    }
-    if (pathway.organelleRoute.target !== "broadcast" && pathway.organelleRoute.direction !== "broadcast") {
-      const targetZone = ORGANELLE_TO_ZONE[pathway.organelleRoute.target];
+    const next = { ...s.signals };
+
+    if (pathway.organelleRoute.direction === "broadcast") {
+      // Fan-out: emit to every zone at attenuated intensity.
+      // Correctly handles BP1 (membrane broadcast) and BP3 (wound field, source="broadcast").
+      for (const zoneId of ALL_ZONES) {
+        next[zoneId] = { type: "bioplasma", intensity: weightedIntensity * 0.55, expiresAt: Date.now() + ttlMs };
+      }
+      // Boost the real source zone (if source is an organelle, not "broadcast").
+      const sourceZone = getZoneForOrganelle(pathway.organelleRoute.source);
+      if (sourceZone) {
+        next[sourceZone] = { type: "bioplasma", intensity: weightedIntensity, expiresAt: Date.now() + ttlMs };
+      }
+    } else {
+      // Point-to-point (inward, outward, bidirectional).
+      const sourceZone = getZoneForOrganelle(pathway.organelleRoute.source);
+      const targetZone = pathway.organelleRoute.target !== "broadcast"
+        ? getZoneForOrganelle(pathway.organelleRoute.target)
+        : null;
+      if (sourceZone) {
+        next[sourceZone] = { type: "bioplasma", intensity: weightedIntensity, expiresAt: Date.now() + ttlMs };
+      }
       if (targetZone) {
-        nextSignals[targetZone] = {
-          type: "pulse",
-          intensity: weightedIntensity * 0.7,
-          expiresAt: Date.now() + 2000,
-        };
+        next[targetZone] = { type: "bioplasma", intensity: weightedIntensity * 0.7, expiresAt: Date.now() + ttlMs + 500 };
       }
     }
-    return { signals: nextSignals };
+    return { signals: next };
   });
 },
+
+// ─── initBP1Baseline() ───────────────────────────────────────────────────────
+initBP1Baseline: (profileIntensity = 0.22) =>
+  set((s) => ({
+    bioplasmaBaseline: { ...s.bioplasmaBaseline, membrane: profileIntensity },
+    signals: {
+      ...s.signals,
+      membrane: { type: "bioplasma", intensity: profileIntensity, expiresAt: Infinity },
+    },
+  })),
 ```
+
+**`clearExpiredSignals()` baseline restore**: After removing any expired signal over a zone that has a recorded `bioplasmaBaseline` entry, the store immediately re-emits the baseline signal at `expiresAt: Infinity`. This ensures the BP1 always-on membrane glow survives all transient overwrites.
+
+**Boot-time profile restore** (`CellExplorerLayout.tsx`): On mount, calls `initBP1Baseline(VMEM_BASELINE[readVmemFromStorage()])` — the persisted Cool/Balanced/Performance profile is applied immediately, not only when the user opens the BP7 switcher.
 
 ### §8.4 Hebbian Adapter Bioplasma Modulation
 
-Add to `src/features/learning/hebbianAdapter.ts`:
+**Implemented in**: `src/features/learning/hebbianAdapter.ts`
+
+The as-built function signature differs from the roadmap sketch: it takes `zoneRegistry: Partial<Record<CellZoneId, BioplasmaPathway[]>>` (i.e. `BIOPLASMA_ZONE_REGISTRY`) rather than a flat `activePathways: BioplasmaPathway[]` array. Two runtime guards added that were absent from the roadmap sketch:
 
 ```typescript
+const MAX_ZONE_BIOPLASMA_BOOST = 0.20;
+// ^ Hard cap: prevents cold-start membrane dominance (5 verified pathways would
+//   otherwise accumulate ~0.65 boost before any user visit has occurred).
+
 export function applyBioplasmaManifoldModulation(
   zoneWeights: Record<CellZoneId, number>,
-  activePathways: BioplasmaPathway[]
+  zoneRegistry: Partial<Record<CellZoneId, BioplasmaPathway[]>>
 ): Record<CellZoneId, number> {
   const modulated = { ...zoneWeights };
-  activePathways.forEach((pw) => {
-    if (pw.status === "reserved") return;
-    const zoneId = ORGANELLE_TO_ZONE[pw.organelleRoute.source] as CellZoneId;
-    if (zoneId && modulated[zoneId] !== undefined) {
-      // Verified pathways (BP1–BP3) boost zone weight by up to 18%; speculative by 9%
+  for (const zoneId of Object.keys(modulated) as CellZoneId[]) {
+    const pathways = zoneRegistry[zoneId];
+    if (!pathways?.length) continue;
+    let zoneBoost = 0;
+    for (const pw of pathways) {
+      if (pw.status === "reserved") continue;               // BP8 guard
+      if (pw.organelleRoute.direction === "readonly") continue; // BP9 guard
       const boostFactor = pw.sigma >= 0.75 ? 0.18 : pw.sigma >= 0.50 ? 0.14 : 0.09;
-      modulated[zoneId] = Math.min(1.0, modulated[zoneId] + pw.sigma * boostFactor);
+      zoneBoost += pw.sigma * boostFactor;
     }
-  });
+    // Cap total bioplasma contribution per zone; then clamp zone weight to [0, 1].
+    modulated[zoneId] = Math.min(1.0, modulated[zoneId] + Math.min(MAX_ZONE_BIOPLASMA_BOOST, zoneBoost));
+  }
   return modulated;
 }
 ```
 
-### §8.5 Implementation Priority Order
+### §8.5 BP7 Vmem Closed Loop (Unplanned Addition)
 
-| Priority | Pathway | σ | Target File | Action |
+**Implemented in**: `src/features/explorer/components/BioplasmaFieldSection.tsx` · `src/features/cell-shell/hooks/useBioplasmaVmem.ts`
+
+This integration was not in the original roadmap but closes the BP7 feedback loop. In zones that include BP7, `BioplasmaFieldSection` renders a VmemProfile switcher with three profiles:
+
+| Profile | `profileIntensity` | Biological analogue |
+|---|---|---|
+| `cool` | 0.10 | Hyperpolarised resting state |
+| `balanced` | 0.22 | Homeostatic default |
+| `performance` | 0.38 | Depolarised metabolic pump |
+
+On profile change:
+1. `useBioplasmaVmem.setVmemProfile(profile)` → persists to `localStorage` (key `cell-os-vmem-v1`)
+2. `bioplasmaSignal(BP7_VMEM_PATTERN, VMEM_BASELINE[profile] / BP7_VMEM_PATTERN.sigma, 3000)` → fires a 3-second BP7 ring pulse
+3. `initBP1Baseline(VMEM_BASELINE[profile])` → updates the membrane glow intensity to match the selected metabolic state
+
+**Note**: `useBioplasmaVmem` uses separate localStorage, not Zustand persist, so the VmemProfile survives store resets. `readVmemFromStorage()` is exported as a pure (non-hook) function for use in `CellExplorerLayout` mount effects.
+
+### §8.6 Implementation Status Table (Updated)
+
+| Priority | Pathway | σ | File | Status |
 |---|---|---|---|---|
-| 1 | BP1 (Resting Potential) | 0.92 | `useCellVitalStore.ts` | Add always-on baseline glow (never expires) |
-| 2 | BP2 (Action Potential) | 0.90 | `useCellVitalStore.ts` | `bioplasmaSignal(BP2, 1.0)` on Binder-analogue events |
-| 3 | BP3 (Wound Field) | 0.85 | `useCellVitalStore.ts` | `bioplasmaSignal(BP3, 1.0)` on health/battery critical |
-| 4 | BP7 (Vmem Pattern) | 0.72 | `useCellVitalStore.ts` | Persistent state hook via Zustand persist |
-| 5 | BP4 (ELF Coupling) | 0.65 | New `useELFResonance.ts` | Edge-triggered event listener |
-| 6 | BP9 (THz Telemetry) | 0.50 | `DiagnosticPanel.tsx` | Read-only metric display; never feeds routing |
-| 7 | BP5 (RF/MMW) | 0.60 | New `useThermalHAL.ts` | Frequency-gated HAL event |
-| 8 | BP6 (Fröhlich) | 0.45 | Deferred | Wait for biological confirmation |
-| 9 | BP8 (QED Water) | 0.32 | `types.ts` only | Reserved constant; no runtime logic |
+| 1 | BP1 (Resting Potential) | 0.92 | `useCellVitalStore.ts` | ✅ Always-on Infinity TTL + bioplasmaBaseline |
+| 2 | BP2 (Action Potential) | 0.90 | `useMembraneObserver.ts` | ✅ Fires on organelle click-lock (affect event) |
+| 3 | BP3 (Wound Field) | 0.85 | `useWoundFieldBroadcast.ts` | ✅ error/offline/Battery<15% listeners; mounted race fix |
+| 4 | BP7 (Vmem Pattern) | 0.72 | `useBioplasmaVmem.ts` + `BioplasmaFieldSection.tsx` | ✅ localStorage persist + VmemProfile switcher |
+| 5 | BP4 (ELF Coupling) | 0.65 | `useELFResonance.ts` | ✅ visibilitychange/focus; 8s debounce |
+| 6 | BP9 (THz Telemetry) | 0.50 | `BioplasmaFieldSection.tsx` | ✅ Read-only panel cards; never feeds routing |
+| 7 | BP5 (RF/MMW) | 0.60 | `useThermalHAL.ts` | ✅ 12s interval; heapRatio > 0.75 gate |
+| 8 | BP6 (Fröhlich) | 0.45 | `bioplasmaPathways.ts` only | ⏸ Deferred — constant exported; no runtime logic |
+| 9 | BP8 (QED Water) | 0.32 | `bioplasmaPathways.ts` only | 🔒 Reserved annotation; no runtime usage |
 
 ---
 
@@ -953,55 +1101,126 @@ export function applyBioplasmaManifoldModulation(
 | Root/su binary in official LOS | ❌ Not present — opt-in Magisk only |
 | microG in standard LOS | ❌ Separate build variant — not in official LOS |
 
+### §9.6 Cell OS TypeScript Implementation Verification
+
+The following table records the as-built status of every component specified or implied by the §10 roadmap. All Phase 1–3 items are accounted for.
+
+| Component | File | Status | Notes |
+|---|---|---|---|
+| `BioplasmaRouteEndpoint` type | `src/domain/types.ts` | ✅ Implemented | 16-member union; roadmap had plain `string` |
+| `PlasmaLiteralness` type | `src/domain/types.ts` | ✅ Implemented | 3 members as specified |
+| `BioplasmaStatus` type | `src/domain/types.ts` | ✅ Implemented | 4 tiers as specified |
+| `BioplasmaPathway` interface | `src/domain/types.ts` | ✅ Implemented | `organelleRoute.source/target` typed as `BioplasmaRouteEndpoint` |
+| `BP1_RESTING_POTENTIAL` | `src/domain/content/bioplasmaPathways.ts` | ✅ Implemented | σ=0.92, verified, broadcast direction |
+| `BP2_ACTION_POTENTIAL` | `src/domain/content/bioplasmaPathways.ts` | ✅ Implemented | σ=0.90, verified, inward |
+| `BP3_WOUND_FIELD` | `src/domain/content/bioplasmaPathways.ts` | ✅ Implemented | σ=0.85, verified, broadcast |
+| `BP4_ELF_COUPLING` | `src/domain/content/bioplasmaPathways.ts` | ✅ Implemented | σ=0.65, indicative, inward |
+| `BP5_RF_MMW` | `src/domain/content/bioplasmaPathways.ts` | ✅ Implemented | σ=0.60, indicative (roadmap alias: `BP5_RF_COUPLING`) |
+| `BP6_FROHLICH` | `src/domain/content/bioplasmaPathways.ts` | ⏸ Deferred constant | σ=0.45, speculative; exported but no runtime logic |
+| `BP7_VMEM_PATTERN` | `src/domain/content/bioplasmaPathways.ts` | ✅ Implemented | σ=0.72, indicative, broadcast |
+| `BP8_QED_WATER` | `src/domain/content/bioplasmaPathways.ts` | 🔒 Reserved annotation | σ=0.32; `bioplasmaSignal()` returns early; no UI |
+| `BP9_THZ_TELEMETRY` | `src/domain/content/bioplasmaPathways.ts` | ✅ Implemented (read-only) | σ=0.50, readonly guard; panel display only |
+| `BIOPLASMA_REGISTRY` | `src/domain/content/organelles.ts` | ✅ Implemented | Keyed by organelle ID string |
+| `BIOPLASMA_ZONE_REGISTRY` | `src/domain/content/organelles.ts` | ✅ Implemented | Keyed by `CellZoneId`; used by `BioplasmaFieldSection` |
+| `bioplasmaSignal()` | `src/features/cell-shell/state/useCellVitalStore.ts` | ✅ Implemented | Broadcast fan-out; σ-weighted clamp; BP8/BP9 guards |
+| `bioplasmaBaseline` map | `src/features/cell-shell/state/useCellVitalStore.ts` | ✅ Implemented | Persists BP1 intensity; restored by `clearExpiredSignals()` |
+| `initBP1Baseline()` | `src/features/cell-shell/state/useCellVitalStore.ts` | ✅ Implemented | Accepts `profileIntensity` (default 0.22); Infinity TTL |
+| `useWoundFieldBroadcast` | `src/features/cell-shell/hooks/useWoundFieldBroadcast.ts` | ✅ Implemented | BP3: error/offline/Battery<15%; mounted ref race fix |
+| `useELFResonance` | `src/features/cell-shell/hooks/useELFResonance.ts` | ✅ Implemented | BP4: visibilitychange/focus; 8s debounce |
+| `useThermalHAL` | `src/features/cell-shell/hooks/useThermalHAL.ts` | ✅ Implemented | BP5: 12s interval; heapRatio > 0.75 gate |
+| `useBioplasmaVmem` | `src/features/cell-shell/hooks/useBioplasmaVmem.ts` | ✅ Implemented | BP7: localStorage persist; `readVmemFromStorage()` exported |
+| `applyBioplasmaManifoldModulation()` | `src/features/learning/hebbianAdapter.ts` | ✅ Implemented | Takes `zoneRegistry`; `MAX_ZONE_BIOPLASMA_BOOST=0.20`; BP9 guard |
+| `BioplasmaFieldSection` | `src/features/explorer/components/BioplasmaFieldSection.tsx` | ✅ Implemented | All 8 zone panels; σ bar; direction glyph; BP7 VmemProfile switcher |
+| `bioplasmaZoneWeights` ring glow | `src/features/explorer/navigation/CellMapNav.tsx` | ✅ Implemented | `useLearnedManifold()` wired to SVG `fillOpacity`/`strokeOpacity` |
+| BP1 boot-time profile restore | `src/features/explorer/navigation/CellExplorerLayout.tsx` | ✅ Implemented | `initBP1Baseline(VMEM_BASELINE[readVmemFromStorage()])` on mount |
+| `SecurityStatusOrganelle` (immune checkpoint) | — | ❌ Not yet built | Replacement for deprecated Trust Interface; §10 Phase 3 outstanding |
+
 ---
 
 ## 10. Implementation Roadmap
 
-### Phase 1 — Immediate (Verified BPs: σ ≥ 0.85, implement now)
-
-**Goal**: Ground the Cell OS in its bioplasma substrate. Every verified pathway must be type-defined and at minimum stub-implemented.
-
-| Action | File | Details |
-|---|---|---|
-| Add `BioplasmaPathway` type | `src/domain/types.ts` | Add full type + `PlasmaLiteralness` + `BioplasmaStatus` |
-| Add BP1–BP9 constants | `src/domain/content/bioplasmaPathways.ts` (new file) | Export all 9 `BioplasmaPathway` constants |
-| Add `BIOPLASMA_REGISTRY` | `src/domain/content/organelles.ts` | Map organelle IDs to pathway arrays |
-| Add `bioplasmaSignal()` action | `src/features/cell-shell/state/useCellVitalStore.ts` | σ-weighted pulse with reserved/readonly guards |
-| BP1 always-on baseline glow | `src/features/cell-shell/state/useCellVitalStore.ts` | Non-expiring signal at `membrane` zone; init on store creation |
-| BP2 Binder-event burst | `src/features/cell-shell/components/CellDiagram.tsx` | Fire on high-priority interaction events |
-| BP3 health/battery broadcast | New `useWoundFieldBroadcast.ts` | Listen for low-battery / critical health state → fire bioplasmaSignal |
-
-### Phase 2 — Near-Term (Indicative BPs: σ 0.50–0.74)
-
-**Goal**: Extend the living system with persistent state and event-driven signalling.
-
-| Action | File | Details |
-|---|---|---|
-| BP7 persistent Vmem store | `useCellVitalStore.ts` | Zustand persist middleware for anatomical memory; read on mount |
-| BP4 ELF edge-triggered listener | New `useELFResonance.ts` | Edge-triggered event handler with threshold gate |
-| BP5 thermal HAL analogue | New `useThermalHAL.ts` | Frequency-gated callback; fires only at sampling-rate threshold |
-| BP9 telemetry display | `DiagnosticPanel.tsx` (or new component) | Read-only metric viewer; never feeds routing or signal decisions |
-| Hebbian bioplasma modulation | `src/features/learning/hebbianAdapter.ts` | `applyBioplasmaManifoldModulation()` integrated into weight calculation |
-| Zone integration display | Zone panel components | Show combined bioplasma+biophoton σ per zone |
-
-### Phase 3 — Research-Gated (Speculative BPs: σ < 0.50)
-
-**Goal**: Hold structural space for speculative pathways without polluting routing logic.
-
-| Action | File | Details |
-|---|---|---|
-| BP6 coherent burst (deferred) | Deferred | Implement only when Fröhlich condensate evidence reaches σ ≥ 0.50. Current implementation: reserved constant only. |
-| BP8 reserved annotation | `src/domain/types.ts` | `BP8_QED_WATER` constant exported; `status: "reserved"`; no runtime usage |
-| Future: immune checkpoint | New `SecurityStatusOrganelle.tsx` | Replacement for deprecated Trust Interface — surface BP3/BP7 anomalies |
-
-### Phase 4 — Documentation Sync
-
-After each Phase 1–3 implementation:
-
-1. Update `BIOPLASMA_RESEARCH.md` §13 (Actionable Dev Roadmap) to reflect completed items
-2. Update this document §9 if new source paths are confirmed
-3. Update `.agents/memory/cell-os-bioplasma-schema.md` if σ calibration changes
+> **Status as of June 2026**: Phases 1–3 are fully complete. Phase 4 (documentation sync) is in progress — this document has been updated; `BIOPLASMA_RESEARCH.md` §13 sync is pending. The immune checkpoint organelle (`SecurityStatusOrganelle.tsx`) remains the sole outstanding Phase 3 item.
 
 ---
 
-*Document compiled from 14 research batches, June 2026. Biological claims governed by `BIOPLASMA_RESEARCH.md`. LineageOS source claims verified against `github.com/LineageOS` organisation. FP5-specific constraints enforced per §3.5 and §9.5.*
+### Phase 1 — ✅ COMPLETE (Verified BPs: σ ≥ 0.85)
+
+**Goal**: Ground the Cell OS in its bioplasma substrate. Every verified pathway type-defined and at minimum stub-implemented.
+
+| Action | Final File | Status | Deviation from plan |
+|---|---|---|---|
+| Add `BioplasmaPathway` type | `src/domain/types.ts` | ✅ Done | Added `BioplasmaRouteEndpoint` 16-member union for `source`/`target` fields (roadmap had `string`) |
+| Add BP1–BP9 constants | `src/domain/content/bioplasmaPathways.ts` | ✅ Done | BP5 exported as `BP5_RF_MMW` (roadmap alias: `BP5_RF_COUPLING`) |
+| Add `BIOPLASMA_REGISTRY` | `src/domain/content/organelles.ts` | ✅ Done | Also added `BIOPLASMA_ZONE_REGISTRY` keyed by `CellZoneId` for panel display |
+| Add `bioplasmaSignal()` | `src/features/cell-shell/state/useCellVitalStore.ts` | ✅ Done | Added broadcast fan-out (all 8 zones × 0.55), intensity clamp, `bioplasmaBaseline` map, `initBP1Baseline()` |
+| BP1 always-on baseline glow | `src/features/cell-shell/state/useCellVitalStore.ts` | ✅ Done | `expiresAt: Infinity`; baseline restored after transient overwrites via `clearExpiredSignals()` |
+| BP2 Binder-event burst | `src/features/learning/useMembraneObserver.ts` | ✅ Done | Fires on organelle click-lock (affect event); roadmap targeted `CellDiagram.tsx` (not used) |
+| BP3 health/battery broadcast | `src/features/cell-shell/hooks/useWoundFieldBroadcast.ts` | ✅ Done | `window.error`, `unhandledrejection`, `offline`, Battery API < 15%; `mounted` ref race condition fixed |
+
+---
+
+### Phase 2 — ✅ COMPLETE (Indicative BPs: σ 0.50–0.74)
+
+**Goal**: Extend the living system with persistent state and event-driven signalling.
+
+| Action | Final File | Status | Deviation from plan |
+|---|---|---|---|
+| BP7 persistent Vmem store | `src/features/cell-shell/hooks/useBioplasmaVmem.ts` | ✅ Done | Separate `localStorage` hook (key `cell-os-vmem-v1`), NOT Zustand persist (roadmap said Zustand). `readVmemFromStorage()` exported as pure function for boot-time use. |
+| BP4 ELF edge-triggered listener | `src/features/cell-shell/hooks/useELFResonance.ts` | ✅ Done | `visibilitychange` + `focus` events; 8s debounce; σ=0.65 intensity |
+| BP5 thermal HAL analogue | `src/features/cell-shell/hooks/useThermalHAL.ts` | ✅ Done | 12s polling interval; fires when JS heap ratio > 0.75 |
+| BP9 telemetry display | `src/features/explorer/components/BioplasmaFieldSection.tsx` | ✅ Done | Roadmap targeted `DiagnosticPanel.tsx` (not built); final component shows pathway cards with σ bar in all zone panels |
+| Hebbian bioplasma modulation | `src/features/learning/hebbianAdapter.ts` | ✅ Done | `applyBioplasmaManifoldModulation(zoneWeights, zoneRegistry)` — takes `BIOPLASMA_ZONE_REGISTRY`, not a flat array; `MAX_ZONE_BIOPLASMA_BOOST=0.20` cap; BP9 readonly guard |
+| Zone integration display | All 8 zone panel components | ✅ Done | `BioplasmaFieldSection` at bottom of each zone panel; `bioplasmaZoneWeights` from `useLearnedManifold()` wired to ring `fillOpacity`/`strokeOpacity` in `CellMapNav.tsx` |
+
+#### Phase 2 Addition (not in original roadmap): BP7 Vmem Closed Loop
+
+`BioplasmaFieldSection.tsx` renders a **VmemProfile switcher** in zones that contain BP7. This closes the feedback loop that was left open by the original plan (Vmem was persisted but nothing read it back as a live signal):
+
+| Profile | `initBP1Baseline` intensity | Biological state |
+|---|---|---|
+| Cool | 0.10 | Hyperpolarised resting |
+| Balanced | 0.22 | Homeostatic default |
+| Performance | 0.38 | Depolarised metabolic pump |
+
+On profile change: persists to localStorage → fires BP7 signal → updates membrane glow. Boot-time restore wired in `CellExplorerLayout.tsx` via `initBP1Baseline(VMEM_BASELINE[readVmemFromStorage()])`.
+
+---
+
+### Phase 3 — ✅ COMPLETE as designed (Speculative BPs: σ < 0.50)
+
+**Goal**: Hold structural space for speculative pathways without polluting routing logic.
+
+| Action | Final File | Status | Notes |
+|---|---|---|---|
+| BP6 coherent burst | `src/domain/content/bioplasmaPathways.ts` | ⏸ Deferred as planned | Constant `BP6_FROHLICH` exported; `status: "speculative"`; zero runtime logic. Activate only when Fröhlich condensate evidence reaches σ ≥ 0.50. |
+| BP8 reserved annotation | `src/domain/content/bioplasmaPathways.ts` | 🔒 Annotation-only | `BP8_QED_WATER` exported; `bioplasmaSignal()` returns immediately for this pathway; not rendered in any panel |
+| Immune checkpoint | — | ❌ **Not yet built** | `SecurityStatusOrganelle.tsx` — replacement for deprecated Trust Interface (§7.6). Should surface BP3 wound-state, BP7 Vmem anomalies, BP1 resting-state deviations. Remains the sole outstanding Phase 3 item. |
+
+---
+
+### Phase 4 — Documentation Sync (In Progress)
+
+After each Phase 1–3 implementation, three sync actions are required:
+
+| Action | Status |
+|---|---|
+| Update this document (§8, §9.6, §10) to reflect as-built implementation | ✅ Done — June 2026 |
+| Update `BIOPLASMA_RESEARCH.md` §13 (Actionable Dev Roadmap) to mark completed items | ⏳ Pending |
+| Update `.agents/memory/cell-os-bioplasma-schema.md` if σ calibration changes | ✅ Done (no σ changes; architect review confirmed values) |
+
+---
+
+### Future Work Register
+
+Items not in the original roadmap but identified during implementation:
+
+| Item | Priority | Notes |
+|---|---|---|
+| `SecurityStatusOrganelle.tsx` | High | Immune checkpoint — surfaces BP1/BP3/BP7 anomalies. See §7.6. |
+| BP6 activation criteria | Research-gated | Requires biological σ ≥ 0.50; currently 0.45. Monitor Fröhlich condensate literature. |
+| BP8 activation path | Research-gated | Requires non-local, phase-coherent coordination mechanism in AOSP kernel. No such mechanism known. |
+| `BIOPLASMA_RESEARCH.md` §13 sync | Documentation | Mark Phase 1–3 items complete in the source research document. |
+
+---
+
+*Document compiled from 14 research batches, June 2026. Phases 1–3 implementation verified June 2026. Biological claims governed by `BIOPLASMA_RESEARCH.md`. LineageOS source claims verified against `github.com/LineageOS` organisation. FP5-specific constraints enforced per §3.5 and §9.5.*
