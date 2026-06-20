@@ -11,7 +11,15 @@ import { useMembraneObserver } from "@/features/learning/useMembraneObserver";
 import { useWoundFieldBroadcast } from "@/features/cell-shell/hooks/useWoundFieldBroadcast";
 import { useELFResonance } from "@/features/cell-shell/hooks/useELFResonance";
 import { useThermalHAL } from "@/features/cell-shell/hooks/useThermalHAL";
+import { readVmemFromStorage, type VmemProfile } from "@/features/cell-shell/hooks/useBioplasmaVmem";
 import type { CellZoneId } from "@/domain/types";
+
+/** Mirror of BioplasmaFieldSection VMEM_BASELINE — kept local to avoid circular imports. */
+const VMEM_BASELINE: Record<VmemProfile, number> = {
+  cool:        0.10,
+  balanced:    0.22,
+  performance: 0.38,
+};
 
 /**
  * CellExplorerLayout — the root cellular GUI shell.
@@ -37,9 +45,10 @@ export function CellExplorerLayout() {
   const [ringExpanded, setRingExpanded] = useState(true);
 
   // BP1 resting potential — always-on membrane baseline glow (Infinity TTL).
-  // Fired once on mount; never re-fires (Infinity expiresAt survives clearExpiredSignals).
+  // Reads the persisted Vmem profile so cool/performance sessions restore the
+  // correct baseline on boot, not always the default balanced=0.22 intensity.
   useEffect(() => {
-    initBP1Baseline();
+    initBP1Baseline(VMEM_BASELINE[readVmemFromStorage()]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

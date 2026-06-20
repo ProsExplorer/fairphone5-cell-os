@@ -23,7 +23,11 @@ export type VmemProfile = "balanced" | "performance" | "cool";
 
 const STORAGE_KEY = "cell-os-vmem-v1";
 
-function readVmemFromStorage(): VmemProfile {
+/**
+ * Pure read — safe to call outside React (e.g. on layout mount to seed BP1 baseline).
+ * Does not subscribe to state changes; use useBioplasmaVmem() for reactive reads.
+ */
+export function readVmemFromStorage(): VmemProfile {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw === "performance" || raw === "cool") return raw;

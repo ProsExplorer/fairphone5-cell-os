@@ -153,12 +153,14 @@ function CellRingSvg({
         const breathDuration = `${(5.5 + ringIndex * 0.7).toFixed(1)}s`;
 
         // Bioplasma weight drives a subtle baseline glow on non-active rings.
-        // bpWeight ∈ [0, 0.20] (capped by applyBioplasmaManifoldModulation).
-        // fillOpacity: inactive rings range 0.02 (no pathways) → 0.06 (max boost).
-        // strokeOpacity: inactive rings range 0.35 → 0.65 with bioplasma weight.
-        const bpWeight = bioplasmaZoneWeights[zoneId] ?? 0;
-        const bpFillOpacity    = isActive ? 0.08 : 0.02 + bpWeight * 0.20;
-        const bpStrokeOpacity  = isActive ? 1    : 0.35 + bpWeight * 1.50;
+        // bioplasmaZoneWeights is the total learned zone weight [0, 1], which
+        // includes pathway density AND visit history, so it can exceed 0.20.
+        // Clamp both opacities to [0, 1] to avoid invalid SVG attribute values.
+        // fillOpacity: inactive rings range 0.02 → 0.06 (max pathway density).
+        // strokeOpacity: inactive rings range 0.35 → 0.65 at full learned weight.
+        const bpWeight = Math.min(bioplasmaZoneWeights[zoneId] ?? 0, 1);
+        const bpFillOpacity    = isActive ? 0.08 : Math.min(0.02 + bpWeight * 0.20, 1);
+        const bpStrokeOpacity  = isActive ? 1    : Math.min(0.35 + bpWeight * 0.30, 1);
 
         // Label position — staggered at 45° per ring so they never overlap.
         const labelAngle = LABEL_ANGLES_DEG[ringIndex];

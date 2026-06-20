@@ -28,6 +28,14 @@ Full bioplasma layer (BP1–BP9) from LineageOSv2_Manifold.md §8–§10 roadmap
 - `src/features/explorer/navigation/CellExplorerLayout.tsx` — BP1 init on mount, wires useWoundFieldBroadcast/useELFResonance/useThermalHAL
 - All 8 zone panels — added BioplasmaFieldSection at end of each
 
+## Architect post-review follow-up fixes (3 issues)
+
+| Severity | Issue | Fix |
+|----------|-------|-----|
+| Major | Persisted Vmem profile ignored on boot — `initBP1Baseline()` always used balanced=0.22 | Exported `readVmemFromStorage()` as a pure (non-hook) function; `CellExplorerLayout` calls `initBP1Baseline(VMEM_BASELINE[readVmemFromStorage()])` on mount |
+| Minor | `bpStrokeOpacity` could exceed 1 — `bioplasmaZoneWeights` is total learned weight [0,1], not just bioplasma boost [0,0.20] | Clamped both `bpFillOpacity` and `bpStrokeOpacity` with `Math.min(…, 1)`; also reduced strokeOpacity multiplier from 1.50 → 0.30 so max inactive stroke = 0.65 |
+| Nit | BP7 ring glow path not documented — profile changes go through vital-store signals, not `bioplasmaZoneWeights` | Documented explicitly in `CellMapNav` and `BioplasmaFieldSection` comments; this is intentional (BP7 is transient, bioplasmaZoneWeights is structural) |
+
 ## Architect-flagged fixes (all resolved)
 
 | # | Issue | Fix |
