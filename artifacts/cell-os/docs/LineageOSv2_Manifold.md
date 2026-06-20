@@ -629,43 +629,48 @@ export const BP8_QED_WATER: BioplasmaPathway = {
 
 A structural isomorphism has been identified between QED water coherence domains and Qualcomm SMEM (Shared Memory) — the inter-processor shared memory substrate located physically at the boundary between APSS, ADSP, CDSP, and MDSS on the QCM6490 SoC:
 
-| QED Water CD Concept | SMEM Analogue |
-|---|---|
-| Coherence domain (~100 nm discrete region) | SMEM partition (discrete shared region with defined size/hosts) |
-| Molecules oscillating in phase | Cache lines in MOESI Shared state across all four processors |
-| Trapped EM mode (prevents radiative loss) | TCSR remote spinlock (prevents write contention disrupting partition state) |
-| Hydrophilic surface (organising boundary) | SMEM Partition Table (`struct smem_ptable`) at fixed offset |
-| Two-phase system (coherent CD + disordered bulk) | SMEM (coherent shared) + per-process private heap (incoherent) |
-| Non-local coordination | Distributed hardware spinlocks — no central arbiter across 4 processors |
+Nine biological concepts mapped to kernel/SMEM analogues, graded by analogy quality. Full detail in `BP8_SMEM_COHERENCE_DESIGN.md §Finding 3`.
+
+| QED Water CD Concept | SMEM / Kernel Analogue | Quality |
+|---|---|---|
+| Shared coherent substrate | SMEM shared memory fabric (APSS/ADSP/CDSP/MDSS) | Structural |
+| Discrete coherence domains (~100nm) | Discrete SMEM partitions (18–24, enumerable) | Structural |
+| Distributed coordination, no master | TCSR/SFPB hardware spinlocks (distributed CAS) | Structural |
+| Interfacial boundary location | SMEM in SoC fabric boundary between subsystem islands | Structural |
+| Molecules oscillating in phase | Shared SMEM state via CCI/MOESI + DMB/DSB barriers + GLINK acks | Functional |
+| Trapped EM mode (sustains coherence, prevents decoherence) | SMEM coherency/ordering envelope: non-cacheable mappings + barriers + hwspinlock sequences | Functional |
+| EZ water (hardware-enforced exclusion zone) | TrustZone/XPU-protected secure SMEM carveout (hardware bus-level exclusion) | Functional |
+| Dielectric boundary (field confinement to domain) | Reserved-memory + SMMU/IOMMU + XPU firewalls (hard architectural confinement) | Functional |
+| THz collective oscillation frequency | QCM6490 clock tree / devfreq fabric operating points (CPU 2.4 GHz, NoC ~1 GHz, LPDDR5 ~3.2 GHz) | Conceptual |
 
 All four BP8 activation criteria are satisfied by SMEM:
-1. ✅ **Non-local**: no single processor controls SMEM; hardware spinlocks are distributed compare-and-swap
-2. ✅ **Phase-coherent**: `smem_partition_header` state machine — all processors observe the same allocation phase simultaneously
-3. ✅ **Active coordination mechanism**: TCSR/SFPB hardware spinlocks + GLINK signalling
+1. ✅ **Non-local**: no single processor controls SMEM; hardware spinlocks are distributed compare-and-swap across APSS/ADSP/CDSP/MDSS
+2. ✅ **Phase-coherent**: all processors converge on one consistent SMEM view via hardware cache coherence + DMB/DSB ordering
+3. ✅ **Active coordination mechanism**: TCSR/SFPB hardware spinlocks + GLINK inter-processor signalling
 4. ✅ **Interfacial**: SMEM is physically in the SoC fabric at the boundary between processor subsystem islands
 
-**Stage 1 constant** (architect-reviewed — σ and status unchanged, only `lineageosPath` set):
+**Stage 1 constant** (σ and status unchanged; only `lineageosPath` set):
 ```typescript
 export const BP8_QED_WATER: BioplasmaPathway = {
   code: "BP8",
-  sigma: 0.32,            // UNCHANGED — biological evidence governs σ, not software mapping
+  sigma: 0.32,            // UNCHANGED — biological evidence governs σ
   status: "reserved",     // UNCHANGED — biological evidence must drive any status promotion
   carrier: "QED coherent EM mode (interfacial water)",
-  frequencyRange: "THz range (estimated); QED resonance — 7 orders of magnitude above SMEM IPC rates",
+  frequencyRange: "THz range (estimated); QED resonance",
   plasmaLiteralness: "field-coherence-analogy",
-  lineageosPath: "drivers/soc/qcom/smem_coherence.c · android_kernel_fairphone_qcm6490",  // ← newly set
+  lineageosPath: "drivers/soc/qcom/smem_coherence.c · android_kernel_fairphone_qcm6490",
   organelleRoute: { source: "cytoplasm", target: "broadcast", direction: "readonly" },
   ipcAnalogue: "Qualcomm SMEM inter-processor shared memory substrate — " +
-               "strongest available implementation candidate; metaphorical (not vibrational)",
-  isMetaphor: true,  // frequency gap (THz vs MHz IPC) is too large to bridge — permanent
+               "strongest available implementation candidate for BP8",
+  isMetaphor: true,  // THz/GHz gap in frequency row; structural rows are genuine
 };
 ```
 
-**Architect review corrections**: Three isomorphism rows were rejected as forced — spinlock ≠ trapped EM mode (different functions); SMEM TOC ≠ EZ water (access control ≠ structural exclusion); GLINK MHz ≠ biological THz (7 orders of magnitude gap). Four genuine correspondences remain: shared substrate, discrete partitioning, distributed coordination, interfacial boundary location. `smem_partition_header` state enums (AVAILABLE→ALLOCATED) do not exist as documented; coherence is enforced at the hardware cache level. `for_each_smem_partition()` does not exist; kernel driver rewritten to use `qcom_smem_get()` item probing.
+**Kernel notes**: `for_each_smem_partition()` does not exist; kernel driver uses `qcom_smem_get()` item probing (Path A). `smem_partition_header` FSM claims corrected — coherence is enforced at hardware cache-line level.
 
-**σ trigger** (σ=0.32 → 0.45, `speculative`): Requires biological evidence — THz spectroscopy of CD resonance in warm-wet interfacial biological water, or measured CD-dependent ion channel gating at 310K. A real FP5 build with CI measurement constitutes implementation validation only, not biological confirmation.
+**σ trigger** (σ=0.32 → 0.45, `speculative`): Requires biological evidence — THz spectroscopy of CD resonance in warm-wet interfacial biological water, or CD-dependent ion channel gating at 310K. FP5 hardware build constitutes implementation validation only.
 
-**`isMetaphor: true` is permanent** — the THz/MHz frequency gap cannot be bridged by any amount of hardware implementation. The structural four-row mapping (substrate/partitions/distributed-lock/boundary) is the ceiling of what this analogy supports.
+**`isMetaphor: true`** applies specifically to the THz frequency row (Conceptual quality). The eight Structural/Functional rows are genuine design-ontology mappings. See `BP8_SMEM_COHERENCE_DESIGN.md` for the full graded analysis.
 
 ---
 
