@@ -623,28 +623,28 @@ export const BP8_QED_WATER: BioplasmaPathway = {
 };
 ```
 
-#### Proposed Activation Path (Pending Architect Ratification)
+#### Activation Path (Architect-Ratified)
 
 **Proposed LineageOS source**: `drivers/soc/qcom/smem_coherence.c · android_kernel_fairphone_qcm6490`
 
-A structural isomorphism has been identified between QED water coherence domains and Qualcomm SMEM (Shared Memory) — the inter-processor shared memory substrate located physically at the boundary between APSS, ADSP, CDSP, and MDSS on the QCM6490 SoC:
+A structural isomorphism has been identified between QED water coherence domains and Qualcomm SMEM (Shared Memory) — the inter-processor shared memory substrate located physically at the boundary between APSS, ADSP, CDSP, and MPSS (Modem Processor Subsystem) on the QCM6490 SoC:
 
 Nine biological concepts mapped to kernel/SMEM analogues, graded by analogy quality. Full detail in `BP8_SMEM_COHERENCE_DESIGN.md §Finding 3`.
 
 | QED Water CD Concept | SMEM / Kernel Analogue | Quality |
 |---|---|---|
-| Shared coherent substrate | SMEM shared memory fabric (APSS/ADSP/CDSP/MDSS) | Structural |
+| Shared coherent substrate | SMEM shared memory fabric (APSS/ADSP/CDSP/MPSS) | Structural |
 | Discrete coherence domains (~100nm) | Discrete SMEM partitions (18–24, enumerable) | Structural |
-| Distributed coordination, no master | TCSR/SFPB hardware spinlocks (distributed CAS) | Structural |
-| Interfacial boundary location | SMEM in SoC fabric boundary between subsystem islands | Structural |
-| Molecules oscillating in phase | Shared SMEM state via CCI/MOESI + DMB/DSB barriers + GLINK acks | Functional |
+| Distributed coordination, no master | TCSR/SFPB hardware spinlocks (distributed CAS) | Functional |
+| Interfacial boundary location | SMEM in SoC fabric boundary between subsystem islands | Functional |
+| Molecules oscillating in phase | Shared SMEM state via CCI/MOESI + DMB/DSB barriers + GLINK acks (ADSP/CDSP/MPSS) | Functional |
 | Trapped EM mode (sustains coherence, prevents decoherence) | SMEM coherency/ordering envelope: non-cacheable mappings + barriers + hwspinlock sequences | Functional |
 | EZ water (hardware-enforced exclusion zone) | TrustZone/XPU-protected secure SMEM carveout (hardware bus-level exclusion) | Functional |
 | Dielectric boundary (field confinement to domain) | Reserved-memory + SMMU/IOMMU + XPU firewalls (hard architectural confinement) | Functional |
-| THz collective oscillation frequency | QCM6490 clock tree / devfreq fabric operating points (CPU 2.4 GHz, NoC ~1 GHz, LPDDR5 ~3.2 GHz) | Conceptual |
+| THz collective oscillation frequency | QCM6490 clock tree / devfreq (CPU 2.4 GHz, NoC ~1 GHz, LPDDR4x ~2.1 GHz; FP5 uses LPDDR4x) | Conceptual |
 
 All four BP8 activation criteria are satisfied by SMEM:
-1. ✅ **Non-local**: no single processor controls SMEM; hardware spinlocks are distributed compare-and-swap across APSS/ADSP/CDSP/MDSS
+1. ✅ **Non-local**: no single processor controls SMEM; hardware spinlocks are distributed compare-and-swap across APSS/ADSP/CDSP/MPSS
 2. ✅ **Phase-coherent**: all processors converge on one consistent SMEM view via hardware cache coherence + DMB/DSB ordering
 3. ✅ **Active coordination mechanism**: TCSR/SFPB hardware spinlocks + GLINK inter-processor signalling
 4. ✅ **Interfacial**: SMEM is physically in the SoC fabric at the boundary between processor subsystem islands

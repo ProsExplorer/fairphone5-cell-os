@@ -15,7 +15,7 @@
 
 The BP8 pathway (QED Water Coherence Domain) has been reserved since the Cell OS bioplasma layer was first defined, held back by a single condition: the discovery of "a non-local, phase-coherent coordination mechanism in the AOSP/LineageOS kernel that maps specifically to interfacial water physics" (LineageOSv2_Manifold.md §5.8). This document presents the finding that such a mechanism exists and proposes a concrete LineageOS fork to implement it.
 
-The mechanism is **Qualcomm Shared Memory (SMEM)** — a multi-processor shared memory substrate physically located in the hardware boundary zone between the Application Processor Subsystem (APSS), Audio DSP (ADSP), Compute DSP (CDSP), and Modem Subsystem (MDSS) of the Fairphone 5's QCM6490 SoC. The isomorphism between QED coherence domains and SMEM partitions is non-trivial:
+The mechanism is **Qualcomm Shared Memory (SMEM)** — a multi-processor shared memory substrate physically located in the hardware boundary zone between the Application Processor Subsystem (APSS), Audio DSP (ADSP), Compute DSP (CDSP), and Modem Processor Subsystem (MPSS) of the Fairphone 5's QCM6490 SoC. The isomorphism between QED coherence domains and SMEM partitions is non-trivial:
 
 - **QED coherence domains** (~100 nm): discrete regions where water molecules oscillate in phase with a trapped electromagnetic mode, stabilised by a dielectric boundary (protein or membrane surface), collectively coherent without a central oscillator
 - **SMEM partitions**: discrete shared memory regions (~kilobytes to megabytes) where processor subsystems converge on a consistent state, stabilised by a partition-table header acting as an organising boundary, collectively coherent without a central arbiter
@@ -41,7 +41,7 @@ This criterion has four components, each of which must be satisfied:
 | Criterion | Required | Proposed mechanism |
 |---|---|---|
 | **Non-local** | No single central controller manages the coordination | SMEM: distributed partition table, hardware spinlocks, no master arbiter |
-| **Phase-coherent** | All participants converge on the same consistent state | SMEM: `smem_partition_header` state machine; all processors see same partition phase |
+| **Phase-coherent** | All participants converge on the same consistent state | SMEM: hardware cache coherence (CCI-550/DMB-DSB) + hwspinlock-protected writes; all processors converge on the same SMEM state. Note: a named AVAILABLE→ALLOCATED FSM does not exist; coherence is enforced at the hardware cache-line level |
 | **Coordination mechanism** | Active coordination, not just passive memory | SMEM: remote spinlocks (TCSR/SFPB hardware registers) mediate access |
 | **Maps to interfacial water physics** | The mechanism must have a structural isomorphism with CDs at hydrophilic surfaces | SMEM: boundary-zone memory at the physical interface between processor subsystems |
 
@@ -101,7 +101,7 @@ Three AOSP/Linux kernel mechanisms were evaluated against all four activation cr
 
 **Source**: `drivers/soc/qcom/smem.c` · `drivers/soc/qcom/smem_state.c` · `drivers/rpmsg/qcom_glink_smem.c` · `include/linux/soc/qcom/smem.h` [7]
 
-SMEM is a dedicated shared memory region physically located in the Qualcomm SoC fabric, accessible to APSS (Application Processor), ADSP, CDSP, and MDSS simultaneously. It is not owned by any single processor. Its architecture:
+SMEM is a dedicated shared memory region physically located in the Qualcomm SoC fabric, accessible to APSS (Application Processor), ADSP, CDSP, and MPSS (Modem Processor Subsystem) simultaneously. It is not owned by any single processor. Its architecture:
 
 - **Partition Table** (`struct smem_ptable` at a fixed offset from base address): the organising boundary structure defining all partition regions — their start addresses, sizes, host assignments, and access flags
 - **Partition Headers** (`struct smem_partition_header`): each partition has a header that all participating processors use to track allocation state. When Processor A allocates an item in a partition, the partition header state change becomes visible to B, C, D through hardware-enforced memory coherence
@@ -155,21 +155,21 @@ However, CCI **fails the "coordination mechanism" criterion as a software fork t
 
 The mapping from QED water coherence domain physics to Qualcomm SMEM / LineageOS kernel architecture. This is a **design ontology** — an intentional structural mapping from cellular biology to computing architecture — not a literal physics equivalence claim. Each row is graded:
 
-- **Structural** — same function AND same mechanism; the analogy is load-bearing
+- **Structural** — same architectural role; the analogue IS the concept at the design level (the correspondence is load-bearing)
 - **Functional** — same architectural function, different physical mechanism; the analogy is genuine at the design level
 - **Conceptual** — useful design insight; the analogy is intentional, the gap is acknowledged
 
 | QED Water Coherence Domain Concept | Qualcomm SMEM / Kernel Analogue | Source / Evidence | Quality |
 |---|---|---|---|
-| **Shared coherent substrate** — a physical region where distinct entities (molecules / processors) access a common state that is coherent across all participants | **SMEM shared memory fabric** — dedicated hardware region accessible to APSS, ADSP, CDSP, and MDSS simultaneously; the only memory that spans all four subsystems without belonging to any one | `include/linux/soc/qcom/smem.h`; `drivers/soc/qcom/smem.c` | **Structural** |
+| **Shared coherent substrate** — a physical region where distinct entities (molecules / processors) access a common state that is coherent across all participants | **SMEM shared memory fabric** — dedicated hardware region accessible to APSS, ADSP, CDSP, and MPSS simultaneously; the only memory that spans all four subsystems without belonging to any one | `include/linux/soc/qcom/smem.h`; `drivers/soc/qcom/smem.c` | **Structural** |
 | **Discrete coherence domains** — CDs are quantised (~100 nm) regions, not a continuum; specific count of them, each with defined extent and host assignment | **Discrete SMEM partitions** — the partition table defines a specific enumerable set of regions (18–24 on Qualcomm platforms), each with defined size, start address, and host pair; not a continuum | `struct smem_ptable_entry`; `drivers/soc/qcom/smem.c:qcom_smem_probe()` | **Structural** |
-| **Distributed coordination without a central oscillator** — no single molecule controls the CD; coherence emerges from the ensemble | **Distributed hardware spinlocks (TCSR/SFPB)** — no processor holds permanent SMEM ownership; all four processors compete via compare-and-swap on dedicated hardware registers; no software arbiter | `drivers/soc/qcom/smem.c`: `hwspin_lock_timeout_irqsave()` | **Structural** |
-| **Interfacial location** — CDs nucleate and stabilise at the physical boundary between hydrophilic surface and bulk water; they do not exist uniformly in bulk | **Boundary-zone substrate** — SMEM is physically located in the SoC fabric at the boundary between processor subsystem islands; it does not exist in any processor's private address space | QCM6490 SoC fabric architecture; TRM | **Structural** |
-| **Molecules oscillating in phase** — all molecules within a CD oscillate in collective phase with the trapped EM mode; ensemble coherence, not individual motion | **Shared SMEM state maintained by the SMEM+interconnect coherency protocol** — all four processors converge on one consistent view of SMEM contents: CCI/ACE/MOESI for coherent masters (APSS CPU clusters), barriers (DMB/DSB) + cache maintenance + GLINK acknowledgement for heterogeneous masters (ADSP/CDSP/MDSS). SMEM coherence is an emergent property of the SMEM substrate + the CCI/GLINK coordination layer above it | `drivers/bus/arm-cci.c`; `arch/arm64/include/asm/barrier.h`; `drivers/rpmsg/qcom_glink_smem.c` | **Functional** |
+| **Distributed coordination without a central oscillator** — no single molecule controls the CD; coherence emerges from the ensemble | **Distributed hardware spinlocks (TCSR/SFPB)** — no processor holds permanent SMEM ownership; all four processors compete via compare-and-swap on dedicated hardware registers; no software arbiter | `drivers/soc/qcom/smem.c`: `hwspin_lock_timeout_irqsave()` | **Functional** |
+| **Interfacial location** — CDs nucleate and stabilise at the physical boundary between hydrophilic surface and bulk water; they do not exist uniformly in bulk | **Boundary-zone substrate** — SMEM is physically located in the SoC fabric at the boundary between processor subsystem islands; it does not exist in any processor's private address space | QCM6490 SoC fabric architecture; TRM | **Functional** |
+| **Molecules oscillating in phase** — all molecules within a CD oscillate in collective phase with the trapped EM mode; ensemble coherence, not individual motion | **Shared SMEM state maintained by the SMEM+interconnect coherency protocol** — all four processors converge on one consistent view of SMEM contents: CCI/ACE/MOESI for coherent masters (APSS CPU clusters), barriers (DMB/DSB) + cache maintenance + GLINK acknowledgement for heterogeneous masters (ADSP/CDSP/MPSS). SMEM coherence is an emergent property of the SMEM substrate + the CCI/GLINK coordination layer above it | `drivers/bus/arm-cci.c`; `arch/arm64/include/asm/barrier.h`; `drivers/rpmsg/qcom_glink_smem.c` | **Functional** |
 | **Trapped EM mode** — the EM field cannot escape the CD because the dielectric boundary reflects it back; this sustains the collective oscillation and PREVENTS decoherence | **SMEM coherency/ordering envelope** — the invariant that prevents stale divergent views from collapsing SMEM coherence: non-cacheable/ordered memory mappings for certain SMEM regions + ARM DMB/DSB barriers before SMEM state transitions + hwspinlock-protected write sequences. Together these form the "envelope" that sustains the coherent shared state and prevents any processor from seeing an incoherent intermediate | `arch/arm64/include/asm/barrier.h`; `drivers/hwspinlock/`; SMEM non-cacheable mapping attributes | **Functional** |
 | **EZ (Exclusion Zone) water** — a structurally distinct phase of water at the hydrophilic surface, physically and chemically excluded from normal bulk water processes; hardware-enforced structural exclusion, not a software rule | **TrustZone/XPU-protected secure SMEM carveout** — a physically reserved and hardware-enforced memory region that normal bus masters are excluded from at the silicon level; Qualcomm XPU (eXclusion Protection Unit) enforces access at the bus fabric, not via software page tables — normal masters receive a bus error if they attempt access; structurally different from general SMEM, not merely by convention | SCM (Secure Channel Manager); Qualcomm XPU/MPU in TCSR; `drivers/soc/qcom/qcom_scm.c` | **Functional** |
 | **Dielectric boundary** — the low-ε lipid membrane (ε≈2–4) adjacent to high-ε bulk water (ε≈80) creates a dielectric discontinuity that confines the EM field to within the CD; same architectural role: prevents the phenomenon from escaping its defined region | **Reserved-memory boundary + SMMU/IOMMU domains + TrustZone/XPU firewalls** — hard confinement of the SMEM coherence domain: SMMU page tables prevent non-authorised processors from mapping SMEM pages; XPU firewalls enforce access at bus level; reserved-memory regions (Device Tree `reserved-memory`) prevent the kernel from allocating the SMEM carveout for general use. Same function: a structured boundary that confines the phenomenon to within its defined region | `drivers/iommu/arm-smmu.c`; Device Tree `reserved-memory`; Qualcomm XPU | **Functional** |
-| **THz collective oscillation frequency** — the resonant frequency of the trapped EM mode (~0.1–60 THz) determines the CD size via λ=hc/ΔE; this is the rate of the collective molecular state oscillation | **QCM6490 clock tree and interconnect/memory fabric operating points** — the CPU cores run at 2.4 GHz, NoC interconnect at ~1 GHz, LPDDR5 memory bus at ~3200 MHz (3.2 GHz); these are the oscillatory substrate frequencies visible to the kernel via `devfreq`, `cpufreq`, and `clk` framework. CPU GHz is ~3 orders of magnitude below biological THz (vs. 7 for GLINK). Framed as a timing-carrier analogy: the CPU clock rate is the "tempo" of SMEM state transitions, not a vibrational frequency equivalence | `drivers/clk/`; `drivers/devfreq/`; `drivers/cpufreq/` | **Conceptual** |
+| **THz collective oscillation frequency** — the resonant frequency of the trapped EM mode (~0.1–60 THz) determines the CD size via λ=hc/ΔE; this is the rate of the collective molecular state oscillation | **QCM6490 clock tree and interconnect/memory fabric operating points** — the CPU cores run at 2.4 GHz, NoC interconnect at ~1 GHz, LPDDR4x memory bus at ~2133 MHz (2.1 GHz; FP5 uses LPDDR4x, not LPDDR5); these are the oscillatory substrate frequencies visible to the kernel via `devfreq`, `cpufreq`, and `clk` framework. CPU GHz is ~3 orders of magnitude below biological THz (vs. 7 for GLINK). Framed as a timing-carrier analogy: the CPU clock rate is the "tempo" of SMEM state transitions, not a vibrational frequency equivalence | `drivers/clk/`; `drivers/devfreq/`; `drivers/cpufreq/` | **Conceptual** |
 
 ---
 
@@ -242,8 +242,33 @@ static ssize_t probe_count_show(struct device *dev,
     return sysfs_emit(buf, "%zu\n", N_PROBE_ITEMS);
 }
 
+static ssize_t accessible_count_show(struct device *dev,
+                                      struct device_attribute *attr,
+                                      char *buf)
+{
+    u32 accessible = 0;
+    size_t size;
+
+    for (u32 i = 0; i < N_PROBE_ITEMS; i++) {
+        void *ptr = qcom_smem_get(QCOM_SMEM_HOST_ANY,
+                                   smem_probe_items[i], &size);
+        if (!IS_ERR_OR_NULL(ptr))
+            accessible++;
+    }
+    return sysfs_emit(buf, "%u\n", accessible);
+}
+
 static DEVICE_ATTR_RO(coherence_index);
-static DEVICE_ATTR_RO(probe_count);  /* total items probed (denominator) */
+static DEVICE_ATTR_RO(probe_count);      /* denominator: total items probed */
+static DEVICE_ATTR_RO(accessible_count); /* numerator: items currently accessible */
+
+/*
+ * NOTE: SMEM item IDs in smem_probe_items[] above must be verified against
+ * the exported <linux/soc/qcom/smem.h> on the target kernel version.
+ * SMEM_CDSP_STATUS and SMEM_ADSP_SLEEP_STATUS may not be present in all
+ * lineage-21 kernels. If a symbol is missing, remove it from the probe table;
+ * the CI denominator self-adjusts via N_PROBE_ITEMS = ARRAY_SIZE(smem_probe_items).
+ */
 ```
 
 **Kconfig entry** (`kernel/msm-5.4/drivers/soc/qcom/Kconfig`):
@@ -357,12 +382,32 @@ int main() {
 }
 ```
 
-**`Coherence.cpp`** (sysfs reader):
+**`Coherence.cpp`** (sysfs reader with error handling):
 ```cpp
-ndk::ScopedAStatus Coherence::getCoherenceIndex(int32_t* _aidl_return) {
+static bool read_sysfs_int(const std::string& path, int32_t* out) {
     std::string val;
-    android::base::ReadFileToString(sysfs_path_ + "/coherence_index", &val);
-    *_aidl_return = std::stoi(android::base::Trim(val));
+    if (!android::base::ReadFileToString(path, &val)) return false;
+    val = android::base::Trim(val);
+    if (val.empty()) return false;
+    try { *out = std::stoi(val); } catch (...) { return false; }
+    return true;
+}
+
+ndk::ScopedAStatus Coherence::getCoherenceIndex(int32_t* _aidl_return) {
+    if (!read_sysfs_int(sysfs_path_ + "/coherence_index", _aidl_return))
+        *_aidl_return = 0;
+    return ndk::ScopedAStatus::ok();
+}
+
+ndk::ScopedAStatus Coherence::getProbeCount(int32_t* _aidl_return) {
+    if (!read_sysfs_int(sysfs_path_ + "/probe_count", _aidl_return))
+        *_aidl_return = 0;
+    return ndk::ScopedAStatus::ok();
+}
+
+ndk::ScopedAStatus Coherence::getAccessibleCount(int32_t* _aidl_return) {
+    if (!read_sysfs_int(sysfs_path_ + "/accessible_count", _aidl_return))
+        *_aidl_return = 0;
     return ndk::ScopedAStatus::ok();
 }
 ```
@@ -533,15 +578,15 @@ export function useWaterCoherence() {
 
 Cell OS is an intentional design ontology — it maps biological phenomena to their best available kernel correspondents to create a coherent architectural language. The standard for each row is not literal physics equivalence but genuine insight: reading both sides of the row should deepen understanding of how cellular and computational coordination share structural patterns. The nine rows span three quality tiers.
 
-**Four Structural rows** (same function, same mechanism — load-bearing):
+**Two Structural rows** (same architectural role — the analogue IS the concept at the design level):
 
-1. *Interfacial boundary location* — SMEM physically sits at the SoC fabric boundary between subsystem islands, precisely as QED CDs nucleate at hydrophilic surface boundaries. Neither exists in "bulk."
-2. *Discrete coherence domains* — SMEM partitions and QED CDs are both enumerable, quantised, non-continuous regions. The CI (fraction accessible) directly parallels "fraction of domains in coherent phase."
-3. *Distributed coordination without a master* — TCSR/SFPB hardware spinlocks and QED's leaderless ensemble coherence both achieve coordination across multiple participants without any single entity holding permanent control.
-4. *Shared coherent substrate* — SMEM is the single physical fabric spanning all four processor subsystems; QED CDs are the single physical medium enabling multi-molecular phase coherence. Both are the substrate that makes the coherence possible.
+1. *Shared coherent substrate* — SMEM is the single physical fabric spanning all four processor subsystems; QED CDs are the single physical medium enabling multi-molecular phase coherence. SMEM literally IS a shared coherent substrate — the correspondence is load-bearing.
+2. *Discrete coherence domains* — SMEM partitions and QED CDs are both enumerable, quantised, non-continuous coordination regions. The CI (fraction accessible) directly parallels "fraction of domains in coherent phase." The correspondence is definitional.
 
-**Four Functional rows** (same architectural function, different physical mechanism):
+**Six Functional rows** (same architectural function, different physical mechanism):
 
+3. *Distributed coordination without a master* — TCSR/SFPB hardware spinlocks and QED's leaderless ensemble coherence both achieve coordination across multiple participants without any single entity holding permanent control. The function is identical; the mechanism differs (CAS registers vs. quantum resonance).
+4. *Interfacial location* — SMEM sits at the SoC fabric boundary between subsystem islands; QED CDs nucleate at hydrophilic surface boundaries. Same function (boundary-zone existence); different mechanism (engineering placement vs. dielectric physics).
 5. *Molecules oscillating in phase* → SMEM state maintained by SMEM+interconnect protocol: CCI/ACE/MOESI for coherent masters, DMB/DSB barriers + GLINK acks for heterogeneous masters. The function — ensemble convergence on one consistent state — is the same. The protocol layer lives in CCI and GLINK, not in `smem.c` itself; SMEM coherence is an emergent property of the substrate + the protocol above it.
 6. *Trapped EM mode* → SMEM coherency/ordering envelope: non-cacheable memory mappings + ARM DMB/DSB barriers + hwspinlock-protected write sequences. The function — sustaining the coherent shared state and preventing any participant from seeing an incoherent intermediate — is the same. The mechanism (memory ordering invariants) is different from EM field trapping, but serves the identical architectural role.
 7. *EZ water* → TrustZone/XPU-protected secure SMEM carveout. Qualcomm XPU (eXclusion Protection Unit) enforces exclusion at the bus fabric level — a hardware-enforced structural exclusion, not a software access convention. Normal masters receive a bus error, not a software denial. This IS a physically distinct zone, not merely a metadata convention.
@@ -549,13 +594,13 @@ Cell OS is an intentional design ontology — it maps biological phenomena to th
 
 **One Conceptual row** (intentional analogy, gap acknowledged):
 
-9. *THz collective oscillation frequency* → QCM6490 clock tree / devfreq fabric operating points (CPU at 2.4 GHz, NoC at ~1 GHz, LPDDR5 at ~3.2 GHz). The CPU GHz range is ~3 orders of magnitude from biological THz — significantly closer than GLINK's 7-order gap, but still not frequency equivalence. Framed as a timing-carrier analogy: the CPU clock rate is the "tempo" of SMEM state transitions. `isMetaphor: true` is correct and permanent for this row; it does not invalidate the eight rows above it.
+9. *THz collective oscillation frequency* → QCM6490 clock tree / devfreq fabric operating points (CPU at 2.4 GHz, NoC at ~1 GHz, LPDDR4x at ~2.1 GHz; FP5 uses LPDDR4x). The CPU GHz range is ~3 orders of magnitude from biological THz — significantly closer than GLINK's 7-order gap, but still not frequency equivalence. Framed as a timing-carrier analogy: the CPU clock rate is the "tempo" of SMEM state transitions. `isMetaphor: true` is correct and permanent for this row; it does not invalidate the eight rows above it.
 
 ---
 
 ## Limitations
 
-**Frequency gap is disqualifying for any vibrational claim**: Biological THz (~30–60 THz estimated for QED CDs) and SMEM IPC rates (~MHz) differ by ~7 orders of magnitude. This is not a minor caveat — it means the SMEM analogy cannot claim to model the electromagnetic/oscillatory physics of coherence domains. `isMetaphor: true` must remain permanently set regardless of how far the implementation advances. The four retained structural correspondences (substrate, discretisation, distributed coordination, boundary location) are sufficient to justify the implementation candidate designation, not a vibrational isomorphism.
+**Frequency gap is disqualifying for any vibrational claim**: Biological THz (~30–60 THz estimated for QED CDs) and the SoC's GHz clock frequencies differ by ~3 orders of magnitude (much closer than GLINK IPC rates, but still not frequency equivalence). `isMetaphor: true` applies permanently to the THz row (Conceptual). The eight Structural/Functional rows are genuine design-ontology mappings; `isMetaphor` refers specifically to the vibrational frequency gap, not the table as a whole.
 
 **`smem_partition_header` is private — use item probing for Stage 2**: The kernel driver originally proposed iterating partition headers via a non-existent `for_each_smem_partition()` macro. This API does not exist; partition/header structs are private to `smem.c`. The corrected driver (Finding 4.1) uses `qcom_smem_get()` to probe a fixed set of well-known SMEM item IDs — this requires no core SMEM change and is suitable for Stage 2. Path B (partition-level stats via a new exported `qcom_smem_get_partition_stats()` function) requires a one-function patch to `smem.c` and is reserved for Stage 3.
 
@@ -567,14 +612,14 @@ Cell OS is an intentional design ontology — it maps biological phenomena to th
 
 ## Recommendations
 
-1. **Designate SMEM as the BP8 implementation candidate** — the four defensible structural correspondences (shared substrate, discrete partitioning, distributed coordination, boundary location) justify this designation. This does not affect σ or `status`.
+1. **SMEM is the BP8 implementation candidate** — nine biological concepts have kernel correspondents (2 Structural, 6 Functional, 1 Conceptual). This designation does not affect σ or `status`; biological evidence governs both.
 
 2. **Implement the fork in three stages**:
    - **Stage 1** (Cell OS SPA only): Set `lineageosPath` in `bioplasmaPathways.ts`, add `useWaterCoherence.ts` with synthetic CI. σ=0.32, `status: "reserved"` unchanged. Update `LineageOSv2_Manifold.md §5.8` to note the candidate path. No kernel work required.
    - **Stage 2** (Kernel driver): Implement `smem_coherence.c` using Path A (`qcom_smem_get()` probe approach — no core SMEM changes). Test on physical FP5 hardware. Verify CI stability over ≥24 hours across reboots, subsystem restart events, and modem cycling.
    - **Stage 3** (Full AIDL stack): Build and ship the `IWaterCoherence` polling HAL, implement real sysfs→HAL→Cell OS path. If Path B (partition-level stats) is needed for accuracy, add `qcom_smem_get_partition_stats()` to `smem.c` at this stage.
 
-3. **Keep `isMetaphor: true` permanently** — the THz/MHz frequency gap is too large to bridge. Any future hardware implementation, no matter how accurate, cannot claim vibrational isomorphism. The structural four-row mapping is the ceiling of what this analogy supports.
+3. **Keep `isMetaphor: true` permanently on the THz Conceptual row** — the THz/GHz frequency gap cannot be bridged by any hardware implementation. `isMetaphor: true` is scoped to the frequency/vibrational claim; the eight Structural/Functional rows are genuine design-ontology correspondences and are not affected by this flag.
 
 4. **Update `BIOPLASMA_RESEARCH.md` §13** to mark BP8 as "implementation candidate path designed (SMEM); biological σ unchanged at 0.32" with a cross-reference to this document.
 

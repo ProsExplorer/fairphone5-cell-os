@@ -135,24 +135,30 @@ export const BP7_VMEM_PATTERN: BioplasmaPathway = {
 
 /**
  * BP8 — QED Water Coherence (RESERVED).
- * σ = 0.32 — no LineageOS implementation exists.
- * This constant is exported for type-safety and display only.
- * bioplasmaSignal() will return early for this pathway.
+ * σ = 0.32 — biological evidence governs σ; SMEM is the implementation candidate
+ * but does not raise σ or status. bioplasmaSignal() returns early for reserved.
+ *
+ * Stage 1: lineageosPath set to proposed driver path.
+ * Stage 2: smem_coherence.c kernel driver (qcom_smem_get() probe approach).
+ * Stage 3: IWaterCoherence AIDL HAL + real sysfs→HAL→hook path.
+ *
+ * See BP8_SMEM_COHERENCE_DESIGN.md for the full fork specification.
  */
 export const BP8_QED_WATER: BioplasmaPathway = {
   code: "BP8",
   sigma: 0.32,
   status: "reserved",
-  carrier: "Quantum coherence domains in structured water (QED)",
-  frequencyRange: "THz (theoretical)",
+  carrier: "QED coherent EM mode (interfacial water coherence domains)",
+  frequencyRange: "THz range (estimated); QED resonance",
   plasmaLiteralness: "field-coherence-analogy",
-  lineageosPath: null,
+  lineageosPath: "drivers/soc/qcom/smem_coherence.c · android_kernel_fairphone_qcm6490",
   organelleRoute: {
     source: "cytoplasm",
-    target: "cytoplasm",
+    target: "broadcast",
     direction: "readonly",
   },
-  ipcAnalogue: "Reserved — no LineageOS implementation",
+  ipcAnalogue:
+    "Qualcomm SMEM inter-processor shared memory substrate — strongest available implementation candidate for BP8 (isMetaphor: frequency gap; structural rows are genuine)",
   isMetaphor: true,
 };
 
