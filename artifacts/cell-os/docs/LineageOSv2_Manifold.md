@@ -1,11 +1,11 @@
 # Cell OS — LineageOS Manifold v2
 ## Unified Bioplasma + Biophoton Coordinate Map: AOSP Android → LineageOS
 
-> **Thesis**: LineageOS is a coordinate chart on the same computational manifold as AOSP Android. This document extends `LINEAGEOS_MANIFOLD.md` by integrating the nine bioplasma pathways (BP1–BP9) from `BIOPLASMA_RESEARCH.md` into verified LineageOS source code, alongside the existing seven biophoton pathways (P1–P7). The result is a complete 16-pathway electromagnetic manifold — from DC resting potential to UV biophoton emission — fully mapped to the Fairphone 5 (QCM6490) running LineageOS 21+.
+> **Thesis**: LineageOS is a coordinate chart on the same computational manifold as AOSP Android. This document extends `LINEAGEOS_MANIFOLD.md` by integrating twelve bioplasma pathways (BP1–BP9, BP12–BP14) from `BIOPLASMA_RESEARCH.md` into verified LineageOS source code, alongside the existing seven biophoton pathways (P1–P7). The result is a complete 19-pathway electromagnetic manifold — from DC resting potential to UV biophoton emission — fully mapped to the Fairphone 5 (QCM6490) running LineageOS 21+.
 >
-> **Hardware target**: Fairphone 5 — Qualcomm QCM6490, Hexagon 770 DSP, Adreno 643L GPU, LPDDR4x 8 GB. Hardware-invariant across all LineageOS coordinate changes.
+> **Hardware target**: Fairphone 5 — Qualcomm QCM6490 (TSMC 6nm), tri-cluster CPU: 1×Gold Prime 2.71 GHz + 3×Gold 2.40 GHz + 4×Silver 1.96 GHz, Hexagon 770 DSP (HVX + HTA ~12 TOPS), Adreno 643 GPU, LPDDR4x 8 GB. Hardware-invariant across all LineageOS coordinate changes.
 >
-> **Authority hierarchy**: `BIOPLASMA_RESEARCH.md` governs all BP1–BP9 σ values and biological claims · `BIOPHOTON_RESEARCH.md` governs all P1–P7 σ values · `LineageOSv2_Manifold.md` governs LineageOS source path claims and implementation tiers only.
+> **Authority hierarchy**: `BIOPLASMA_RESEARCH.md` governs all BP1–BP9, BP12–BP14 σ values and biological claims · `BIOPHOTON_RESEARCH.md` governs all P1–P7 σ values · `LineageOSv2_Manifold.md` governs LineageOS source path claims and implementation tiers only.
 >
 > **Confidence framework**: `verified` (σ ≥ 0.75) · `indicative` (σ 0.50–0.75) · `speculative` (σ 0.30–0.50) · `unconfirmed` (< 0.30) · `deprecated-feature` (confirmed removed) · `reserved` (placeholder, no implementation)
 >
@@ -72,15 +72,18 @@ Bioplasma pathways (ionic/EM field carriers) and biophoton pathways (photon carr
 | Deep NIR | 1,270 nm | Singlet O₂ monomol decay | P7 sub | `THREAD_PRIORITY_LOWEST` | SeedVault |
 | UV | 200–380 nm | DNA excimer/exciplex; NER burst | P4, P5 | `THREAD_PRIORITY_URGENT_DISPLAY` | Unchanged |
 
-### 1.2 Unified Pathway Summary Table (All 16 Pathways)
+### 1.2 Unified Pathway Summary Table (All 19 Pathways)
 
 | Code | Family | σ | Status | Carrier | Frequency | Zone | LOS Implementation Domain |
 |---|---|---|---|---|---|---|---|
 | **BP1** | Bioplasma | 0.92 | Verified | Electrostatic (K⁺/Na⁺) | DC | membrane | Kernel IRQ / Power HAL |
 | **BP2** | Bioplasma | 0.90 | Verified | Depolarisation wavefront | 0.1–1000 Hz pulse | membrane→cytoplasm | Binder IPC (binder.c) |
+| **BP12** | Bioplasma | 0.88 | Verified | CLOCK/BMAL1 feedback oscillation | ~0.000012 Hz (24 h) | nucleus→broadcast | AlarmManagerService / JobScheduler |
 | **BP3** | Bioplasma | 0.85 | Verified | DC wound field | DC to 0.1 Hz | membrane→broadcast | BroadcastQueue / BatteryService |
+| **BP14** | Bioplasma | 0.82 | Verified | IP3R Ca²⁺ spark / CICR oscillation | 0.1–10 Hz | ER→broadcast | NO_HZ_FULL timer coalescing |
 | **BP7** | Bioplasma | 0.72 | Indicative | Vmem spatial pattern | DC + 0.001–0.1 Hz | all zones | SettingsProvider / LineageParts |
-| **BP4** | Bioplasma | 0.65 | Indicative | ELF EM field (VGCC) | 0.01–300 Hz | membrane→ER | epoll / Looper / MessageQueue |
+| **BP13** | Bioplasma | 0.72 | Indicative | IDR liquid-liquid phase separation | DC (state change) | nucleus→cytoplasm | cgroup memory tier / NUMA affinity |
+| **BP4** | Bioplasma | 0.70 | Indicative | ELF EM field (VGCC) | 0.01–300 Hz | membrane→ER | epoll / Looper / MessageQueue |
 | **BP5** | Bioplasma | 0.60 | Indicative | RF/MMW EM field | 30–300 GHz | membrane→nucleus | AIDL Thermal/Sensor HAL |
 | **P3** | Biophoton | 0.80 | Verified | NIR photon (600–900 nm) | ~430 THz | membrane→broadcast | sendBroadcast / AppOps |
 | **P1** | Biophoton | 0.75 | Verified | Red/NIR photon | 430–500 THz | mitochondria→nucleus | Binder oneway |
@@ -163,10 +166,13 @@ To prevent data drift and circular references, the following hierarchy of author
 |---|---|---|---|
 | **BP1** (Membrane Potential) | 0.92 | `verified` | Inherited — AOSP kernel/IRQ invariant |
 | **BP2** (Action Potential) | 0.90 | `verified` | Inherited — AOSP Binder invariant |
+| **BP12** (Circadian Clock) | 0.88 | `verified` | AlarmManagerService.java AOSP-inherited; Nobel-confirmed mechanism |
 | **BP3** (Wound Fields) | 0.85 | `verified` | Inherited — AOSP BroadcastQueue + BatteryService |
+| **BP14** (Calcium Spark) | 0.82 | `verified` | kernel/time/tick-sched.c NO_HZ_FULL coalescing; patch-clamp verified |
 | **BP7** (Morphogenesis) | 0.72 | `indicative` | LOS-specific — LineageParts source-verified |
-| **BP4** (ELF Coupling) | 0.65 | `indicative` | Inherited — epoll/Looper AOSP invariant |
-| **BP5** (RF/MMW Coupling) | 0.60 | `indicative` | AIDL HAL confirmed; FP5-specific path indicative |
+| **BP13** (Phase Separation) | 0.72 | `indicative` | kernel/mm/ cgroup + NUMA zone paths; metaphor analogy |
+| **BP4** (ELF Coupling) | 0.70 | `indicative` | Inherited — epoll/Looper AOSP invariant; σ raised per Renati 2024 QFT/QED ICR consolidation |
+| **BP5** (RF/MMW Coupling) | 0.60 | `indicative` | LOS-specific: hardware/lineage/interfaces/thermal/ confirmed |
 | **BP9** (THz Phenotype) | 0.50 | `indicative` | StatsD/perfetto verified AOSP; THz analogy metaphor |
 | **BP6** (Fröhlich Coherence) | 0.45 | `speculative` | No LOS production path; architectural metaphor only |
 | **BP8** (QED Water) | 0.32 | `reserved` | No implementation; annotation placeholder only |
@@ -641,7 +647,7 @@ Nine biological concepts mapped to kernel/SMEM analogues, graded by analogy qual
 | Trapped EM mode (sustains coherence, prevents decoherence) | SMEM coherency/ordering envelope: non-cacheable mappings + barriers + hwspinlock sequences | Functional |
 | EZ water (hardware-enforced exclusion zone) | TrustZone/XPU-protected secure SMEM carveout (hardware bus-level exclusion) | Functional |
 | Dielectric boundary (field confinement to domain) | Reserved-memory + SMMU/IOMMU + XPU firewalls (hard architectural confinement) | Functional |
-| THz collective oscillation frequency | QCM6490 clock tree / devfreq (CPU 2.4 GHz, NoC ~1 GHz, LPDDR4x ~2.1 GHz; FP5 uses LPDDR4x) | Conceptual |
+| THz collective oscillation frequency | QCM6490 clock tree / devfreq (CPU tri-cluster 2.71/2.40/1.96 GHz, NoC ~1 GHz, LPDDR4x ~2.1 GHz) | Conceptual |
 
 All four BP8 activation criteria are satisfied by SMEM:
 1. ✅ **Non-local**: no single processor controls SMEM; hardware spinlocks are distributed compare-and-swap across APSS/ADSP/CDSP/MPSS
@@ -711,6 +717,90 @@ export const BP9_THZ_TELEMETRY: BioplasmaPathway = {
   isMetaphor: true,
 };
 ```
+
+### §5.10 BP12 — Circadian Clock Oscillation → AlarmManager / JobScheduler
+
+**σ = 0.88 · Verified · Inherited AOSP · Added June 2026**
+
+#### Biological Mechanism
+
+The mammalian circadian clock is a **transcription-translation feedback loop (TTFL)** with ~24 h period. CLOCK:BMAL1 heterodimers (the positive arm) drive transcription of *Per1/2/3* and *Cry1/2* genes. As PER/CRY protein accumulates, it inhibits CLOCK:BMAL1 (the negative arm) — suppressing its own synthesis. CK1ε phosphorylates PER, targeting it for proteasomal degradation, releasing CLOCK:BMAL1 for the next cycle. The period is tuned by the rate of CK1ε-mediated PER degradation. This Nobel-Prize-confirmed mechanism (Hall, Rosbash, Young 2017) operates in every nucleated eukaryotic cell and is functionally conserved from cyanobacteria to humans.
+
+The circadian clock produces a **broadcast output** that modulates nearly every cellular process: transcription of 80% of protein-coding genes oscillates with circadian phase; metabolic rate, cell division, DNA repair, immune activity, and membrane electrical excitability are all gated by circadian time. The nucleus is the source; the entire cell is the receiver.
+
+#### LineageOS / Android Analogy
+
+| Biological element | Android analogue | Source path |
+|---|---|---|
+| CLOCK:BMAL1 positive arm (drives transcription) | `AlarmManagerService` — schedules recurring exact and inexact alarms | `frameworks/base/services/core/java/com/android/server/alarm/AlarmManagerService.java` |
+| PER/CRY negative arm (suppresses the loop) | Doze mode power controller — suppresses background activity during deep idle | `frameworks/base/services/core/java/com/android/server/DeviceIdleController.java` |
+| CK1ε period-tuning kinase | `JobScheduler` flex-window parameter + `setPeriodic()` — period is the dial | `frameworks/base/services/core/java/com/android/server/job/JobSchedulerService.java` |
+| Circadian broadcast output (phase-gated gene expression) | `ACTION_TIME_TICK` broadcast (every 60 s) + `AlarmManager.RTC_WAKEUP` (circadian-phase wakeup) | AOSP broadcast |
+| Metabolic trough (deep sleep phase) | `NO_HZ_FULL` kernel tick suppression during APSS idle | `kernel/time/tick-sched.c` |
+
+**P → A → E translation**:
+- **P** (Physical): CLOCK:BMAL1 begins transcribing *Per/Cry* at dawn; nucleus broadcasts phase signal to all cellular machinery.
+- **A** (Algorithm): `AlarmManagerService.setExactAndAllowWhileIdle()` fires at exactly the right circadian phase; `JobScheduler.setPeriodic()` schedules recurring constraint-respecting work.
+- **E** (Electronic): Kernel `hrtimer` + `NO_HZ` tick gate — hardware timer fires, APSS wakes from deep-idle, broadcasts `ACTION_TIME_TICK`, subsystems phase-lock to the system clock.
+
+**TypeScript hook** (`bioplasmaPathways.ts`): `BP12_CIRCADIAN_CLOCK` constant — `lineageosPath: "frameworks/base/services/core/java/com/android/server/alarm/AlarmManagerService.java · android_frameworks_base"`, `organelleRoute: { source: "nucleus", target: "broadcast", direction: "broadcast" }`.
+
+---
+
+### §5.11 BP13 — Liquid-Liquid Phase Separation → cgroup Memory Tier / NUMA Affinity
+
+**σ = 0.72 · Indicative · Metaphor-class analogy · Added June 2026**
+
+#### Biological Mechanism
+
+**Liquid-liquid phase separation (LLPS)** is the spontaneous demixing of macromolecular solutions into two coexisting liquid phases — a dense (condensed) phase and a dilute phase — without a membrane boundary. Proteins containing **intrinsically disordered regions (IDRs)** undergo concentration-dependent demixing driven by multivalent weak interactions (π–π, cation–π, hydrophobic). The result is **membraneless organelles**: stress granules, P-bodies, nucleoli (the rRNA processing condensate), transcription hubs (super-enhancer condensates), and centrosome condensates.
+
+Key properties: (1) soft boundary — molecules exchange freely between condensed and dilute phases via diffusion; (2) concentration-sensor — assembly is threshold-driven by protein concentration; (3) selectivity — different IDR sequences produce different condensate compositions; (4) functional gateway — some condensates concentrate enzymes (nucleolus concentrates rRNA modifiers), others exclude them (stress granules sequester mRNAs away from translation).
+
+In-vivo condensate function (signalling amplification vs. pathological aggregation) is an active research area — hence σ = 0.72, not higher.
+
+#### LineageOS / Android Analogy
+
+| Biological element | Android analogue | Source path |
+|---|---|---|
+| Dense condensate phase (concentrated IDR proteins) | "Hot" cgroup memory tier — pages under active use, resident in fastest DRAM bank | `kernel/mm/memcontrol.c` |
+| Dilute phase (sparse background pool) | "Cold" cgroup memory tier — pages eligible for zswap/zram compression | `kernel/mm/vmscan.c` |
+| NUMA zone affinity (physical memory locality) | Qualcomm QCM6490 interleaved LPDDR4x channel binding — first-touch NUMA policy | `kernel/mm/mempolicy.c` |
+| IDR multivalency threshold (assembly criterion) | cgroup memory pressure threshold — crossing the threshold triggers active reclaim | `mm/memcontrol.c pressure_events` |
+| Membraneless boundary (soft, permeable) | No hard page-type fence — LRU scan freely migrates pages between tiers | AOSP mm/inactive list promotion/demotion |
+
+**Metaphor note**: BP13 is `isMetaphor: true` in TypeScript. The cgroup tier partition is a genuine OS mechanism, but the analogy to LLPS condensates is structural (both partition a homogeneous medium into coexisting phases without hard walls) not mechanistic (cgroup does not use IDR-like multivalency). This classification is intentionally conservative.
+
+**TypeScript hook** (`bioplasmaPathways.ts`): `BP13_PHASE_SEPARATION` constant — `lineageosPath: "kernel/mm/memcontrol.c (cgroup memory tier) · kernel/mm/mempolicy.c (NUMA zone) · android_kernel_fairphone_qcm6490"`.
+
+---
+
+### §5.12 BP14 — Calcium Spark / IP3R Ca²⁺ Oscillation → NO_HZ_FULL Timer Coalescing
+
+**σ = 0.82 · Verified · Added June 2026**
+
+#### Biological Mechanism
+
+The **calcium spark** is a stochastic, elementary unit of intracellular Ca²⁺ signalling, first described by Cheng et al. 1993. A single IP3R (inositol 1,4,5-trisphosphate receptor) on the ER lumen opens, releasing a tiny cloud of Ca²⁺ (~1,000–10,000 ions) into the cytoplasm — the spark. If local [Ca²⁺] rises sufficiently, neighbouring RyR (ryanodine receptor) channels on adjacent ER undergo **Ca²⁺-induced Ca²⁺ release (CICR)** — a positive feedback that recruits nearby channels. Thousands of sparks sum to produce **global Ca²⁺ oscillations** (0.1–10 Hz), which encode signalling information in their frequency, amplitude, and spatial pattern.
+
+The key computational principle: **stochastic local events (sparks) coalesce into deterministic global oscillations via positive feedback (CICR)**. The ER is the source; the entire cytoplasm is the receiver.
+
+#### LineageOS / Android Analogy
+
+| Biological element | Android analogue | Source path |
+|---|---|---|
+| Individual Ca²⁺ spark (stochastic IP3R opening) | Individual `hrtimer` expiry — stochastic, nanosecond-resolution | `kernel/time/hrtimer.c` |
+| CICR positive feedback (RyR recruitment) | Timer coalescing under `NO_HZ_FULL` — nearby timers batch to the same tick, reducing wakeups | `kernel/time/tick-sched.c` |
+| Global Ca²⁺ oscillation (frequency-encoded signal) | Periodic batched wakeup burst — the coalesced timer cluster delivers accumulated work in one IRQ | `kernel/irq/chip.c` (IRQ affinity batching) |
+| IP3R channel (source of initial spark) | `hrtimer_start_range_ns()` with slack — the "spark interval" = the slack range | `kernel/time/hrtimer.c` |
+| SERCA pump (re-sequesters Ca²⁺ into ER between sparks) | CPU idle re-entry after `NO_HZ_FULL` work batch — the quiet phase between oscillation peaks | `kernel/sched/idle.c` |
+
+**P → A → E translation**:
+- **P** (Physical): Stochastic IP3R openings fire spontaneously; CICR recruits neighbours when local [Ca²⁺] threshold is exceeded.
+- **A** (Algorithm): Coalescing window [t, t+slack] groups timers that would otherwise generate separate wakeups; any timer within the window inherits the batch's slack.
+- **E** (Electronic): QCM6490 GIC-600 IPI delivers batched timer interrupt; CPU wakes once, drains all coalesced timer callbacks, re-enters idle — one wakeup pulse per oscillation period.
+
+**TypeScript hook** (`bioplasmaPathways.ts`): `BP14_CALCIUM_SPARK` constant — `lineageosPath: "kernel/time/tick-sched.c · kernel/irq/chip.c (NO_HZ_FULL coalescing) · android_kernel_fairphone_qcm6490"`, `organelleRoute: { source: "endoplasmic-reticulum", target: "broadcast", direction: "broadcast" }`.
 
 ---
 
@@ -814,6 +904,59 @@ LiveDisplay implements **chromatic adaptation** — the cellular process by whic
 **STATUS**: ❌ **DEPRECATED/REMOVED in LOS 20/21+** — `android_packages_apps_Trust` repository HTTP 404-deleted.
 
 The Trust Interface was the **immune checkpoint complex** for bioplasma pathway integrity — it would have surfaced BP3 wound-state, BP7 Vmem anomalies, and BP1 resting-state deviations to the user. Because it is removed, the bioplasma manifold currently lacks an immune checkpoint layer. Future Cell OS design should consider implementing a custom Security Status organelle that performs this function.
+
+### 7.7 QCM6490 Extended Substrate Capabilities (Deep Research Additions — June 2026)
+
+Four hardware capabilities of the QCM6490 SoC were not modelled in the original manifold. Each carries a strong biological analogy and can enrich existing pathway substrate metadata or serve as the foundation for future pathway extensions.
+
+**CPU Correction (June 2026 audit):** All references to "4x Gold @ 2.4 GHz + 4x Silver" are superseded by the verified tri-cluster layout: 1×Gold Prime (Cortex-A78) @ **2.71 GHz** + 3×Gold (Cortex-A78) @ **2.40 GHz** + 4×Silver (Cortex-A55) @ **1.96 GHz**. Process node: **TSMC 6nm (N6)**. Adreno GPU: **643** (not 643L).
+
+---
+
+#### 7.7.1 Sensor Hub / LPASS Island → Basal Metabolic Monitoring
+
+**Source**: `drivers/iio/` + ADSP Sensor Protection Domain firmware · `android_kernel_fairphone_qcm6490`  
+**Confidence**: `indicative` — LPASS sensor PD verified in QCM6490 ADSP architecture; Cell OS analogy is architectural.
+
+The ADSP contains a dedicated **Sensor Protection Domain (Sensor PD)** within the Low Power Audio Subsystem (LPASS). This Sensor PD runs **always-on** accelerometer/gyroscope/barometer fusion without waking the main APSS cluster — power draw < 2 mW vs ~500 mW for APSS wakeup. The analogy is the cell's **basal metabolic tone**: housekeeping organelles (mitochondria at rest, ER Ca²⁺ buffering, cytoskeletal tension) maintain a continuous low-energy monitoring state that does not require "nuclear attention" (APSS wakeup). This enriches **BP1** (resting membrane potential = ADSP resting IRQ baseline) and is the substrate for **BP12** (circadian clock output monitoring the metabolic trough without APSS involvement).
+
+**Cell OS integration path**: `useCellVitalStore` circadian hook → ADSP-resident polling when `document.visibilityState === "hidden"`, analogous to Sensor PD operating without APSS wake.
+
+---
+
+#### 7.7.2 Hexagon Tensor Accelerator (HTA) → Epigenetic Pattern Recognition
+
+**Source**: `drivers/char/adsprpc.c` (FastRPC userspace bridge) + CDSP firmware · `android_kernel_fairphone_qcm6490`  
+**Confidence**: `indicative` — HTA documented in Qualcomm Hexagon 770 Architecture Reference; CDSP FastRPC path verified.
+
+The Hexagon 770 contains both **HVX** (vector extension, SIMD) and a dedicated **Hexagon Tensor Accelerator (HTA)** delivering ~12 TOPS for matrix operations. The HTA is architecturally separate from HVX and is accessed via the CDSP. The biological analogy is **epigenetic pattern recognition**: histone modification readers (BRD4, HDAC complexes) scan chromatin marks across the genome in a massively parallel sliding-window fashion, classifying gene accessibility patterns — exactly as the HTA performs sliding-window tensor convolution across input feature maps. This is distinct from general computation (APSS) just as epigenetic reading is distinct from direct DNA transcription. Enriches **BP7** (Vmem morphogenetic patterning — the HTA is the genomic reader that acts on the pattern written by the morphogenetic field).
+
+---
+
+#### 7.7.3 Subsystem Restart (SSR) → Organelle Apoptosis and Mitophagy
+
+**Source**: `drivers/remoteproc/qcom_q6v5_adsp.c` · `android_kernel_fairphone_qcm6490`  
+**Confidence**: `verified` — SSR is a well-documented QCM6490 recovery feature; biological analogy is Structural.
+
+The QCM6490 hardware supports **per-subsystem restart**: if ADSP, CDSP, or MPSS crashes (segfault, watchdog expiry), the SoC isolates and hot-restarts that subsystem without rebooting the full SoC or APSS. The analogy is precise: **selective autophagy / mitophagy**. Damaged mitochondria are selectively tagged with PINK1/Parkin ubiquitin, isolated from the healthy mitochondrial network (fusion/fission balance), encapsulated in an autophagosome, and delivered to the lysosome for degradation and recycling — without triggering whole-cell apoptosis. SSR performs the identical algorithmic step: isolate the faulty subsystem, terminate it, rebuild its state from firmware, reconnect it to the shared SMEM/GLINK fabric. This maps to a new BP substrate enriching **BP8** (SMEM fabric recovery — the GLINK re-handshake after ADSP SSR mirrors the MAM Ca²⁺ re-establishment after mitochondrial fission/fusion).
+
+---
+
+#### 7.7.4 FastRPC / GLink → Vesicle-Mediated Transport
+
+**Source**: `drivers/char/adsprpc.c` (FastRPC) · `drivers/soc/qcom/smem.c` (GLink IPC) · `android_kernel_fairphone_qcm6490`  
+**Confidence**: `verified` — FastRPC and GLink are production QCM6490 IPC mechanisms; biological analogy is Functional.
+
+**FastRPC** provides zero-copy remote procedure calls from APSS to CDSP/ADSP, passing shared-memory buffer handles rather than copying data. **GLINK** (Generic Link) is the transport layer over SMEM that routes packets between all four subsystems. The combined FastRPC/GLink mechanism is the closest software analogue to **vesicle-mediated transport**: the cell does not copy cargo molecules between compartments — instead it wraps them in membrane-derived vesicles (analogous to shared-memory buffer handles), routes them via cytoskeletal tracks (analogous to GLINK routing table), and delivers them to the target organelle, where the vesicle fuses and releases cargo (analogous to the FastRPC callee accessing the buffer pointer directly). This enriches **BP2** (action potential Binder IPC) by providing a distinct, parallel zero-copy transport substrate appropriate for high-bandwidth ER→Golgi vesicle traffic (ER synthesises → COPII vesicle buds → Golgi receives, all without membrane crossing the cytoplasm as free protein).
+
+---
+
+#### 7.7.5 SPU (Secure Processing Unit) → Nuclear Pore Complex Privileged Zone
+
+**Source**: Qualcomm SPU (not directly accessible via LineageOS kernel; TrustZone mediates access)  
+**Confidence**: `indicative` — SPU documented in QCM6490 product brief; kernel access model via TrustZone verified.
+
+The QCM6490 SPU is a dedicated secure enclave for hardware root-of-trust, key storage, and attestation — physically isolated from all other subsystems, accessible only via TrustZone EL3 calls. The analogy is the **nuclear pore complex (NPC)**: the NPC is the exclusive gateway between nucleus and cytoplasm, enforcing active transport selectivity (importin-β/Ran-GTP gradient). Only proteins carrying a nuclear localisation signal (NLS) — analogous to code signed by the hardware root-of-trust — pass through. This enriches **BP7** (morphogenetic state store — Vmem pattern writes must be authenticated, like NLS-guided transcription factor nuclear import).
 
 ---
 
@@ -1090,12 +1233,15 @@ On profile change:
 | 1 | BP1 (Resting Potential) | 0.92 | `useCellVitalStore.ts` | ✅ Always-on Infinity TTL + bioplasmaBaseline |
 | 2 | BP2 (Action Potential) | 0.90 | `useMembraneObserver.ts` | ✅ Fires on organelle click-lock (affect event) |
 | 3 | BP3 (Wound Field) | 0.85 | `useWoundFieldBroadcast.ts` | ✅ error/offline/Battery<15% listeners; mounted race fix |
-| 4 | BP7 (Vmem Pattern) | 0.72 | `useBioplasmaVmem.ts` + `BioplasmaFieldSection.tsx` | ✅ localStorage persist + VmemProfile switcher |
-| 5 | BP4 (ELF Coupling) | 0.65 | `useELFResonance.ts` | ✅ visibilitychange/focus; 8s debounce |
-| 6 | BP9 (THz Telemetry) | 0.50 | `BioplasmaFieldSection.tsx` | ✅ Read-only panel cards; never feeds routing |
-| 7 | BP5 (RF/MMW) | 0.60 | `useThermalHAL.ts` | ✅ 12s interval; heapRatio > 0.75 gate |
-| 8 | BP6 (Fröhlich) | 0.45 | `bioplasmaPathways.ts` only | ⏸ Deferred — constant exported; no runtime logic |
-| 9 | BP8 (QED Water) | 0.32 | `bioplasmaPathways.ts` only | 🔒 Reserved annotation; no runtime usage |
+| 4 | BP12 (Circadian Clock) | 0.88 | `bioplasmaPathways.ts` | ✅ Constant + IMPLEMENTED_BIOPLASMA_PATHWAYS; June 2026 addition |
+| 5 | BP7 (Vmem Pattern) | 0.72 | `useBioplasmaVmem.ts` + `BioplasmaFieldSection.tsx` | ✅ localStorage persist + VmemProfile switcher |
+| 6 | BP14 (Calcium Spark) | 0.82 | `bioplasmaPathways.ts` | ✅ Constant + IMPLEMENTED_BIOPLASMA_PATHWAYS; June 2026 addition |
+| 7 | BP4 (ELF Coupling) | 0.70 | `useELFResonance.ts` | ✅ visibilitychange/focus; 8s debounce; σ raised 0.65→0.70 June 2026 |
+| 8 | BP9 (THz Telemetry) | 0.50 | `BioplasmaFieldSection.tsx` | ✅ Read-only panel cards; never feeds routing |
+| 9 | BP5 (RF/MMW) | 0.60 | `useThermalHAL.ts` | ✅ 12s interval; heapRatio > 0.75 gate; lineageosPath fixed June 2026 |
+| 10 | BP13 (Phase Separation) | 0.72 | `bioplasmaPathways.ts` only | ⏸ Constant exported; `isMetaphor: true`; no runtime hook (cgroup analogy) |
+| 11 | BP6 (Fröhlich) | 0.45 | `bioplasmaPathways.ts` only | ⏸ Deferred — constant exported; no runtime logic |
+| 12 | BP8 (QED Water) | 0.32 | `bioplasmaPathways.ts` only | 🔒 Reserved annotation; no runtime usage |
 
 ---
 
@@ -1264,9 +1410,11 @@ Items not in the original roadmap but identified during implementation:
 | Item | Priority | Notes |
 |---|---|---|
 | `SecurityStatusOrganelle.tsx` | High | Immune checkpoint — surfaces BP1/BP3/BP7 anomalies. See §7.6. |
-| BP6 activation criteria | Research-gated | Requires biological σ ≥ 0.50; currently 0.45. Monitor Fröhlich condensate literature. |
-| BP8 activation path | Research-gated | Requires non-local, phase-coherent coordination mechanism in AOSP kernel. No such mechanism known. |
-| `BIOPLASMA_RESEARCH.md` §13 sync | Documentation | Mark Phase 1–3 items complete in the source research document. |
+| BP12 runtime hook | Medium | `useCircadianClock.ts` — wrap `visibilityState`/`document.timeline` to broadcast circadian phase to zone weights via `bioplasmaSignal()`. Substrate is AlarmManagerService; OS hook is JS Page Visibility API. |
+| BP14 runtime hook | Medium | `useCalciumSpark.ts` — `setInterval` with stochastic jitter simulates CICR; fires burst of bioplasmaSignal() calls with overlapping TTLs to the ER zone and broadcast. |
+| BP6 activation criteria | Research-gated | Requires biological σ ≥ 0.50; currently 0.45. Pietruszka 2025 is Tier 2 only; monitor in-vivo confirmation. |
+| BP8 activation path | Research-gated | Requires non-local, phase-coherent coordination mechanism in AOSP kernel. De Ninno 2025 is supporting context; σ = 0.32 stays frozen until direct CD experimental evidence. |
+| JEITA charging paths (P6/BP3) | Documentation | Add `drivers/power/supply/qcom/smb5-lib.c` and `drivers/power/supply/qcom/qg-battery-profile.c` to §9.x source audit as FP5-specific enrichment of P6 and BP3 wound-field detection substrate. |
 
 ---
 

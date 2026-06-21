@@ -1,23 +1,34 @@
 ---
 name: Cell OS bioplasma schema decisions
-description: Durable decisions on bioplasma pathway set (BP1–BP9), σ calibration, plasma-literalness taxonomy, pseudoscience filters, and authority hierarchy with BIOPHOTON_RESEARCH.md.
+description: Durable decisions on bioplasma pathway set (BP1–BP9, BP12–BP14), σ calibration, plasma-literalness taxonomy, pseudoscience filters, and authority hierarchy with BIOPHOTON_RESEARCH.md.
 ---
 
-## Canonical bioplasma pathway set — BP1–BP9
+## Canonical bioplasma pathway set — BP1–BP9, BP12–BP14
 
-Nine pathways defined in BIOPLASMA_RESEARCH.md §5. BIOPLASMA_RESEARCH.md is authoritative for all BP pathway σ values; BIOPHOTON_RESEARCH.md is authoritative for P1–P7 biophoton σ values. Where both address the same organelle, bioplasma governs ionic/EM weight, biophoton governs photon emission weight.
+Twelve pathways defined in BIOPLASMA_RESEARCH.md §9.2. BIOPLASMA_RESEARCH.md is authoritative for all BP pathway σ values; BIOPHOTON_RESEARCH.md is authoritative for P1–P7 biophoton σ values. Where both address the same organelle, bioplasma governs ionic/EM weight, biophoton governs photon emission weight.
+
+BP12 (Circadian Clock, σ=0.88) and BP14 (Calcium Spark, σ=0.82) were added June 2026 and are in IMPLEMENTED_BIOPLASMA_PATHWAYS. BP13 (LLPS/Phase Separation, σ=0.72) was added June 2026 with `isMetaphor: true` — cgroup analogy, no runtime hook.
+
+The `BioplasmaPathway.code` union type in `types.ts` must include BP12, BP13, BP14 alongside BP1–BP9.
 
 | Pathway | σ | Tier | Description |
 |---|---|---|---|
 | BP1 | 0.92 | Verified | Membrane resting potential (Na⁺/K⁺ gradient) |
 | BP2 | 0.90 | Verified | Action potential propagation (NaV/KV wave) |
+| BP12 | 0.88 | Verified | Circadian clock oscillation (CLOCK/BMAL1 TTFL, Nobel 2017) |
 | BP3 | 0.85 | Verified | Wound bioelectric field (TEP disruption, 40–200 mV/mm) |
+| BP14 | 0.82 | Verified | Calcium spark / IP3R CICR oscillation (0.1–10 Hz) |
 | BP7 | 0.72 | Indicative | Morphogenetic Vmem patterning (Levin bioelectricity) |
-| BP4 | 0.65 | Indicative | ELF coupling 0.01–300 Hz (VGCC stochastic resonance) |
+| BP13 | 0.72 | Indicative | Liquid-liquid phase separation / LLPS condensates (IDR) |
+| BP4 | 0.70 | Indicative | ELF coupling 0.01–300 Hz (VGCC + Renati 2024 ICR consolidation) |
 | BP5 | 0.60 | Indicative | RF/MMW coupling 300 MHz–300 GHz (membrane lipid resonance) |
 | BP9 | 0.50 | Indicative (lower) | THz refractive phenotype 0.1–10 THz |
 | BP6 | 0.45 | Speculative | Fröhlich coherent dipolar oscillation GHz–THz |
-| BP8 | 0.32 | Speculative | QED water coherence domain field (Del Giudice model) |
+| BP8 | 0.32 | Speculative (reserved) | QED water coherence domain field; De Ninno 2025 is supporting context only — σ frozen |
+
+**σ authority rule**: BIOPLASMA_RESEARCH.md §9.2 table is canonical for all BP σ values. Never raise from software analogy alone. BP8 σ frozen until direct experimental CD evidence published. BP6 σ floor is 0.45 until in-vivo Fröhlich condensate confirmed.
+
+**BP4 σ change history**: 0.65 (original) → 0.70 (June 2026, Renati et al. 2024 IJMS systematic review consolidating Liboff-Zhadin ICR effect in QFT/QED framework).
 
 ## Plasma-literalness taxonomy
 

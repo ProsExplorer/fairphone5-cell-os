@@ -479,13 +479,16 @@ This document uses the same four-tier evidence system as BIOPHOTON_RESEARCH.md, 
 |---|---|---|---|
 | BP1 — Membrane resting potential | 0.92 | Verified | Decades of patch-clamp; universal across cell types; mechanism atomic-resolution known |
 | BP2 — Action potential propagation | 0.90 | Verified | Hodgkin-Huxley framework; Nobel Prize 1963; universal in excitable cells |
+| BP12 — Circadian clock oscillation | 0.88 | Verified | CLOCK/BMAL1 TTFL Nobel Prize 2017; mechanism resolved by cryo-EM (CRY/PER); replicated in all eukaryotes; period tuning via CK1ε phosphorylation fully characterised |
 | BP3 — Wound bioelectric field | 0.85 | Verified | Directly measured in multiple species; galvanotaxis replicated in multiple labs |
+| BP14 — Calcium spark / IP3R oscillation | 0.82 | Verified | IP3R gating kinetics by patch-clamp (decades of data); CICR via RyR replicated across muscle/neuron/non-excitable cells; cryo-EM structure resolved; Ca²⁺ oscillation frequency precisely measured |
 | BP7 — Vmem morphogenetic patterning | 0.72 | Indicative | Levin lab + independent groups; Xenopus, planaria, zebrafish replications |
-| BP4 — ELF bioelectromagnetic coupling | 0.65 | Indicative | VGCC stochastic resonance multiple labs; Schumann resonance mechanism contested |
+| BP13 — Liquid-liquid phase separation | 0.72 | Indicative | IDR condensation demonstrated in vitro (multiple labs 2018-2025); in-vivo function of condensates under active investigation; stress granule assembly well-characterised |
+| BP4 — ELF bioelectromagnetic coupling | 0.70 | Indicative | VGCC stochastic resonance multiple labs; Liboff-Zhadin ICR effect now consolidated in QFT/QED framework (Renati et al. 2024, IJMS systematic review); Schumann coupling mechanism still contested |
 | BP5 — RF/MMW bioplasma coupling | 0.60 | Indicative | Non-thermal MMW effects in bacteria and mammalian cells; G-quadruplex single study |
 | BP9 — THz refractive phenotype | 0.50 | Indicative (lower) | THz-TDS of living cells replicated; interpretation of coherent modes uncertain |
-| BP6 — Fröhlich coherent oscillation | 0.45 | Speculative | Crystal evidence (Lundholm 2015); in vivo gap unresolved; decoherence objection valid |
-| BP8 — QED water coherence domain | 0.32 | Speculative | Theoretical QED framework peer-reviewed; direct experimental evidence absent |
+| BP6 — Fröhlich coherent oscillation | 0.45 | Speculative | Crystal evidence (Lundholm 2015); Pietruszka 2025 Fröhlich-like in hydrated DNA (ambient conditions); full in vivo gap unresolved |
+| BP8 — QED water coherence domain | 0.32 | Speculative | Theoretical QED framework peer-reviewed; De Ninno & Gamberale 2025 (MDPI Liquids) raises coherent fraction estimate at 310K to ~40% — supporting context, insufficient to raise σ without direct experimental CD evidence |
 
 ### 9.3 Evidence Traps to Avoid
 
@@ -648,7 +651,11 @@ The following claims or frameworks were explicitly excluded from this document's
 
 ### 13.1 Immediate Actions (Verified pathways — implement now)
 
-**Action 1 — Add bioplasma σ annotations to existing organelle data.** For each organelle in `organelles.ts`, add a `bioplasmaProfiles` array listing its dominant bioplasma pathways (BP1–BP9), their σ values from §11.2, and their plasma-literalness tags. The `cell-membrane` zone receives BP1 (σ=0.92), BP2 (σ=0.90), BP3 (σ=0.85). The `mitochondria` zone receives the ΔΨm profile (σ=0.92 for inner membrane potential).
+**Action 1 — Add bioplasma σ annotations to existing organelle data.** For each organelle in `organelles.ts`, add a `bioplasmaProfiles` array listing its dominant bioplasma pathways (BP1–BP9, BP12–BP14), their σ values from §11.2, and their plasma-literalness tags. The `cell-membrane` zone receives BP1 (σ=0.92), BP2 (σ=0.90), BP3 (σ=0.85). The `mitochondria` zone receives the ΔΨm profile (σ=0.92 for inner membrane potential). The `nucleus` zone receives BP12 (σ=0.88, circadian clock output). The `endoplasmic-reticulum` zone receives BP14 (σ=0.82, Ca²⁺ spark source).
+
+**Action 10 — Implement BP12 circadian hook.** The CLOCK/BMAL1 oscillation (σ=0.88) is the highest-σ pathway not yet wired to a runtime hook. Implement `useCircadianClock.ts`: use JavaScript `document.visibilityState` changes to detect phase transitions (hidden = circadian trough, visible = circadian peak). Fire `bioplasmaSignal()` on the `nucleus` → broadcast route with a slow-decaying TTL (8 h) to simulate the circadian broadcast modulation across all zones. This is the closest JavaScript equivalent to `AlarmManager.RTC_WAKEUP` circadian-phase broadcasts.
+
+**Action 11 — Implement BP14 calcium spark hook.** The Ca²⁺ spark/oscillation mechanism (σ=0.82) maps to timer coalescing. Implement `useCalciumSpark.ts`: fire a cluster of overlapping `bioplasmaSignal()` calls from `endoplasmic-reticulum` → broadcast on a 0.1–10 Hz stochastic interval (using jittered `setInterval`), with individual TTLs that sum to a global Ca²⁺ oscillation envelope. The ER is the source; all cytoplasmic zones are receivers. Cap frequency to 0.2 Hz for browser performance.
 
 **Action 2 — Implement BP7 morphogenetic Vmem pattern as a tissue-state persistent store.** Levin's morphogenetic bioelectric code maps directly to Android SharedPreferences or a SQLite-backed Room database: a persistent key-value store where keys are organelle zone IDs and values are their current Vmem offsets. The store encodes the cell's "anatomical memory" independently of the real-time vital store. Trigger re-patterning events (planarian reprogramming analogue) when BP7 σ-weighted signals exceed a configurable threshold.
 

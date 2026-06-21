@@ -165,12 +165,12 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
   {
     sourceOrganelleId: "mitochondria",
     targetOrganelleId: "nucleus",
-    description: "Mitochondria-to-nucleus retrograde biophoton signaling (P1 — BIOPHOTON_RESEARCH.md §5): ROS-induced ultra-weak photon emission from mitochondrial Complex I/III propagates toward the nucleus as a stress-state signal, coordinating nuclear gene expression response to metabolic load. This is the canonical retrograde direction — the mitochondrion reports its oxidative state to the nucleus, not the reverse. Android analogue: Binder oneway async message from a background service to the system server — the energy subsystem signals the kernel supervisor without blocking, σ=0.65 (indicative, biologically calibrated), brokered through ServiceManager.",
+    description: "Mitochondria-to-nucleus retrograde biophoton signaling (P1 — BIOPHOTON_RESEARCH.md §5): ROS-induced ultra-weak photon emission from mitochondrial Complex I/III propagates toward the nucleus as a stress-state signal, coordinating nuclear gene expression response to metabolic load. This is the canonical retrograde direction — the mitochondrion reports its oxidative state to the nucleus, not the reverse. Android analogue: Binder oneway async message from a background service to the system server — the energy subsystem signals the kernel supervisor without blocking, σ=0.75 (verified, BIOPHOTON_RESEARCH.md §5.2 canonical value; iScience 2025 hippocampal synchrony data confirms fidelity at verified tier), brokered through ServiceManager.",
     rateRange: "10–1000 photons/cm²/s",
-    confidence: "indicative",
+    confidence: "verified",
     wavelengthBand: "NIR",
     ipcMechanism: "binder",
-    couplingSigma: 0.65,
+    couplingSigma: 0.75,
     hubService: "ServiceManager"
   },
   {
@@ -270,13 +270,13 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
   {
     sourceOrganelleId: "cell-membrane",
     targetOrganelleId: "nucleus",
-    description: "Action potential propagation (P6 partial — BIOPHOTON_RESEARCH.md §5): the membrane potential crossing threshold triggers a cascade that ultimately reaches the nucleus — Ca²⁺ influx activates CaM-kinase IV, which phosphorylates CREB, which modulates gene expression. Biophoton emission accompanies membrane depolarization in the blue-green band. In Android: a hardirq fires at the membrane (interrupt controller), propagates through the kernel's IRQ thread, crosses the Binder boundary as a system call, and reaches the nucleus (kernel syscall table) where the process state is updated. σ=0.60 (indicative, biologically recalibrated from over-confident 0.9).",
+    description: "Action potential propagation (P6 — BIOPHOTON_RESEARCH.md §5.7): the membrane potential crossing threshold triggers a cascade that ultimately reaches the nucleus — Ca²⁺ influx activates CaM-kinase IV, which phosphorylates CREB, which modulates gene expression. Biophoton emission accompanies membrane depolarization in the blue-green band. In Android: a hardirq fires at the membrane (interrupt controller), propagates through the kernel's IRQ thread, crosses the Binder boundary as a system call, and reaches the nucleus (kernel syscall table) where the process state is updated. σ=0.55 (indicative, aligned to BIOPHOTON_RESEARCH.md §9.2 canonical P6 value).",
     rateRange: "1–500 ph/cm²/s",
     confidence: "indicative",
     wavelengthBand: "blue-green",
     attentionWeight: 0.83,
     ipcMechanism: "binder",
-    couplingSigma: 0.60
+    couplingSigma: 0.55
   },
 
   // #19 ER-phagy path — distinct from classical ERAD (ERAD→proteasome; ER-phagy→lysosome).

@@ -40,7 +40,7 @@ Enforced at build time by `biophotonIntegrity.assert.ts` (run via `pnpm --filter
 
 All P1–P7 tuples must be present; enforced by the integrity script. **BIOPHOTON_RESEARCH.md is authoritative for σ values; LINEAGEOS_MANIFOLD.md is authoritative for LineageOS endpoint descriptions.** Where they conflict, BIOPHOTON_RESEARCH.md wins on σ.
 
-- P1: `mitochondria → nucleus` (retrograde ROS→lipid perox→450–670 nm triplet carbonyl, σ=**0.75**, indicative)
+- P1: `mitochondria → nucleus` (retrograde ROS→lipid perox→450–670 nm triplet carbonyl, σ=**0.75**, **verified** — confidence upgraded from indicative June 2026 to match σ≥0.75 verified tier)
 - P2: `endoplasmic-reticulum ↔ mitochondria` (MAM oxidative crosstalk — **bidirectional**, σ=0.55, indicative)
 - P3: `cell → cell` (extracellular UPE broadcast 600–900 nm — **biology is extracellular, not intracellular**, unordered-broadcast, σ=0.80, verified)
 - P4: `nucleus → cytoplasm` (DNA excimer UV 200–380 nm anterograde, ordered-broadcast, σ=0.35, speculative)

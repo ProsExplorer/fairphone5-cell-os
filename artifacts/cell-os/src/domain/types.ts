@@ -156,6 +156,15 @@ export type BiophotonLink = {
   rateRange: string;
   confidence: ClaimConfidence;
   /**
+   * Canonical pathway code (P1–P7 for the seven canonical inter-organelle
+   * pathways defined in BIOPHOTON_RESEARCH.md §5). Sub-links and supporting
+   * links that extend a canonical pathway may share its code; non-canonical
+   * supporting links may omit this field. The `canonical` flag indicates
+   * whether this link is one of the primary P1–P7 representative links.
+   */
+  code?: `P${number}`;
+  canonical?: boolean;
+  /**
    * The spectral band of photon emission for this pathway, derived from
    * BIOPHOTON_RESEARCH.md §4–§5. Guides downstream spectral rendering.
    * UV=200–380nm, blue-green=400–550nm, red=570–670nm, NIR=700–900nm, deep-NIR=900–1400nm.
@@ -310,7 +319,7 @@ export type BioplasmaStatus =
  *   - organelleRoute.direction === "readonly" → never drives routing (BP9)
  */
 export interface BioplasmaPathway {
-  code: "BP1" | "BP2" | "BP3" | "BP4" | "BP5" | "BP6" | "BP7" | "BP8" | "BP9";
+  code: "BP1" | "BP2" | "BP3" | "BP4" | "BP5" | "BP6" | "BP7" | "BP8" | "BP9" | "BP12" | "BP13" | "BP14";
   sigma: number;
   status: BioplasmaStatus;
   carrier: string;
