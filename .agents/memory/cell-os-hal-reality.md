@@ -20,12 +20,26 @@ description: android_hardware_lineage_interfaces does not contain thermal/ or pe
 
 Only if Cell OS needs a **new custom AIDL interface** not in the existing HAL set. Not needed for Phases 1–4.
 
-## Other verified path facts (lineage-21.0 branch)
+## Branch naming (critical — repos differ)
+
+| Repo | Branch |
+|---|---|
+| android_vendor_lineage | lineage-21.0 |
+| android_frameworks_base | lineage-21.0 |
+| android_packages_apps_Settings | lineage-21.0 |
+| android_hardware_lineage_interfaces | lineage-21.0 |
+| android_device_fairphone_FP5 | lineage-21 (no .0) |
+| android_kernel_fairphone_qcm6490 | lineage-21 (no .0) |
+
+## Other verified path facts (lineage-21.0 / lineage-21 branches)
 
 - `ThermalController.java` does **not** exist anywhere in `android_frameworks_base` on lineage-21.0 (0 search results). Use `ThermalManager` API instead.
 - About page class is `MyDeviceInfoFragment.java` in `src/com/android/settings/deviceinfo/aboutphone/`. `DeviceInfoSettings.java` does not exist.
-- `vendor/lineage/config/lineage-build.prop` is the full in-tree path (not `lineage-build.prop` at root).
+- `vendor/lineage/config/lineage-build.prop` does NOT EXIST (HTTP 404 verified twice). Use `PRODUCT_SYSTEM_DEFAULT_PROPERTIES` in `config/common.mk` or a sourced `.mk` file instead.
 - SELinux policy lives at `device/fairphone/FP5/sepolicy/vendor/` (not just `sepolicy/`).
+- FP5 overlay directories are component-named: `overlay/FrameworksResTarget/`, `overlay/SystemUIResTarget/`, etc. — NOT `overlay/frameworks/base/`. Also has `overlay-lineage/` for LOS-specific overlays.
+- `android_hardware_lineage_interfaces` also contains `motorola_health/` — not listed in earlier notes.
+- Thermal AIDL service is `android.hardware.thermal-service.qti` (from `android_hardware_qcom_thermal` repo), not just "qcom-caf/common tree".
 - FP5 active development has moved to `lineage-23.2`; `lineage-21.0` branch exists but is no longer primary. All verified paths in CELL_OS_ROM_FORK_PLAN.md are for lineage-21.0 — re-verify before rebasing to 23.2.
 
 **How to apply:** Before writing or reviewing any Cell OS ROM fork document that names HAL paths, file paths, or class names, check this file first. Do not assume paths from AOSP documentation apply to LOS 21 without verification.
