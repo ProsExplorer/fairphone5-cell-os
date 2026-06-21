@@ -4,7 +4,7 @@
 **Research Date:** June 19, 2026  
 **Depth:** Deep (5 primary + 2 gap-fill + 3 S4-parallel subagents, 10 research batches, 41 distinct sources)  
 **Sources Consulted:** 41  
-**Scope:** Cellular electrochemical plasma substrate, bioelectromagnetic field coupling (ELF/RF/MMW), high-frequency coherence models (Fröhlich condensate, THz vibrational modes), morphogenetic field / aether-convergence models, quantum biology limits, MIT-compatible open-access corpus, and direct Cell OS IPC mapping tables for further OS development.
+**Scope:** Cellular electrochemical plasma substrate, bioelectromagnetic field coupling (ELF/RF/MMW), high-frequency coherence models (Fröhlich condensate, THz vibrational modes), morphogenetic field / aether-convergence models, quantum biology limits, publicly citable research corpus (open-access status varies by source), and direct Cell OS IPC mapping tables for further OS development.
 
 ---
 
@@ -14,12 +14,12 @@
 2. [Definitions & Boundary Rules](#2-definitions--boundary-rules)
 3. [Cellular Electrochemical Substrate](#3-cellular-electrochemical-substrate)
 4. [Organelle-Specific Bioplasma Field Profiles](#4-organelle-specific-bioplasma-field-profiles)
-5. [Bioplasma Pathways BP1–BP9](#5-bioplasma-pathways-bp1bp9)
+5. [Bioplasma Pathways BP1–BP10, BP12–BP14](#5-bioplasma-pathways-bp1bp9)
 6. [High-Frequency Bioplasma Phenomena](#6-high-frequency-bioplasma-phenomena)
 7. [Coherent-Field / Aether-Convergence Models](#7-coherent-field--aether-convergence-models)
 8. [Measurement Methods & Frequency Bands](#8-measurement-methods--frequency-bands)
 9. [Evidence Model and σ Calibration](#9-evidence-model-and-σ-calibration)
-10. [MIT-Compatible Open Research Registry](#10-mit-compatible-open-research-registry)
+10. [Open Research Registry](#10-open-research-registry)
 11. [Cell OS IPC Mapping Tables](#11-cell-os-ipc-mapping-tables)
 12. [Limitations, Pseudoscience Filters & Open Questions](#12-limitations-pseudoscience-filters--open-questions)
 13. [Actionable Dev Roadmap](#13-actionable-dev-roadmap)
@@ -33,11 +33,11 @@ Every living cell is an electrochemical system that generates, propagates, and r
 
 The term "bioplasma" (生物電漿) requires careful definition before it can be productive. In strict plasma physics, a plasma is an ionised gas in which collective electromagnetic oscillations — governed by the Debye length, the plasma parameter, and the plasma frequency — dominate the medium's behaviour. By those criteria, the cell cytoplasm is *not* a plasma: the Debye length at physiological ionic strength is approximately 0.7–1.0 nm [2][29], the number of ions per Debye sphere is too small to satisfy the plasma parameter criterion, and the estimated ion plasma frequency (~140 GHz for K⁺) is heavily overdamped by the collision-dominated viscous aqueous medium [29][30]. Cells are accurately described as *structured electrolytes* or, where 2D collective excitations at the plasma membrane are invoked, *quasi-plasma* systems [4][29].
 
-What makes the bioplasma concept scientifically productive, however, is the second and third-order phenomena it encompasses: the endogenous electric fields that guide morphogenesis [19][22], the bioelectromagnetic field coupling through voltage-gated ion channels that operate as molecular antennae [10][6], the high-frequency collective molecular oscillations proposed by Fröhlich [13][14], and the convergence of all these field layers into what the 以太收斂 (field-substrate convergence) framing calls the underlying electromagnetic manifold of living organisation. This document maps nine distinct bioplasma pathways (BP1–BP9) from the established DC resting potential to the speculative terahertz water-coherence boundary, assigning evidence-calibrated σ weights for each.
+What makes the bioplasma concept scientifically productive, however, is the second and third-order phenomena it encompasses: the endogenous electric fields that guide morphogenesis [19][22], the bioelectromagnetic field coupling through voltage-gated ion channels that operate as molecular antennae [10][6], the high-frequency collective molecular oscillations proposed by Fröhlich [13][14], and the convergence of all these field layers into what the 以太收斂 (field-substrate convergence) framing calls the underlying electromagnetic manifold of living organisation. This document maps thirteen distinct bioplasma pathways (BP1–BP10, BP12–BP14) from the established DC resting potential to the speculative aquaporin quantum-tunneling boundary, assigning evidence-calibrated σ weights for each.
 
-For Cell OS development, the bioplasma layer provides a complementary and mechanistically distinct signalling substrate from the biophoton layer already documented in BIOPHOTON_RESEARCH.md. Biophotons are the photon emission products of reactive oxygen chemistry. Bioplasma pathways are the charge-carrier and field-mediated processes that occur continuously in every living cell regardless of oxidative state. The nine pathways described here span from the most firmly established (BP1: membrane resting potential, σ=0.92) through the well-replicated developmental bioelectricity of Levin's group (BP7: morphogenetic Vmem patterning, σ=0.72) to the speculative high-frequency boundary (BP8: quantum electrodynamic water coherence domains, σ=0.32). Together they define nine new axes for Cell OS attention-tensor weighting, organelle routing, and IPC analogue design.
+For Cell OS development, the bioplasma layer provides a complementary and mechanistically distinct signalling substrate from the biophoton layer already documented in BIOPHOTON_RESEARCH.md. Biophotons are the photon emission products of reactive oxygen chemistry. Bioplasma pathways are the charge-carrier and field-mediated processes that occur continuously in every living cell regardless of oxidative state. The thirteen pathways described here span from the most firmly established (BP1: membrane resting potential, σ=0.92) through the well-replicated developmental bioelectricity of Levin's group (BP7: morphogenetic Vmem patterning, σ=0.72) to the speculative quantum-tunneling boundary (BP10: aquaporin proton QT, σ=0.48; BP8: QED water coherence domains, σ=0.32). Together they define thirteen axes for Cell OS attention-tensor weighting, organelle routing, and IPC analogue design.
 
-All 41 sources used in this document are MIT-compatible open access: PubMed Central (CC-BY or PMC open), arXiv preprints, Frontiers journals (CC-BY), PLOS (CC-BY), MDPI (CC-BY), Scientific Reports (CC-BY), or Cell Reports Physical Science (CC-BY). One citation (arXiv:2105.10541) was identified by gap-fill verification as an entirely off-topic machine-learning paper and was excluded from this corpus [G2 audit finding].
+Sources used in this document are publicly citable academic publications. Many are open-access (PMC CC-BY, arXiv, Frontiers CC-BY, PLOS CC-BY, MDPI CC-BY, Scientific Reports CC-BY, Cell Reports Physical Science CC-BY); some, including ACS Nano Letters, Elsevier, Nature/Springer portfolio, and IOP Publishing entries added in the SA5 research pass, are paywalled in primary form. All citations are used here for their scientific conclusions only — no paper text, figures, or tables are reproduced. Scientific citation of published findings is compatible with any open-source project licence. One citation (arXiv:2105.10541) was identified by gap-fill verification as entirely off-topic and excluded [G2 audit finding]. See §10 source registry.
 
 ---
 
@@ -67,7 +67,7 @@ Every bioplasma pathway is tagged with one of three plasma-literalness designati
 
 ### 2.3 Authority Hierarchy
 
-**σ values:** This document is authoritative for all bioplasma pathway σ values (BP1–BP9). BIOPHOTON_RESEARCH.md is authoritative for biophoton pathway σ values (P1–P7). Where both documents address the same organelle, this document governs the ionic/EM field weight; BIOPHOTON_RESEARCH.md governs the photon emission weight.
+**σ values:** This document is authoritative for all bioplasma pathway σ values (BP1–BP10, BP12–BP14). BIOPHOTON_RESEARCH.md is authoritative for biophoton pathway σ values (P1–P9). Where both documents address the same organelle, this document governs the ionic/EM field weight; BIOPHOTON_RESEARCH.md governs the photon emission weight.
 
 **Evidence tiers:** Same four-tier system as BIOPHOTON_RESEARCH.md: Verified (σ ≥ 0.75), Indicative (0.50–0.75), Speculative (0.30–0.50), Unconfirmed (<0.30).
 
@@ -183,9 +183,9 @@ This charge distribution is the physical basis for several high-frequency biopla
 
 ### 5.1 Overview
 
-Nine bioplasma pathways are defined below, ordered from most to least evidence-supported. Each pathway is assigned an identifier (BP1–BP9), a σ weight (for the Cell OS attention tensor), an evidence tier, and a plasma-literalness tag. The canonical 9-pathway set is authoritative for this document.
+Thirteen bioplasma pathways are defined in §5.2–§5.10 and the extended pathway blocks (BP12–BP14, BP10), ordered from most to least evidence-supported. Each pathway is assigned an identifier (BP1–BP10, BP12–BP14), a σ weight (for the Cell OS attention tensor), an evidence tier, and a plasma-literalness tag. The canonical 13-pathway set is authoritative for this document.
 
-The bioplasma pathways differ from biophoton pathways (P1–P7 in BIOPHOTON_RESEARCH.md) in their physical carrier: biophoton pathways carry photons; bioplasma pathways carry ion fluxes, electric fields, electromagnetic fields, or collective field modes. Some bioplasma pathways are coupled to biophoton pathways (e.g., BP1's membrane potential drives the ROS production that generates P6's biophoton emission), but they are mechanistically distinct.
+The bioplasma pathways differ from biophoton pathways (P1–P9 in BIOPHOTON_RESEARCH.md) in their physical carrier: biophoton pathways carry photons; bioplasma pathways carry ion fluxes, electric fields, electromagnetic fields, or collective field modes. Some bioplasma pathways are coupled to biophoton pathways (e.g., BP1's membrane potential drives the ROS production that generates P6's biophoton emission), but they are mechanistically distinct.
 
 ### 5.2 BP1 — Membrane Electrochemical Resting Gradient
 
@@ -364,9 +364,9 @@ Five historical scientists — Gurwitsch, Popp, Ling, Harold Burr, and Michael L
 
 **Current scientific status:** Active fringe/speculative. Detection and statistics of biophoton emission: mainstream. Popp's field-geometry and morphogenetic information claims: heterodox theoretical framework within biophysics. The full Popp evidence corpus and supporting sources are documented in BIOPHOTON_RESEARCH.md §7; the morphogenetic geometry claim remains unresolved as of the latest reviews surveyed there.
 
-**Open-access evidence:** BIOPHOTON_RESEARCH.md §2 and §7 provide the full Popp evidence corpus. For morphogenetic field-geometry specifically: no Tier 1 experimental confirmation. Assign σ = 0.35 (speculative) for the field-geometry/morphogenetic claim, distinct from the σ = 0.80 (verified) for inter-cellular UPE broadcast (P3 in BIOPHOTON_RESEARCH.md).
+**Open-access evidence:** BIOPHOTON_RESEARCH.md §2 and §7 provide the full Popp evidence corpus. For morphogenetic field-geometry specifically: no Tier 1 experimental confirmation. Assign σ = 0.35 (speculative) for the field-geometry/morphogenetic claim, distinct from the σ = 0.85 (verified) for inter-cellular UPE broadcast (P3 in BIOPHOTON_RESEARCH.md; raised 0.80→0.85 on Casey 2025 iScience + Mould 2024 Frontiers).
 
-**Cell OS relevance:** The biophoton pathway table (P1–P7, BIOPHOTON_RESEARCH.md) is authoritative for Popp's UPE contributions. The morphogenetic geometry claim is architecturally represented by the `coherent-field` annotation in the bioplasma pathway table but carries speculative σ only. Do not conflate with the verified inter-cellular UPE broadcast (P3, σ = 0.80).
+**Cell OS relevance:** The biophoton pathway table (P1–P9, BIOPHOTON_RESEARCH.md) is authoritative for Popp's UPE contributions. The morphogenetic geometry claim is architecturally represented by the `coherent-field` annotation in the bioplasma pathway table but carries speculative σ only. Do not conflate with the verified inter-cellular UPE broadcast (P3, σ=0.85, verified).
 
 ### 7.4 Ling — The Association-Induction Hypothesis
 
@@ -429,7 +429,7 @@ BP7 (morphogenetic Vmem patterning, σ = 0.72) is anchored exclusively in Levin'
 | Sheldrake morphic resonance | None specified | No — author explicitly states non-falsifiability | No physical measurement defined | None | **Pseudoscience — do not cite** |
 | New Age "aether energy" | None specified | No | No | None | **Pseudoscience — do not cite** |
 
-**以太收斂 as legitimate convergence:** The term 以太收斂 (Aether Convergence / Field Substrate Convergence) in Cell OS maps to the upper four rows of this table — the intersection zone where Levin's bioelectric Vmem field (BP7), Gurwitsch/Popp's biophoton emission field (P1–P7, BIOPHOTON_RESEARCH.md), and the high-frequency coherence proposals of Fröhlich (BP6) and QED water (BP8) share a common organisational substrate. All four have named physical carriers, at least some testable predictions, and at least some measurable biological outcomes. None of them is "aether" in the luminiferous or New Age sense. The 以太收斂 concept is Cell OS's architectural name for this intersection — the layer at which bioplasma, biophoton, and coherent-field mechanisms collectively shape biological organisation, without asserting any non-physical substrate.
+**以太收斂 as legitimate convergence:** The term 以太收斂 (Aether Convergence / Field Substrate Convergence) in Cell OS maps to the upper four rows of this table — the intersection zone where Levin's bioelectric Vmem field (BP7), Gurwitsch/Popp's biophoton emission field (P1–P9, BIOPHOTON_RESEARCH.md), and the high-frequency coherence proposals of Fröhlich (BP6) and QED water (BP8) share a common organisational substrate. All four have named physical carriers, at least some testable predictions, and at least some measurable biological outcomes. None of them is "aether" in the luminiferous or New Age sense. The 以太收斂 concept is Cell OS's architectural name for this intersection — the layer at which bioplasma, biophoton, and coherent-field mechanisms collectively shape biological organisation, without asserting any non-physical substrate.
 
 ---
 
@@ -511,9 +511,9 @@ The bioplasma literature contains well-defined pseudoscience traps. The followin
 
 ---
 
-## 10. MIT-Compatible Open Research Registry
+## 10. Open Research Registry
 
-All sources in this document have been verified for MIT-compatible open-access status. The following registry lists verified licences:
+Sources in this document are publicly citable academic publications used for their scientific conclusions only. Open-access status varies: PMC, arXiv, Frontiers, PLOS, MDPI, Scientific Reports, and Cell Reports Physical Science sources are CC-BY or equivalent open. ACS Nano Letters, Elsevier, Nature/Springer portfolio, and IOP Publishing sources added in the SA5 research pass may be paywalled in primary form — cited by DOI only, no text reproduced. The following registry lists sources with their access type:
 
 | Source # | Venue | Licence | Access Verification |
 |---|---|---|---|
@@ -585,7 +585,7 @@ This section translates the bioplasma model directly into Cell OS architecture. 
 | BP9 | THz EM field interaction | Living cell bulk/intracellular water; molecular vibrational modes | 0.1–10 THz; absorption peaks at 390 GHz, 1.44 THz, 1.8 THz (cancer/AD tissue) | THz-TDS refractive phenotype; proposed Fröhlich window modes | `cytoplasm` ↔ `cytoskeleton` | Diagnostic telemetry channel (read-only spectral probe) | Read-only | 0.50 | Indicative (lower) | Field-coherence analogy |
 | BP6 | Collective dipolar EM mode (GHz–THz) | Metabolically driven proteins (tubulin, membranes) | 10 GHz–10 THz; Fröhlich condensate lifetime 10⁻⁶–10⁻³ s | ATP/GTP hydrolysis energy pumping → collective dipole resonance | `cytoskeleton` ↔ `mitochondria` | Binder thread pool coherent burst (synchronised IPC batch) | Bidirectional | 0.45 | Speculative | Field-coherence analogy |
 | BP8 | QED coherent EM mode in water (CD) | Protein-membrane interfacial water; ~100 nm CDs | THz range (estimated); spatial ~100 nm | Del Giudice QED water coherence domain formation | `cytoplasm` substrate layer | Zero-weight annotation layer / reserved channel (not implemented) | N/A | 0.32 | Speculative | Field-coherence analogy |
-| BP10 | Proton quantum tunneling at AQP1/AQP4 NPA-barrier (Grotthuss + nuclear-spin switching) | AQP plasma membrane / intracellular vesicle membranes | DC; proton exclusion gating ~ps–ns | Quantum tunneling cooperativity in 2.8 Å pore geometry (Kim 2025 Nano Letters DOI:10.1021/acs.nanolett.4c05831) | `cell-membrane` ↔ `cytoplasm` | Zero-copy DMA coherent memremap — water passes at near-classical rates, proton transfer is quantum-gated | Inward | 0.48 | Speculative | Field-coherence analogy |
+| BP10 | Proton quantum tunneling at AQP1/AQP4 NPA-barrier (Grotthuss + nuclear-spin switching) | AQP plasma membrane / intracellular vesicle membranes | DC; proton exclusion gating ~ps–ns | Quantum tunneling cooperativity in 2.8 Å pore geometry (Kim 2025 Nano Letters DOI:10.1021/acs.nanolett.4c05831) | `cell-membrane` → `cytoplasm` | Zero-copy DMA coherent memremap — water passes at near-classical rates, proton transfer is quantum-gated | Inward | 0.48 | Speculative | Field-coherence analogy |
 
 ### 11.2 Organelle Bioplasma Field Profile Map
 
@@ -648,7 +648,7 @@ The following claims or frameworks were explicitly excluded from this document's
 2. What are the 2D plasmon excitation modes at the plasma membrane, and can they be measured at single-cell resolution using near-field THz probes?
 3. Is Levin's bioelectric morphogenetic code (BP7) operative in human somatic cells and cancer biology? Current evidence is strongest in regeneration-competent organisms.
 4. Do water coherence domains (BP8) contribute measurably to any biological outcome, or are they a mathematical artefact of the Del Giudice/Preparata QED approximation scheme?
-5. What is the relationship between biophoton emission pathways (P1–P7, BIOPHOTON_RESEARCH.md) and bioplasma pathways (BP1–BP9)? Specifically: does BP6 (Fröhlich coherent oscillation) generate photons that appear in the P1–P7 biophoton network, or are they mechanistically decoupled?
+5. What is the relationship between biophoton emission pathways (P1–P9, BIOPHOTON_RESEARCH.md) and bioplasma pathways (BP1–BP14+BP10)? Specifically: does BP6 (Fröhlich coherent oscillation) generate photons that appear in the P1–P9 biophoton network, or are they mechanistically decoupled?
 
 ---
 
@@ -656,7 +656,7 @@ The following claims or frameworks were explicitly excluded from this document's
 
 ### 13.1 Immediate Actions (Verified pathways — implement now)
 
-**Action 1 — Add bioplasma σ annotations to existing organelle data.** For each organelle in `organelles.ts`, add a `bioplasmaProfiles` array listing its dominant bioplasma pathways (BP1–BP9, BP12–BP14), their σ values from §11.2, and their plasma-literalness tags. The `cell-membrane` zone receives BP1 (σ=0.92), BP2 (σ=0.90), BP3 (σ=0.85). The `mitochondria` zone receives the ΔΨm profile (σ=0.92 for inner membrane potential). The `nucleus` zone receives BP12 (σ=0.88, circadian clock output). The `endoplasmic-reticulum` zone receives BP14 (σ=0.82, Ca²⁺ spark source).
+**Action 1 — Add bioplasma σ annotations to existing organelle data.** For each organelle in `organelles.ts`, add a `bioplasmaProfiles` array listing its dominant bioplasma pathways (BP1–BP10, BP12–BP14), their σ values from §11.2, and their plasma-literalness tags. The `cell-membrane` zone receives BP1 (σ=0.92), BP2 (σ=0.90), BP3 (σ=0.85). The `mitochondria` zone receives the ΔΨm profile (σ=0.92 for inner membrane potential). The `nucleus` zone receives BP12 (σ=0.88, circadian clock output). The `endoplasmic-reticulum` zone receives BP14 (σ=0.82, Ca²⁺ spark source).
 
 **Action 10 — Implement BP12 circadian hook.** The CLOCK/BMAL1 oscillation (σ=0.88) is the highest-σ pathway not yet wired to a runtime hook. Implement `useCircadianClock.ts`: use JavaScript `document.visibilityState` changes to detect phase transitions (hidden = circadian trough, visible = circadian peak). Fire `bioplasmaSignal()` on the `nucleus` → broadcast route with a slow-decaying TTL (8 h) to simulate the circadian broadcast modulation across all zones. This is the closest JavaScript equivalent to `AlarmManager.RTC_WAKEUP` circadian-phase broadcasts.
 
@@ -732,4 +732,4 @@ The following claims or frameworks were explicitly excluded from this document's
 
 ---
 
-*Document generated June 19, 2026. Updated June 19, 2026 with full S4 architect-planned research (3 parallel subagents: Gurwitsch+Popp, Ling+Burr, Levin+Aether framing). All 41 sources verified open-access or publicly citable. Research depth: Deep (5 primary + 2 gap-fill + 3 S4-parallel subagents; citation audit by G2 subagent with 1 off-topic source removed). §7 expanded from 5 subsections to 7 subsections with per-scientist analysis (Gurwitsch, Popp, Ling, Harold Burr, Levin) and legitimate-vs-New-Age classification table. BIOPLASMA_RESEARCH.md is authoritative for all bioplasma pathway σ values (BP1–BP9); BIOPHOTON_RESEARCH.md is authoritative for biophoton pathway σ values (P1–P7).*
+*Document generated June 19, 2026. Updated June 19, 2026 with full S4 architect-planned research. Updated June 21, 2026 with SA5 research pass: BP10 Aquaporin Quantum Tunneling (Kim 2025 Nano Letters, σ=0.48 speculative) added; BP13 LLPS σ raised 0.72→0.75 (BMAL1 LLPS Signal Transduction 2026); BP12/BP14 confirmed unchanged. Open-access status: majority of 41+ sources CC-BY/PMC open; SA5 additions include ACS/Elsevier/Nature paywalled sources cited by DOI only. BIOPLASMA_RESEARCH.md is authoritative for all bioplasma pathway σ values (BP1–BP10, BP12–BP14); BIOPHOTON_RESEARCH.md is authoritative for biophoton pathway σ values (P1–P9).*

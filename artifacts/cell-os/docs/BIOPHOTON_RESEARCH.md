@@ -4,7 +4,7 @@
 **Research Date:** June 16, 2026  
 **Depth:** Deep (12 sub-tasks, 4 research batches, 34 distinct sources)  
 **Sources Consulted:** 34  
-**Scope:** Emission mechanisms, organelle-specific profiles, inter-organelle signaling pathways, spectral/quantitative data, theoretical models, MIT-compatible open-access corpus, and direct Cell OS IPC mapping tables for further OS development.
+**Scope:** Emission mechanisms, organelle-specific profiles, inter-organelle signaling pathways, spectral/quantitative data, theoretical models, publicly citable research corpus (open-access status varies by source), and direct Cell OS IPC mapping tables for further OS development.
 
 ---
 
@@ -17,7 +17,7 @@
 5. [Inter-Organelle Biophoton Signaling Pathways](#5-inter-organelle-biophoton-signaling-pathways)
 6. [Spectral Data, Emission Rates & Detection Methods](#6-spectral-data-emission-rates--detection-methods)
 7. [Theoretical Models & Evidence Levels](#7-theoretical-models--evidence-levels)
-8. [MIT-Compatible Open Research Registry](#8-mit-compatible-open-research-registry)
+8. [Open Research Registry](#8-open-research-registry)
 9. [Cell OS IPC Mapping Tables](#9-cell-os-ipc-mapping-tables)
 10. [Limitations & Open Questions](#10-limitations--open-questions)
 11. [Actionable Dev Roadmap for Cell OS](#11-actionable-dev-roadmap-for-cell-os)
@@ -33,9 +33,9 @@ The field was founded by Fritz-Albert Popp in the 1970s–1980s, who proposed th
 
 For Cell OS development, the critical insight is structural: every major organelle in the eukaryotic cell is a distinguishable biophoton emitter, each with a characteristic spectral band, emission rate range, and inter-organelle coupling pathway. Mitochondria dominate at 570–670 nm with rates of 100–1000 ph/s/cm² under stress [9]. The nucleus emits in the UV band (200–380 nm) via DNA excited-state relaxation and repair dynamics [11]. The endoplasmic reticulum contributes up to 25% of total cellular ROS through the PDI-ERO1 oxidative folding axis, producing visible-range emission [12]. Peroxisomes generate intense UPE through hydrogen peroxide turnover [3]. Golgi emission, while speculative in mechanism, is coupled to the secretory oxidative flux already modelled in Cell OS's secretory arc.
 
-These emission profiles map directly onto Cell OS's existing architecture: the biophoton attention tensor (18 BIOPHOTON_LINKS, 39 QI_INTERSECTIONS) can be grounded in real biological rates and spectral bands, the σ weights can be calibrated to published emission strengths, and the inter-organelle pathway table (§5 of this document) gives the full directed graph of signaling routes with evidence tier labels — verified, indicative, or speculative — for each edge.
+These emission profiles map directly onto Cell OS's existing architecture: the biophoton attention tensor (20 BIOPHOTON_LINKS, 39 QI_INTERSECTIONS) can be grounded in real biological rates and spectral bands, the σ weights can be calibrated to published emission strengths, and the inter-organelle pathway table (§5 of this document) gives the full directed graph of signaling routes with evidence tier labels — verified, indicative, or speculative — for each edge.
 
-The research corpus used here is entirely MIT-compatible: all 34 sources are either PubMed Central open-access (CC-BY), arXiv preprints, or publicly citable Tier 1 academic publications, verified in the source registry (§8).
+The research corpus used here consists of publicly citable academic publications. Many are open-access (PubMed Central CC-BY, arXiv preprints, MDPI, Frontiers, Scientific Reports); some are published by ACS, Elsevier, Optica, or IOP, which are paywalled in their primary form. All citations are used here for their scientific conclusions only — no paper text, figures, or tables are reproduced. Scientific citation of published findings is compatible with any open-source project licence regardless of the journal's distribution model. See source registry (§8).
 
 ---
 
@@ -372,9 +372,9 @@ Evidence level: **Indicative** — the waveguide physics is established; the neu
 
 ---
 
-## 8. MIT-Compatible Open Research Registry
+## 8. Open Research Registry
 
-All sources in this document are either (a) PubMed Central full-text articles under CC-BY licences, (b) arXiv/bioRxiv preprints (open by default), or (c) publicly citable Tier 1 academic publications accessible without subscription through PMC or institutional open access. None require proprietary database access for citation in a developer manual. The following table lists the verified open-access sources:
+Sources in this document are publicly citable academic publications used for their scientific conclusions only. Open-access status varies: PMC, arXiv/bioRxiv, MDPI, Frontiers, PLOS, and Scientific Reports sources are CC-BY or equivalent open. ACS (Nano Letters), Elsevier (Acta Biomaterialia), Optica Publishing Group, and IOP Publishing sources may be paywalled in primary form — they are cited here by DOI or PMC where available, and no text, figures, or tables from those sources are reproduced. Scientific citation of published findings (conclusions and σ weights) is compatible with any open-source project licence. The following table lists sources by access tier:
 
 | # | Title | URL | Year | Licence / Access |
 |---|---|---|---|---|
@@ -453,12 +453,12 @@ This table maps biophoton wavelength bands to IPC priority channels in Android, 
 
 The existing 39 QI_INTERSECTIONS in `qiMatrix.ts` use attention weights that can now be anchored to biological emission rates and pathway evidence:
 
-- **σ ≥ 0.75:** Restrict to **Verified** pathways (P3, P1 upper bound) — these map to known, replicated biology.
-- **σ 0.50–0.75:** Use for **Indicative** pathways (P1, P2, P5, P6, P7) — plausible, mechanistically coherent, pending replication.
+- **σ ≥ 0.75:** Restrict to **Verified** pathways (P3 σ=0.85, P1 σ=0.75) — replicated biology.
+- **σ 0.50–0.75:** Use for **Indicative** pathways (P2, P5, P6, P7, P8, P9) — mechanistically coherent, pending independent replication. P5 sits at the indicative upper boundary (σ=0.75); it is indicative rather than verified because direct guided-propagation measurement in living microtubules is still pending.
 - **σ 0.30–0.50:** Use for **Speculative** pathways (P4, Golgi emission) — architecturally justified but not yet experimentally confirmed.
 - **σ < 0.30:** Reserve for future pathway hypotheses not yet in the literature.
 
-The 18 BIOPHOTON_LINKS in `mappings.ts` (expanded from 13 in §13 implementation) should be reviewed against the P1–P7 pathway table: any link with σ > 0.75 should map to a Verified pathway, any link with σ < 0.35 should map to a Speculative pathway, with appropriate evidence-level annotations in the link metadata.
+The 20 BIOPHOTON_LINKS in `mappings.ts` (13 original → 18 after §13 implementation → 20 after SA4/SA5 2024-2026 research adding P8 and P9) should be reviewed against the P1–P9 pathway table: any link with σ > 0.75 should map to a Verified pathway, any link with σ < 0.35 should map to a Speculative pathway, with appropriate evidence-level annotations in the link metadata.
 
 ---
 
@@ -797,7 +797,7 @@ Residual fidelity gap:
 ### Remaining Gaps (Not Closed by This Implementation)
 
 1. **P3/P5 spectral wording precision** — descriptions could be tightened to match §5 table language exactly (medium-wavelength characterization for P3; waveguide geometry for P5). Impact: LOW.
-2. **Automated integrity assertion** — no test or runtime check enforces "exactly 18 links + P1–P7 required field tuples." A future edit could silently break the canonical set without TypeScript catching it. Impact: MEDIUM (development safety).
+2. **Automated integrity assertion** — `biophotonIntegrity.assert.ts` enforces exactly 20 links + P1–P9 required field tuples. This item was closed in the SA4/SA5 research pass (June 2026).
 3. **Stale count comments** — any inline comments referencing "36 intersections" or "13 links" in qiMatrix.ts or mappings.ts should be updated to "39" and "18" respectively. Impact: LOW (documentation drift).
 
 ---
@@ -876,19 +876,21 @@ All four required assertions are implemented and operational:
 
 | Assertion | Implementation | Status |
 |---|---|---|
-| Count = 18 | `assert.equal(BIOPHOTON_LINKS.length, 18, …)` | ✓ |
-| P1–P7 required tuples | 7-entry `REQUIRED_PATHS` loop with `.some()` match | ✓ |
+| Count = 20 | `assert.equal(BIOPHOTON_LINKS.length, 20, …)` | ✓ |
+| P1–P9 required tuples | 9-entry `REQUIRED_PATHS` loop with `.some()` match | ✓ |
 | `wavelengthBand` populated | `.filter(l => !l.wavelengthBand …)` | ✓ |
 | σ within confidence-tier bounds | Per-link bounds check with `SIGMA_BOUNDS` record | ✓ |
 
-**P1–P7 tuples verified correct:**
+**P1–P9 tuples verified correct:**
 - P1: `mitochondria → nucleus` ✓
 - P2: `endoplasmic-reticulum → mitochondria` ✓
 - P3: `cell-membrane → membrane-receptors` ✓
 - P4: `nucleus → cytoplasm` ✓
 - P5: `cytoskeleton → mitochondria` ✓
-- P6: `cell-membrane → mitochondria` ✓ (retrograde lipid perox cascade → organelle network, primarily mitochondria; distinct from P1 mito→nucleus and P3 membrane→membrane-receptors)
+- P6: `cell-membrane → mitochondria` ✓ (retrograde lipid perox cascade; distinct from P1 mito→nucleus)
 - P7: `mitochondria → mitochondria` ✓ (self-link correctly modelled as source === target)
+- P8: `golgi-apparatus → membrane-receptors` ✓ (ECM-Collagen SHG waveguide; added SA4 research pass)
+- P9: `cytoskeleton → nucleus` ✓ (Axonal-Myelin step-index retrograde; added SA4 research pass)
 
 **σ tier bounds match §9.4:**
 - Verified: [0.75, 1.00] ✓
@@ -943,7 +945,7 @@ Four references in the BIOPHOTON_RESEARCH.md document body were identified and c
 ### Regression Check: PASS
 
 - **TypeScript compile:** `tsc --noEmit` exits 0. No new type errors. ✓
-- **Integrity test:** `pnpm run test:biophoton` exits 0, prints `✓ Biophoton integrity: 18 links · P1–P7 tuples present · wavelengthBand complete · σ tiers valid`. ✓
+- **Integrity test:** `pnpm run test:biophoton` exits 0, prints `✓ Biophoton integrity: 20 links · P1–P9 tuples present · wavelengthBand complete · σ tiers valid`. ✓
 - **P3 wavelengthBand change from "blue-green" to "red":** The integrity test's wavelengthBand assertion only checks non-empty — it does not assert specific enum values — so this correction is not structurally caught by the test, but it IS biologically correct and does not break any existing test or TypeScript type constraint. ✓
 - **No runtime regressions:** The Vite dev server restarts cleanly; the changes are in pure data files with no UI component modifications. ✓
 
