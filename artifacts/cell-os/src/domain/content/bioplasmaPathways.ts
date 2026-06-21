@@ -187,6 +187,39 @@ export const BP9_THZ_TELEMETRY: BioplasmaPathway = {
 };
 
 /**
+ * BP10 — Aquaporin Quantum Tunneling.
+ * Water molecules pass through AQP1/AQP4 channels (2.8 Å pore geometry) at
+ * near-classical rates, but the selectivity filter's proton exclusion is
+ * fundamentally quantum-mechanical: Kim et al. 2025 (Nano Letters) demonstrated
+ * controlled cooperativity of proton tunneling in a water trimer matching AQP
+ * pore geometry. The NPA electrostatic barrier uses nuclear-spin-enhanced
+ * switching — a hybrid classical/QM mechanism. Proton tunneling rather than
+ * classical hopping is the gatekeeper of cellular water homeostasis.
+ * OS analogue: zero-copy DMA coherent memremap — data (water) transits at wire
+ * speed while a quantum-gated selectivity filter blocks parasitic proton currents.
+ * σ = 0.48 (Speculative upper) — Kim 2025 Nano Letters provides direct tunneling
+ * evidence at AQP geometry; full in-vivo selectivity filter quantum-mapping pending.
+ */
+export const BP10_AQUAPORIN_QUANTUM_TUNNELING: BioplasmaPathway = {
+  code: "BP10",
+  sigma: 0.48,
+  status: "speculative",
+  carrier: "Proton quantum tunneling at AQP1/AQP4 NPA-barrier selectivity filter (Grotthuss + nuclear-spin switching)",
+  frequencyRange: "DC (continuous flux); proton exclusion gating ~ps–ns",
+  plasmaLiteralness: "field-coherence-analogy",
+  lineageosPath:
+    "kernel/dma/dma-coherent.c · kernel/mm/memremap.c · android_kernel_fairphone_qcm6490",
+  organelleRoute: {
+    source: "cell-membrane",
+    target: "cytoplasm",
+    direction: "inward",
+  },
+  ipcAnalogue:
+    "Zero-copy DMA coherent memremap — water molecules pass at near-classical rates, proton transfer quantum-gated (Kim 2025 Nano Letters DOI:10.1021/acs.nanolett.4c05831)",
+  isMetaphor: false,
+};
+
+/**
  * BP12 — Circadian Clock Oscillation.
  * CLOCK/BMAL1 transcription-translation feedback loop — the best-characterised
  * molecular oscillator in biology (Nobel Prize Physiology 2017). Maps to
@@ -224,12 +257,13 @@ export const BP12_CIRCADIAN_CLOCK: BioplasmaPathway = {
  * policy — the kernel partitions process memory into "phases" (hot/warm/cold)
  * without hard boundaries, exactly as IDRs partition the cytoplasm into
  * condensed vs dilute phases without membrane walls.
- * σ = 0.72 (Indicative) — mechanism well-demonstrated in vitro; in-vivo
- * condensate function (signalling vs. aggregation) still under active study.
+ * σ = 0.75 (Indicative upper) — mechanism well-demonstrated in vitro; 2026
+ * Signal Transduction paper (BMAL1 LLPS transcriptional hub) demonstrates LLPS
+ * as a high-fidelity biological OS-memory-tier mechanism, not merely stochastic.
  */
 export const BP13_PHASE_SEPARATION: BioplasmaPathway = {
   code: "BP13",
-  sigma: 0.72,
+  sigma: 0.75,
   status: "indicative",
   carrier: "IDR-driven liquid-liquid phase separation (concentration-dependent condensation)",
   frequencyRange: "DC (persistent state); assembly/disassembly ~seconds–minutes",
@@ -289,6 +323,7 @@ export const BIOPLASMA_PATHWAYS: BioplasmaPathway[] = [
   BP7_VMEM_PATTERN,
   BP8_QED_WATER,
   BP9_THZ_TELEMETRY,
+  BP10_AQUAPORIN_QUANTUM_TUNNELING,
 ];
 
 export const BIOPLASMA_BY_CODE: Record<string, BioplasmaPathway> = Object.fromEntries(

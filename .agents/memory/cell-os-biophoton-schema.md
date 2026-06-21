@@ -36,21 +36,23 @@ Enforced at build time by `biophotonIntegrity.assert.ts` (run via `pnpm --filter
 
 **Why:** Previous implementation had indicative links at σ=0.9, falsely implying verified-tier certainty. The research provides explicit evidence-tier-to-σ guidance that must be followed.
 
-## Canonical 7-pathway set (P1–P7) — 18 links total
+## Canonical 9-pathway set (P1–P9) — 20 links total
 
-All P1–P7 tuples must be present; enforced by the integrity script. **BIOPHOTON_RESEARCH.md is authoritative for σ values; LINEAGEOS_MANIFOLD.md is authoritative for LineageOS endpoint descriptions.** Where they conflict, BIOPHOTON_RESEARCH.md wins on σ.
+All P1–P9 tuples must be present; enforced by the integrity script. **BIOPHOTON_RESEARCH.md §9.2 is authoritative for σ values.** Where they conflict with code, §9.2 wins.
 
-- P1: `mitochondria → nucleus` (retrograde ROS→lipid perox→450–670 nm triplet carbonyl, σ=**0.75**, **verified** — confidence upgraded from indicative June 2026 to match σ≥0.75 verified tier)
-- P2: `endoplasmic-reticulum ↔ mitochondria` (MAM oxidative crosstalk — **bidirectional**, σ=0.55, indicative)
-- P3: `cell → cell` (extracellular UPE broadcast 600–900 nm — **biology is extracellular, not intracellular**, unordered-broadcast, σ=0.80, verified)
-- P4: `nucleus → cytoplasm` (DNA excimer UV 200–380 nm anterograde, ordered-broadcast, σ=0.35, speculative)
-- P5: `microtubule waveguide routing` (MT lumen 14 nm, n≈1.46 vs 1.35 total internal reflection, Binder thread pool, σ=0.60, indicative)
-- P6: `membrane → organelle` (**biological endpoint is full organelle network, not nucleus only**; retrograde lipid perox cascade 450–703 nm, σ=**0.55**, indicative)
-- P7: `mitochondria → mitochondria` (lateral sync, 2023 experiment [PMC10560087], σ=0.65, indicative)
+- P1: `mitochondria → nucleus` (retrograde ROS→lipid perox→450–670 nm, σ=0.75, verified)
+- P2: `endoplasmic-reticulum → mitochondria` (MAM ferroptosis-MAM carbonyl-triplet, σ=0.60, indicative — raised 0.55→0.60 on MedComm 2025)
+- P3: `cell-membrane → membrane-receptors` (extracellular UPE broadcast, σ=0.85, verified — raised 0.80→0.85 on Casey 2025 iScience + Mould 2024 Frontiers)
+- P4: `nucleus → cytoplasm` (DNA excimer UV anterograde, σ=0.35, speculative)
+- P5: `cytoskeleton → mitochondria` (MT lumen QED cavity, Entropy 2026, σ=0.75, indicative upper-boundary — raised 0.60→0.75)
+- P6: `cell-membrane → mitochondria` (**endpoint is mitochondria, not nucleus**; retrograde lipid perox cascade, σ=0.55, indicative)
+- P7: `mitochondria → mitochondria` (lateral sync, PMC10560087 2023, σ=0.65, indicative)
+- P8: `golgi-apparatus → membrane-receptors` (**NEW** ECM-Collagen extracellular waveguide, SHG/NLO, Yang 2024 Optica, σ=0.65, indicative)
+- P9: `cytoskeleton → nucleus` (**NEW** Axonal-Myelin step-index waveguide retrograde, PMC11539334 2024, σ=0.50, indicative — downgraded from proposed 0.82)
 
-**Why:** P1 corrected from σ=0.65 → 0.75 per BIOPHOTON_RESEARCH §5.8 cross-document audit. P6 corrected from σ=0.60 → 0.55 and endpoint broadened from "→nucleus" to "→organelle" — same audit. P2 is bidirectional (MAM is a contact site, not a one-way conduit). P3 biological route is extracellular; LineageOS maps the IPC analogue to HAL→AppOps internally, but the biology is cell-to-cell.
+**Why:** P8/P9 added after 2024-2026 research. P5 raised on Entropy 2026 QED cavity evidence. P2/P3 raised on ferroptosis-MAM and iScience 2025 literature.
 
-**σ is a continuous attention-tensor weight, not a binary confidence flag.** A pathway can be `indicative` evidence level and carry σ=0.75 if its emission rate and mechanistic coherence justify high weighting (P1 canonical example).
+**σ is a continuous attention-tensor weight, not a binary confidence flag.** Indicative tier spans 0.50–0.75; P5 at 0.75 and P9 at 0.50 are both valid indicative links at opposite ends.
 
 ## Golgi biophoton links — mixed confidence
 

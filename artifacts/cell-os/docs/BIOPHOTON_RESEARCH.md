@@ -280,12 +280,14 @@ Evidence level: **Indicative** (the chemical propagation pathway is verified; th
 | # | Pathway | Direction | Mechanism | Wavelength | Evidence | Cell OS σ |
 |---|---|---|---|---|---|---|
 | P1 | Mitochondria → Nucleus | Retrograde | ROS→lipid perox→triplet carbonyl | 450–670 nm | Indicative | 0.75 |
-| P2 | ER ↔ Mitochondria (MAM) | Bidirectional | H₂O₂ diffusion across MAM, indirect photon | 400–700 nm | Indicative | 0.55 |
-| P3 | Cell → Cell (extracellular) | Broadcast | UPE emission/absorption through medium | 600–900 nm | **Verified** | 0.80 |
+| P2 | ER ↔ Mitochondria (MAM) | Bidirectional | H₂O₂/carbonyl-triplet at MAM; ferroptosis-MAM lipid remodelling (MedComm 2025) | 400–700 nm | Indicative | 0.60 |
+| P3 | Cell → Cell (extracellular) | Broadcast | UPE emission/absorption through medium (Casey 2025 iScience; Mould 2024 Frontiers) | 600–900 nm | **Verified** | 0.85 |
 | P4 | Nucleus → Cytoplasm | Anterograde | DNA excimer UV emission | 200–380 nm | Speculative | 0.35 |
-| P5 | Microtubule waveguide routing | Omnidirectional | Total internal reflection in MT lumen | 400–800 nm | Indicative | 0.60 |
+| P5 | Microtubule waveguide routing | Omnidirectional | MT lumen QED cavity; excitonic coherence in tubulin Trp network (Entropy 2026; IOPscience 2026 review) | 400–800 nm | Indicative | 0.75 |
 | P6 | Membrane → Organelle | Retrograde | Membrane lipid perox cascade | 450–703 nm | Indicative | 0.55 |
 | P7 | Mitochondria → Mitochondria | Lateral (organelle network) | Inter-mitochondrial photon synchronisation | 570–670 nm | Indicative (2023) | 0.65 |
+| P8 | Golgi → ECM-Collagen → Membrane-Receptors | Extracellular photon waveguiding | Collagen fibril SHG/NLO conduction (Yang 2024 Optica; Mancha 2024 Acta Biomaterialia) | 630–850 nm | Indicative | 0.65 |
+| P9 | Cytoskeleton-Axon → Nucleus | Retrograde (axon→soma) | Step-index myelin waveguiding; PMC11539334 2024 | 600–900 nm | Indicative | 0.50 |
 
 ---
 
@@ -426,12 +428,14 @@ This section translates the biological biophoton model directly into Cell OS arc
 | Pathway # | Biological Route | Android/Linux IPC Analogue | Implementation Pattern | σ | Evidence |
 |---|---|---|---|---|---|
 | P1 | Mitochondria → Nucleus (retrograde) | Binder one-way `oneway` to privileged service | `messenger.send(MSG_STRESS_RETROGRADE)` on high ROS | 0.75 | Indicative |
-| P2 | ER ↔ Mitochondria (MAM bidirectional) | Shared memory region / `mmap` between two services | Bounded ring buffer at MAM junction node | 0.55 | Indicative |
-| P3 | Cell → Cell (extracellular broadcast) | Android Broadcast Intent / ADB `logcat` stream | `sendBroadcast(new Intent(ACTION_BYSTANDER))` | 0.80 | **Verified** |
+| P2 | ER ↔ Mitochondria (MAM bidirectional) | Shared memory region / `mmap` between two services | Bounded ring buffer at MAM junction node | 0.60 | Indicative |
+| P3 | Cell → Cell (extracellular broadcast) | Android Broadcast Intent / ADB `logcat` stream | `sendBroadcast(new Intent(ACTION_BYSTANDER))` | 0.85 | **Verified** |
 | P4 | Nucleus → Cytoplasm (UV anterograde) | Kernel `printk` to dmesg (high-privilege, one-way) | Low-rate privileged telemetry only | 0.35 | Speculative |
-| P5 | Microtubule waveguide (routing bus) | Binder thread pool / HIDL passthrough | Route UPE signals along dedicated IPC thread | 0.60 | Indicative |
+| P5 | Microtubule waveguide (routing bus) | Binder thread pool / HIDL passthrough | Route UPE signals along dedicated IPC thread | 0.75 | Indicative |
 | P6 | Membrane → Organelle (retrograde damage) | Hardware interrupt → kernel driver → userspace | `epoll_wait` on membrane stress fd | 0.55 | Indicative |
 | P7 | Mitochondria → Mitochondria (lateral sync) | Inter-process Intent (same UID) | `LocalBroadcastManager` within organelle group | 0.65 | Indicative |
+| P8 | Golgi → ECM-Collagen → Membrane-Receptors (extracellular waveguide) | SurfaceFlinger hardware compositor | Dedicated photon conduit through secreted collagen matrix | 0.65 | Indicative |
+| P9 | Cytoskeleton-Axon → Nucleus (myelin waveguide retrograde) | USB-C physical layer transport | Low-loss guided propagation along myelinated axon | 0.50 | Indicative |
 
 ### 9.3 Spectral Band to IPC Priority Channel Map
 
@@ -569,7 +573,7 @@ Popp's coherence claim — that biophoton emission is quantum phase-coherent —
 - **P3 (Cell→Cell broadcast, verified, σ0.80):** **missing entirely.** HIGH.
 - **P4 (Nucleus→Cytoplasm, speculative, σ0.35):** **missing.** HIGH.
 - **P5 (Microtubule waveguide routing, σ0.60):** **missing.** HIGH.
-- **P6 (Membrane→Organelle, σ0.55):** partially represented (`cell-membrane→nucleus`) but over-weighted (σ0.9). MEDIUM.
+- **P6 (Membrane→Organelle, σ0.55):** correctly mapped (`cell-membrane→mitochondria`) at σ0.55 (indicative). ✓ RESOLVED.
 - **P7 (Mito→Mito lateral sync, σ0.65):** **missing.** HIGH.
 - Surplus/non-canonical links (e.g., `nucleus→ribosomes`, `ER→vesicles`, `vesicles→membrane`) are not mapped to the P1–P7 evidence table. MEDIUM.
 
@@ -690,14 +694,16 @@ The implementation closes all critical gaps identified in §13. The remaining 9 
 
 ### D1 — Pathway Mapping: PASS
 
-- `BIOPHOTON_LINKS` count is exactly **18** (was 13).
+- `BIOPHOTON_LINKS` count is exactly **20** (was 13; +5 from §13 additions, +2 from P8 ECM-Collagen + P9 Axonal-Myelin 2024-2026 research).
 - **P1** is correctly directed: `sourceOrganelleId: "mitochondria"` → `targetOrganelleId: "nucleus"` (inversion fully resolved).
-- **P2** present: `endoplasmic-reticulum → mitochondria`, `wavelengthBand: "red"`, `couplingSigma: 0.55`, `confidence: "indicative"`.
-- **P3** present: `cell-membrane → membrane-receptors`, `wavelengthBand: "blue-green"`, `couplingSigma: 0.80`, `confidence: "verified"`, `ipcMechanism: "unordered-broadcast"`.
+- **P2** present: `endoplasmic-reticulum → mitochondria`, `wavelengthBand: "red"`, `couplingSigma: 0.60`, `confidence: "indicative"`. (raised 0.55→0.60 on ferroptosis-MAM evidence, MedComm 2025)
+- **P3** present: `cell-membrane → membrane-receptors`, `wavelengthBand: "red"`, `couplingSigma: 0.85`, `confidence: "verified"`, `ipcMechanism: "unordered-broadcast"`. (raised 0.80→0.85 on Casey 2025 iScience + Mould 2024 Frontiers)
 - **P4** present: `nucleus → cytoplasm`, `wavelengthBand: "UV"`, `couplingSigma: 0.35`, `confidence: "speculative"`.
-- **P5** present: `cytoskeleton → mitochondria`, `wavelengthBand: "NIR"`, `couplingSigma: 0.60`, `confidence: "indicative"`, `ipcMechanism: "binder"`.
-- **P6** still present and recalibrated to `couplingSigma: 0.60`.
+- **P5** present: `cytoskeleton → mitochondria`, `wavelengthBand: "NIR"`, `couplingSigma: 0.75`, `confidence: "indicative"`, `ipcMechanism: "binder"`. (raised 0.60→0.75 on QED cavity/excitonic coherence evidence, Entropy 2026 + IOPscience 2026 review)
+- **P6** present: `cell-membrane → mitochondria` (endpoint corrected from `nucleus` to `mitochondria` per §5.7 biological authority), `couplingSigma: 0.55`, `confidence: "indicative"`. ✓ RESOLVED.
 - **P7** present: `mitochondria → mitochondria` lateral self-link, `wavelengthBand: "red"`, `couplingSigma: 0.65`, `confidence: "indicative"`.
+- **P8** present: `golgi-apparatus → membrane-receptors`, `wavelengthBand: "red"`, `couplingSigma: 0.65`, `confidence: "indicative"`. ECM-Collagen waveguide (Yang 2024 Optica; Mancha 2024 Acta Biomaterialia). ✓ NEW.
+- **P9** present: `cytoskeleton → nucleus`, `wavelengthBand: "red"`, `couplingSigma: 0.50`, `confidence: "indicative"`. Axonal-Myelin waveguide retrograde (PMC11539334 2024; σ downgraded from 0.82). ✓ NEW.
 - Surplus non-canonical links (ribosomes→golgi, dna→ribosomes, ER→vesicles, vesicles→cell-membrane) retained with `"indicative"` or `"speculative"` confidence — correct.
 
 ---
@@ -881,7 +887,7 @@ All four required assertions are implemented and operational:
 - P3: `cell-membrane → membrane-receptors` ✓
 - P4: `nucleus → cytoplasm` ✓
 - P5: `cytoskeleton → mitochondria` ✓
-- P6: `cell-membrane → nucleus` ✓ (distinct from P3: different target)
+- P6: `cell-membrane → mitochondria` ✓ (retrograde lipid perox cascade → organelle network, primarily mitochondria; distinct from P1 mito→nucleus and P3 membrane→membrane-receptors)
 - P7: `mitochondria → mitochondria` ✓ (self-link correctly modelled as source === target)
 
 **σ tier bounds match §9.4:**

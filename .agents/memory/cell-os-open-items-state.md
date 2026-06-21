@@ -30,5 +30,5 @@ Peroxisome function is backfilled across three existing organelles (vacuole, nuc
 1. **Frozen-15 unfreeze**: add `peroxisome` organelle, clean up backfill. Only path to canonical peroxisome representation.
 2. **Fredholm cap relief**: can only add a substrate node if organelle count rises (16 organelles − 18 substrates = −2, still at cap) or an existing node is removed.
 3. **QI density**: Any future QI additions must be earned with strict biological grounding — do not add speculative intersections to pad coverage.
-4. **Biophoton links**: Canonical count is 18. Any further links should replace a low-confidence existing link rather than extending the count past the canonical set.
+4. **Biophoton links**: Canonical count is now **20** (P1–P9, +P8 ECM-Collagen + P9 Axonal-Myelin added from 2024-2026 research). The integrity test enforces exactly 20 links and P1–P9 required paths. Further additions require updating the integrity test count.
 5. **Documents page Phase 2**: Import (endocytosis) path — File API drag-and-drop to ingest external PDFs, linking to qi-document-perception-textual.

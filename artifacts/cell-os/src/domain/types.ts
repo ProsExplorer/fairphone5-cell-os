@@ -156,11 +156,11 @@ export type BiophotonLink = {
   rateRange: string;
   confidence: ClaimConfidence;
   /**
-   * Canonical pathway code (P1–P7 for the seven canonical inter-organelle
+   * Canonical pathway code (P1–P9 for the nine canonical inter-organelle
    * pathways defined in BIOPHOTON_RESEARCH.md §5). Sub-links and supporting
    * links that extend a canonical pathway may share its code; non-canonical
    * supporting links may omit this field. The `canonical` flag indicates
-   * whether this link is one of the primary P1–P7 representative links.
+   * whether this link is one of the primary P1–P9 representative links.
    */
   code?: `P${number}`;
   canonical?: boolean;
@@ -319,7 +319,7 @@ export type BioplasmaStatus =
  *   - organelleRoute.direction === "readonly" → never drives routing (BP9)
  */
 export interface BioplasmaPathway {
-  code: "BP1" | "BP2" | "BP3" | "BP4" | "BP5" | "BP6" | "BP7" | "BP8" | "BP9" | "BP12" | "BP13" | "BP14";
+  code: "BP1" | "BP2" | "BP3" | "BP4" | "BP5" | "BP6" | "BP7" | "BP8" | "BP9" | "BP10" | "BP12" | "BP13" | "BP14";
   sigma: number;
   status: BioplasmaStatus;
   carrier: string;

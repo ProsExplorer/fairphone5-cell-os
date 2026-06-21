@@ -266,11 +266,13 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
     couplingSigma: 0.40
   },
 
-  // #13 Membrane potential — action potential propagates from membrane to nucleus (gene expression change)
+  // #13 P6 — Membrane → Mitochondria retrograde lipid peroxidation signal (BIOPHOTON_RESEARCH.md §5.7)
+  // Biological endpoint: organelle network (primarily mitochondria via 4-HNE/ROS retrograde cascade).
+  // NOT nucleus — that is P1 (mitochondria→nucleus retrograde) and BP14 (Ca²⁺/CaM-kinase IV→CREB).
   {
     sourceOrganelleId: "cell-membrane",
-    targetOrganelleId: "nucleus",
-    description: "Action potential propagation (P6 — BIOPHOTON_RESEARCH.md §5.7): the membrane potential crossing threshold triggers a cascade that ultimately reaches the nucleus — Ca²⁺ influx activates CaM-kinase IV, which phosphorylates CREB, which modulates gene expression. Biophoton emission accompanies membrane depolarization in the blue-green band. In Android: a hardirq fires at the membrane (interrupt controller), propagates through the kernel's IRQ thread, crosses the Binder boundary as a system call, and reaches the nucleus (kernel syscall table) where the process state is updated. σ=0.55 (indicative, aligned to BIOPHOTON_RESEARCH.md §9.2 canonical P6 value).",
+    targetOrganelleId: "mitochondria",
+    description: "Membrane → Organelle retrograde lipid peroxidation signal (P6 — BIOPHOTON_RESEARCH.md §5.7): oxidative attack on the plasma membrane initiates a peroxyl-radical cascade propagating inward through the bilayer and perinuclear membranes. The resulting wave of triplet carbonyl (450–550 nm) and singlet oxygen (634/703 nm) photons travels toward the organelle network — primarily mitochondria, which receive the 4-HNE and ROS signal before chemical messengers diffuse further. This retrograde biophoton gradient communicates membrane-stress status to mitochondria, triggering antioxidant upregulation and mitophagy priming. σ=0.55 (indicative, aligned to BIOPHOTON_RESEARCH.md §9.2 canonical P6 value). In Android: a hardware interrupt from a peripheral (membrane stress) propagates inward through the kernel IRQ thread and reaches the power subsystem (mitochondria analogue) via the HAL layer.",
     rateRange: "1–500 ph/cm²/s",
     confidence: "indicative",
     wavelengthBand: "blue-green",
@@ -340,12 +342,12 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
   {
     sourceOrganelleId: "endoplasmic-reticulum",
     targetOrganelleId: "mitochondria",
-    description: "ER-mitochondria membrane contact sites (MAMs): the smooth ER forms physical tether contacts with the outer mitochondrial membrane, transferring Ca²⁺ and lipid precursors. PDI-ERO1 oxidative folding in the ER lumen generates ROS that drive biophoton emission in the red band — this signal propagates across the contact site to the mitochondrion. Android analogue: Messenger async callback from the App Framework layer to the power service — async, point-to-point, neither layer blocks the other (σ=0.55, indicative, biologically calibrated per §9.4).",
+    description: "ER-mitochondria membrane contact sites (MAMs): the smooth ER forms physical tether contacts with the outer mitochondrial membrane, transferring Ca²⁺ and lipid precursors. PDI-ERO1 oxidative folding in the ER lumen generates ROS that drive biophoton emission in the red band — this signal propagates across the contact site to the mitochondrion. 2024 ferroptosis-MAM research (MedComm 2025) provides stronger mechanistic anchor: MAM lipid remodelling during ferroptosis drives carbonyl-triplet emission at the ER-mito interface. Android analogue: Messenger async callback from the App Framework layer to the power service — async, point-to-point, neither layer blocks the other (σ=0.60, indicative, BIOPHOTON_RESEARCH.md §9.2).",
     rateRange: "5–100 photons/cm²/s",
     confidence: "indicative",
     wavelengthBand: "red",
     ipcMechanism: "messenger",
-    couplingSigma: 0.55
+    couplingSigma: 0.60
   },
 
   // P3 — Cell-to-cell bystander biophoton signaling (Verified, §5 P3, PMC3840296, PMC10606557 2024)
@@ -353,12 +355,12 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
   {
     sourceOrganelleId: "cell-membrane",
     targetOrganelleId: "membrane-receptors",
-    description: "Bystander biophoton cell-to-cell signaling (P3 — Verified, §5): stressed cells emit UPE that propagates as an extracellular broadcast and is received by neighboring cells, including transmission across photon-transparent barriers that block molecular diffusion. Pathway wavelength is 600–900 nm (the biological window), with emission/absorption through the extracellular medium over μm-to-mm distances. This is the most firmly established functional biophoton signaling pathway in the current literature (Verified, 2013–2024). Android analogue: unordered broadcast intent — fire-and-forget across all process boundaries, received by all registered listeners simultaneously. σ=0.80 (biologically calibrated for the strongest verified inter-cellular coupling).",
+    description: "Bystander biophoton cell-to-cell signaling (P3 — Verified, §5): stressed cells emit UPE that propagates as an extracellular broadcast and is received by neighboring cells, including transmission across photon-transparent barriers that block molecular diffusion. Pathway wavelength is 600–900 nm (the biological window), with emission/absorption through the extracellular medium over μm-to-mm distances. Casey et al. 2025 (iScience) demonstrates UPEs as optical markers of brain activity correlating with neural synchrony across cell populations; Mould et al. 2024 (Frontiers Physiology) review consolidates non-chemical cell-to-cell signalling evidence. Android analogue: unordered broadcast intent — fire-and-forget across all process boundaries, received by all registered listeners simultaneously. σ=0.85 (BIOPHOTON_RESEARCH.md §9.2; raised from 0.80 on 2025-2026 literature).",
     rateRange: "10–500 photons/cm²/s",
     confidence: "verified",
     wavelengthBand: "red",
     ipcMechanism: "unordered-broadcast",
-    couplingSigma: 0.80
+    couplingSigma: 0.85
   },
 
   // P4 — Nucleus → Cytoplasm UV emission (Speculative, §5 P4)
@@ -379,12 +381,12 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
   {
     sourceOrganelleId: "cytoskeleton",
     targetOrganelleId: "mitochondria",
-    description: "Microtubule waveguide routing (P5 — Indicative, §5): microtubules are proposed intracellular photon waveguides where total internal reflection occurs in the MT lumen (inner diameter ~14 nm) due to refractive-index contrast between tubulin (n≈1.46) and cytoplasm (n≈1.35). Physical waveguide models support propagation across 400–800 nm, but the physiologically operative range for intracellular biophoton guidance is primarily NIR (700–900 nm), consistent with the wavelengthBand metadata. Evidence is indicative: waveguide physics is established, but direct single-photon guided-propagation measurement in living microtubules is still pending. Android analogue: Binder thread-pool routing — dispatch to target execution units as route-specific photon guidance (σ=0.60, indicative).",
+    description: "Microtubule waveguide routing (P5 — Indicative, §5): microtubules are proposed intracellular photon waveguides where total internal reflection occurs in the MT lumen (inner diameter ~14 nm) due to refractive-index contrast between tubulin (n≈1.46) and cytoplasm (n≈1.35). 2025–2026 evidence elevates confidence significantly: arXiv:2505.20364 (2025) models microtubules as high-Q QED cavities with decoherence-resistant states; Entropy 2026 (arXiv:2602.02868) characterises long-range excitonic coherence in tubulin tryptophan networks; IOPscience 2026 review consolidates optical properties of the cytoskeleton. Android analogue: Binder thread-pool routing — dispatch to target execution units as route-specific photon guidance (σ=0.75, indicative upper-boundary, BIOPHOTON_RESEARCH.md §9.2).",
     rateRange: "1–50 photons/cm²/s",
     confidence: "indicative",
     wavelengthBand: "NIR",
     ipcMechanism: "binder",
-    couplingSigma: 0.60
+    couplingSigma: 0.75
   },
 
   // P7 — Mitochondria lateral synchronization (Indicative, §5 P7, PMC10560087 2023)
@@ -398,6 +400,32 @@ export const BIOPHOTON_LINKS: BiophotonLink[] = [
     wavelengthBand: "red",
     ipcMechanism: "messenger",
     couplingSigma: 0.65
+  },
+
+  // P8 — ECM-Collagen extracellular biophoton waveguiding (Indicative, §5 P8)
+  // Collagen fibril hierarchical structure provides SHG-active nonlinear optical conduit through ECM.
+  {
+    sourceOrganelleId: "golgi-apparatus",
+    targetOrganelleId: "membrane-receptors",
+    description: "ECM-collagen extracellular biophoton waveguiding (P8 — Indicative, §5): collagen fibril hierarchical structures in the extracellular matrix act as biological optical conduits. Second-harmonic generation (SHG) in collagen provides direct evidence of nonlinear photon interaction and guided propagation through the fibril matrix (Yang 2024 Optica; Mancha 2024 Acta Biomaterialia). Red/NIR photons (630–850 nm) from metabolically active cells are guided through collagen scaffolds to adjacent membrane receptors — confirmed by photobiomodulation (PBM) studies. The Golgi apparatus secretes procollagen, making it the intracellular origin of the conduit (Golgi → secreted collagen → ECM waveguide → neighbouring receptor). Android analogue: SurfaceFlinger hardware compositor — routes rendered buffers through dedicated hardware conduits to the display layer (σ=0.65, indicative, BIOPHOTON_RESEARCH.md §9.2).",
+    rateRange: "10–1000 photons/cm²/s",
+    confidence: "indicative",
+    wavelengthBand: "red",
+    ipcMechanism: "binder",
+    couplingSigma: 0.65
+  },
+
+  // P9 — Axonal-Myelin biophoton waveguiding (Indicative, §5 P9)
+  // Myelinated nerve fibers act as step-index optical waveguides for retrograde soma signaling.
+  {
+    sourceOrganelleId: "cytoskeleton",
+    targetOrganelleId: "nucleus",
+    description: "Axonal-myelin biophoton waveguiding (P9 — Indicative, §5): myelinated nerve fibers act as low-loss step-index optical waveguides due to refractive-index contrast between myelin sheath (n≈1.46–1.48) and axon core (n≈1.36). 2024 mechanotransduction-biophotonics review (PMC11539334) documents neural biophoton transmission along fibers; waveguide theory predicts sub-dB/cm propagation loss in the 600–900 nm biological window. Proposed route: cytoskeletal axonal structure → nucleus (retrograde to cell body) for biophoton-mediated axon-to-soma signaling. σ downgraded from proposed 0.82 to 0.50 — direct in-vivo propagation-loss measurements still lacking. Android analogue: USB-C physical-layer transport — low-loss, geometry-constrained, medium-specific propagation (σ=0.50, indicative lower-boundary, BIOPHOTON_RESEARCH.md §9.2).",
+    rateRange: "1–50 photons/cm²/s",
+    confidence: "indicative",
+    wavelengthBand: "red",
+    ipcMechanism: "binder",
+    couplingSigma: 0.50
   }
 ];
 
