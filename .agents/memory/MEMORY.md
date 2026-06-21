@@ -15,3 +15,4 @@
 - [Cell OS bioplasma implementation](cell-os-bioplasma-implementation.md) — BP1–BP9 live in codebase: types, store, 3 hooks, BIOPLASMA_ZONE_REGISTRY, BioplasmaFieldSection, Hebbian modulation, all 8 panels.
 - [BP8 SMEM coherence design](bp8-smem-design.md) — SMEM satisfies all 4 BP8 activation criteria; 9-row isomorphism table; 3-stage fork spec; σ proposal 0.32→0.45; pending architect ratification.
 - [Cell OS ROM Fork Plan](cell-os-rom-fork-plan.md) — architect-approved ROM-first/kernel-last strategy; 5 phases, 7-repo minimal fork set, BP8 zero-guard, generate_domain.py TS→Kotlin, sacred/profane boundary rules.
+- [Cell OS HAL reality boundary](cell-os-hal-reality.md) — android_hardware_lineage_interfaces has NO thermal/ or performance/ dir; FP5 thermal/power come from Qualcomm vendor tree; verified paths are for lineage-21.0 only.

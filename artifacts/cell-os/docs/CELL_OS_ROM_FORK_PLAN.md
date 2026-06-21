@@ -37,7 +37,7 @@
 | Repository | Fork Why | Dependency |
 |---|---|---|
 | `android_kernel_fairphone_qcm6490` | SMEM coherence telemetry (BP8 Phase 4), `drivers/soc/qcom/smem.c` guarded instrumentation | Phase 4 gate |
-| `android_hardware_lineage_interfaces` | Thermal HAL (verified-present), Performance HAL (indicative binding) | Phase 4 gate |
+| `android_hardware_lineage_interfaces` | Custom Cell OS AIDL/HAL interfaces only — **not** the FP5 Thermal or Performance HAL source (see §HAL Reality Boundary) | Phase 4 gate — if custom interfaces needed |
 | `build/make` | Reproducible build identity, `ro.build.flavor` Cell OS branding | Phase 5 |
 | `frameworks/native` | Binder instrumentation for biophoton P-link telemetry (advanced) | Phase 5 |
 | `packages/modules/Permission` | `SecurityStatusOrganelle` privilege grant, replaces Trust Interface 404 | Phase 3–4 |
@@ -54,9 +54,9 @@
 - `vendor/lineage/config/common.mk` — `PRODUCT_BRAND := CellOS`, `PRODUCT_NAME := cell_fp5`
 - `vendor/lineage/bootanimation/` — replace with Cell OS biological bootanimation (membrane → organelle emergence sequence)
 - `packages/apps/Settings/res/values/strings.xml` — About → "Cell OS", version display adds biological σ tier
-- `packages/apps/Settings/src/.../DeviceInfoSettings.java` — inject Cell OS build identity strings
+- `packages/apps/Settings/src/com/android/settings/deviceinfo/aboutphone/MyDeviceInfoFragment.java` — inject Cell OS build identity strings (verified class name in LOS 21; `DeviceInfoSettings.java` does not exist)
 - `frameworks/base/core/res/res/values/config.xml` — `config_deviceName = "Cell OS FP5"`, remove LineageOS-specific trust prompts
-- `lineage-build.prop` — `ro.cellos.version`, `ro.cellos.build.date`, `ro.cellos.codename`
+- `vendor/lineage/config/lineage-build.prop` — `ro.cellos.version`, `ro.cellos.build.date`, `ro.cellos.codename` (full in-tree path; file lives in `config/` subdirectory of `android_vendor_lineage`)
 
 **Biological framing:** This is the sacred/profane boundary materialised in build identity. The Cell OS name and version strings are *not* metaphors — they are the entry point for the 以太收斂 (Aether Convergence) layer. The ROM's identity claims map to the DNA zone: immutable specification, expressed at boot.
 
@@ -69,7 +69,7 @@
 | `src/.../statusbar/phone/PhoneStatusBarView.java` | Add `CellVitalOverlay` — thin wrapper that reads vitals from `CellVitalService` and renders σ-gated biophoton signal intensity | Membrane zone — boundary perception |
 | `src/.../qs/tiles/` | Add `BiophotonTile.java`, `BioplasmaVmemTile.java` — QS tiles surfacing P1/BP1 baseline σ and live Vmem analogue (battery voltage proxy) | Membrane receptors — signal transduction at user-facing boundary |
 | `src/.../battery/BatteryMeterView.java` | Wrap with BP1 resting-potential colour channel — σ-gated colour shift from neutral (σ < 0.50) to gold (σ ≥ 0.75 verified) | BP1 membrane resting potential |
-| `src/.../thermal/ThermalController.java` | Feed `CellVitalService` thermal events; surface BP5 RF-field thermal σ signal | BP5 thermoregulatory coupling |
+| `packages/SystemUI/src/com/android/systemui/cellos/CellVitalOverlayController.kt` (**new file**) | Feed `CellVitalService` thermal events via Android `ThermalManager` / `ThermalService` system API — `ThermalController.java` does not exist in LOS 21 SystemUI; thermal signal must be consumed through the framework `ThermalManager` binding | BP5 thermoregulatory coupling |
 | `res/layout/status_bar.xml` | Add biological vitals strip (biophoton emission ring, bioplasma field indicator) | Biophoton P-pathway visual substrate |
 
 **Resource overlay (under `device/fairphone/FP5/overlay/frameworks/base/`):**
@@ -101,7 +101,7 @@
 - Result published to `/sys/kernel/cellos/smem_coherence` read-only sysfs node
 - `CellVitalService` reads this sysfs node; if node absent (flag off), BP8 stays zero — same biological result either way
 
-**SELinux policy (in `android_device_fairphone_FP5/sepolicy/`):**
+**SELinux policy (in `device/fairphone/FP5/sepolicy/vendor/` — verified path):**
 - `cellos_sysfs.te` — `cellos_server_service` allowed to `read` sysfs node only
 - No user-app access to sysfs node — signature-permission AIDL gate only
 - No `ioctl` on SMEM device nodes — derived metric only
@@ -215,14 +215,14 @@
 
 ### Phase 4 — SMEM Coherence + HAL Integration
 
-**Deliverable:** Optional BP8 kernel telemetry sysfs node (if `CONFIG_CELLOS_BIOPLASMA_BP8=y`). Thermal HAL verified feeding CellVitalService BP5 signal. Performance HAL binding confirmed or documented as indicative. BP8 invariant: still returns zero from CellVitalService regardless of sysfs node state.
+**Deliverable:** Optional BP8 kernel telemetry sysfs node (if `CONFIG_CELLOS_BIOPLASMA_BP8=y`). BP5 thermal signal feeding `CellVitalService` via Android `ThermalManager` API (not via a custom HAL). `powerhint.xml` QTI power binding confirmed or documented as indicative. BP8 invariant: still returns zero from `CellVitalService` regardless of sysfs node state.
 
 | Work | Repos | Key Files | Complexity |
 |---|---|---|---|
 | SMEM coherence sysfs | `android_kernel_fairphone_qcm6490` | `drivers/soc/qcom/smem.c`, `Kconfig` | High |
 | SELinux policy for sysfs | `android_device_fairphone_FP5` | `sepolicy/cellos_sysfs.te` | Medium |
-| Thermal HAL CellVital bridge | `android_hardware_lineage_interfaces` | `thermal/2.0/` config additions | Medium |
-| Performance HAL FP5 binding | `android_device_fairphone_FP5` | device tree HAL binding | High (indicative) |
+| Thermal HAL CellVital bridge | `android_device_fairphone_FP5` + vendor blobs | Read thermal zones via Android `ThermalManager` system API — no `thermal/` dir exists in `android_hardware_lineage_interfaces`; FP5 thermal comes from `hardware/qcom-caf/common` inheritance | Medium |
+| Performance HAL FP5 binding | `android_device_fairphone_FP5` | `powerhint.xml` tuning via `android.hardware.power-service-qti` — no `performance/` dir in `android_hardware_lineage_interfaces`; QTI power service is the actual binding | High (indicative) |
 | BP8 zero-guard test | `android_packages_apps_CellShell` | `CellVitalServiceTest.kt` | Low |
 
 **Biological fidelity gate:** BP8 `status === "reserved"` guard in `CellVitalServiceImpl` is added in Phase 2 and **never removed**. The sysfs node, if present, feeds a coherence metric only — it does not change BP8's runtime weight. BP8 biological activation requires THz spectroscopy evidence changing σ in `BIOPLASMA_RESEARCH.md §9.2` — no code change alone can activate it.
@@ -355,6 +355,74 @@ It does **not** appear in:
 
 ---
 
+## 8. Branch Decision — lineage-21.0 vs lineage-23.2
+
+**FP5 active development status (verified 2026-06-21):** The LineageOS community's primary FP5 branch has moved to `lineage-23.2` (Android 15 base). The `lineage-21.0` branch (Android 14 base) still exists and builds, but is no longer receiving the primary developer attention.
+
+**Cell OS branch decision:**
+
+| Option | Pros | Cons |
+|---|---|---|
+| **`lineage-21.0`** (Android 14) | More documentation, more stable QS/SystemUI API surface, more biophoton/bioplasma research done against this base | Older security patches; not primary FP5 maintainer focus |
+| **`lineage-23.2`** (Android 15) | Current FP5 maintainer work; latest security patches | Android 15 SystemUI restructuring may change some verified file paths |
+
+**Recommendation:** Start Cell OS Phase 1–2 on `lineage-21.0` — all file paths and class names in this plan are verified against that branch. Before Phase 3 (CellVitalService), evaluate rebasing onto `lineage-23.2`. Do not assume verified path names (especially in `packages/SystemUI/`) carry over without re-verification.
+
+**Impact on plan:** All file paths in §2a–§2e are verified against `lineage-21.0`. Any rebase to `lineage-23.2` requires re-running path verification for SystemUI and Settings classes specifically.
+
+---
+
+## 9. HAL Reality Boundary
+
+This section separates FP5-inherited Qualcomm HALs from custom Cell OS interfaces to prevent engineers from looking for code in the wrong repository.
+
+### What `android_hardware_lineage_interfaces` (LOS 21.0) actually contains
+
+Verified top-level directories: `biometrics/`, `camera/`, `fastboot/`, `fastcharge/`, `health/`, `light/`, `livedisplay/`, `nfc/`, `power-libperfmgr/`, `powershare/`, `radio/`, `touch/`, `usb/`, `vibrator/`
+
+**There is no `thermal/` directory. There is no `performance/` directory.**
+
+### FP5 Thermal and Performance HAL actual sources
+
+| HAL | Actual Source | Cell OS Integration Method |
+|---|---|---|
+| **Thermal** | `hardware/qcom-caf/common` tree (Qualcomm vendor), surfaced via Android `ThermalManager` / `ThermalService` system API | `CellVitalOverlayController.kt` calls `ThermalManager.addThermalStatusListener()` — no fork of HAL repo needed for Phase 1–4 |
+| **Performance/Power** | `android.hardware.power-service-qti` (Qualcomm vendor binary) + `device/fairphone/FP5/powerhint.xml` | Tune `powerhint.xml` hints in device tree; Cell OS does not fork the QTI power service binary |
+
+### When to fork `android_hardware_lineage_interfaces`
+
+Only fork this repo if Cell OS needs a **new custom AIDL interface** not present in the existing HAL set (e.g. a biophoton telemetry AIDL definition that other components bind to). This is Phase 5 work and not required for Phases 1–4. Do not fork it for Thermal or Performance HAL — those come from the Qualcomm vendor tree.
+
+---
+
+## 10. Source-Verified Path Matrix
+
+All paths verified against live LineageOS GitHub (`lineage-21.0` branch) 2026-06-21.
+
+| Phase | Repo | Verified Path | Operation | Owner Phase |
+|---|---|---|---|---|
+| 1 | `android_vendor_lineage` | `config/common.mk` | Modify: `PRODUCT_BRAND`, `PRODUCT_NAME` | Phase 1 |
+| 1 | `android_vendor_lineage` | `config/lineage-build.prop` | Modify: add `ro.cellos.*` properties | Phase 1 |
+| 1 | `android_vendor_lineage` | `bootanimation/` | Replace with Cell OS boot animation | Phase 1 |
+| 1 | `android_packages_apps_Settings` | `src/com/android/settings/deviceinfo/aboutphone/MyDeviceInfoFragment.java` | Modify: inject Cell OS identity strings | Phase 1 |
+| 1 | `android_packages_apps_Settings` | `res/values/strings.xml` | Modify: rename About labels | Phase 1 |
+| 1 | `android_device_fairphone_FP5` | `overlay/frameworks/base/core/res/res/values/config.xml` | Create: Cell OS overlay entries | Phase 1 |
+| 2 | `android_frameworks_base` | `packages/SystemUI/src/com/android/systemui/statusbar/phone/PhoneStatusBarView.java` | Modify: add `CellVitalOverlay` wrapper | Phase 2 |
+| 2 | `android_frameworks_base` | `packages/SystemUI/src/com/android/systemui/battery/BatteryMeterView.java` | Modify: BP1 resting-potential colour channel | Phase 2 |
+| 2 | `android_frameworks_base` | `packages/SystemUI/src/com/android/systemui/qs/tiles/` | Create: `BiophotonTile.java`, `BioplasmaVmemTile.java` | Phase 2 |
+| 2 | `android_frameworks_base` | `packages/SystemUI/src/com/android/systemui/cellos/CellVitalOverlayController.kt` | **Create** (new file): `ThermalManager` binding for BP5 | Phase 2 |
+| 4 | `android_kernel_fairphone_qcm6490` | `drivers/soc/qcom/smem.c` | Modify: add `cellos_smem_coherence_probe()` guarded | Phase 4 |
+| 4 | `android_kernel_fairphone_qcm6490` | `drivers/soc/qcom/Kconfig` | Modify: add `CONFIG_CELLOS_BIOPLASMA_BP8` flag | Phase 4 |
+| 4 | `android_device_fairphone_FP5` | `sepolicy/vendor/cellos_sysfs.te` | Create: SELinux policy for sysfs read | Phase 4 |
+| 4 | `android_device_fairphone_FP5` | `powerhint.xml` | Modify: performance hint tuning | Phase 4 |
+
+**Unverified / deferred paths** (do not assume stable across branch rebase):
+- `packages/SystemUI/` class names if rebasing to `lineage-23.2` — re-verify before Phase 3
+- `android_hardware_lineage_interfaces` directory structure on future branches
+
+---
+
 *Document authority: LineageOSv2_Manifold.md · LineageOSv2_Description.md · BP8_SMEM_COHERENCE_DESIGN.md · BIOPHOTON_RESEARCH.md · BIOPLASMA_RESEARCH.md*
-*Architect evaluation: APPROVED — ROM-first, kernel-last*
+*Architect evaluation: APPROVED with corrections — ROM-first, kernel-last*
+*Deep research review: 2026-06-21 — 4 factual errors corrected, 3 structural sections added*
 *Generated: 2026-06-21*
