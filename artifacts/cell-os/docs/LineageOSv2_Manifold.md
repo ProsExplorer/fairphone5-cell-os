@@ -34,7 +34,7 @@
 
 `LineageOSv2_Manifold.md` is the second-generation Cell OS coordinate map for the LineageOS software substrate. Where `LINEAGEOS_MANIFOLD.md` established the nine biophoton IPC pathways (P1–P9) and their LineageOS translations, this document integrates the thirteen bioplasma pathways (BP1–BP9, BP10, BP12–BP14) from `BIOPLASMA_RESEARCH.md` into the same source-verified LineageOS coordinate system. Together, the 22 pathways constitute the complete electromagnetic manifold of the living cell as expressed in LineageOS source code on Fairphone 5 hardware.
 
-The nine bioplasma pathways span the full frequency spectrum from DC to terahertz. The most firmly established — BP1 (membrane resting potential, σ=0.92) and BP2 (action potential propagation, σ=0.90) — map to the Linux kernel's IRQ ground state and the Binder IPC transaction chain respectively, both of which are AOSP invariants preserved without modification in LineageOS. The well-replicated bioelectric morphogenesis work of Michael Levin's group underlies BP7 (σ=0.72), which maps to LineageOS's persistent settings infrastructure (SettingsProvider + LineageParts). The speculative high-frequency boundary (BP8: QED water coherence, σ=0.32) has no LineageOS production path and is implemented as a reserved annotation only.
+The thirteen bioplasma pathways span the full frequency spectrum from DC to terahertz. The core nine (BP1–BP9) are fully documented with LineageOS source paths in §5; BP10, BP12, BP13, and BP14 are covered in §5.10–§5.11 and in BIOPLASMA_RESEARCH.md. The most firmly established — BP1 (membrane resting potential, σ=0.92) and BP2 (action potential propagation, σ=0.90) — map to the Linux kernel's IRQ ground state and the Binder IPC transaction chain respectively, both of which are AOSP invariants preserved without modification in LineageOS. The well-replicated bioelectric morphogenesis work of Michael Levin's group underlies BP7 (σ=0.72), which maps to LineageOS's persistent settings infrastructure (SettingsProvider + LineageParts). The speculative high-frequency boundary (BP8: QED water coherence, σ=0.32) has no LineageOS production path and is implemented as a reserved annotation only.
 
 The authority hierarchy is strict. Biological σ values and evidence tiers are set permanently by `BIOPLASMA_RESEARCH.md` and cannot be elevated by LineageOS source verification alone. What LineageOS verification changes is only the implementation confidence — whether a software analogue can be pointed at a real, HTTP-confirmed source path. The biological σ is a ceiling; the implementation tier is a floor that can be raised toward that ceiling by source confirmation.
 
@@ -72,7 +72,7 @@ Bioplasma pathways (ionic/EM field carriers) and biophoton pathways (photon carr
 | Deep NIR | 1,270 nm | Singlet O₂ monomol decay | P7 sub | `THREAD_PRIORITY_LOWEST` | SeedVault |
 | UV | 200–380 nm | DNA excimer/exciplex; NER burst | P4, P5 | `THREAD_PRIORITY_URGENT_DISPLAY` | Unchanged |
 
-### 1.2 Unified Pathway Summary Table (Core 19 Pathways — 22-pathway manifold; P8, P9, BP10 in §5.x sections)
+### 1.2 Unified Pathway Summary Table (Core 19 Pathways — full 22-pathway manifold; BP10/BP12–BP14 in BIOPLASMA_RESEARCH.md; P8/P9 in BIOPHOTON_RESEARCH.md)
 
 | Code | Family | σ | Status | Carrier | Frequency | Zone | LOS Implementation Domain |
 |---|---|---|---|---|---|---|---|
@@ -147,8 +147,8 @@ The LineageOS Manifold is a secondary coordinate system mapped over a primary bi
 
 To prevent data drift and circular references, the following hierarchy of authority is strictly enforced:
 
-1. **BIOPLASMA_RESEARCH.md**: Authoritative for all **BP1–BP9 σ values**, biological mechanism claims, and ionic/EM evidence tiers.
-2. **BIOPHOTON_RESEARCH.md**: Authoritative for all **P1–P7 σ values**, photon emission profiles (wavelength, rate), and inter-organelle pathway evidence.
+1. **BIOPLASMA_RESEARCH.md**: Authoritative for all **BP1–BP9, BP10, BP12–BP14 σ values**, biological mechanism claims, and ionic/EM evidence tiers.
+2. **BIOPHOTON_RESEARCH.md**: Authoritative for all **P1–P9 σ values**, photon emission profiles (wavelength, rate), and inter-organelle pathway evidence.
 3. **LineageOSv2_Manifold.md**: Authoritative only for **LineageOS source path claims**, software implementation tiers, and FP5-specific hardware/software activation status.
 
 **Conflict Resolution**: In the event of σ value or biological description conflicts, the specialised research document (`BIOPLASMA` or `BIOPHOTON`) governs. LineageOS-specific implementation claims (e.g., whether a feature is active on FP5) are governed by the audit logs in §9 of this document.
@@ -170,7 +170,7 @@ To prevent data drift and circular references, the following hierarchy of author
 | **BP3** (Wound Fields) | 0.85 | `verified` | Inherited — AOSP BroadcastQueue + BatteryService |
 | **BP14** (Calcium Spark) | 0.82 | `verified` | kernel/time/tick-sched.c NO_HZ_FULL coalescing; patch-clamp verified |
 | **BP7** (Morphogenesis) | 0.72 | `indicative` | LOS-specific — LineageParts source-verified |
-| **BP13** (Phase Separation) | 0.72 | `indicative` | kernel/mm/ cgroup + NUMA zone paths; metaphor analogy |
+| **BP13** (Phase Separation) | 0.75 | `indicative` | kernel/mm/ cgroup + NUMA zone paths; metaphor analogy; σ raised on BMAL1 LLPS hub (Signal Transduction 2026) |
 | **BP4** (ELF Coupling) | 0.70 | `indicative` | Inherited — epoll/Looper AOSP invariant; σ raised per Renati 2024 QFT/QED ICR consolidation |
 | **BP5** (RF/MMW Coupling) | 0.60 | `indicative` | Framework-level: `CellVitalOverlayController.kt` (SystemUI) calls `PowerManager.addThermalStatusListener(executor, OnThermalStatusChangedListener)`. `android_hardware_lineage_interfaces` has **no `thermal/` directory** (verified absent). Underlying HAL `android.hardware.thermal-service.qti` is transparent to Cell OS. |
 | **BP9** (THz Phenotype) | 0.50 | `indicative` | StatsD/perfetto verified AOSP; THz analogy metaphor |
@@ -236,16 +236,16 @@ Each of the 8 Cell OS zones now carries a combined bioplasma+biophoton field pro
 | Pathway | Family | σ | Carrier | LineageOS Implementation |
 |---|---|---|---|---|
 | BP2 | Bioplasma | 0.90 | Depolarisation propagation | Binder `IPCThreadState` / `ProcessState` |
-| P2 | Biophoton | 0.50 | Blue-green photon | Binder oneway |
+| P2 | Biophoton | 0.60 | Blue-green photon | Binder oneway |
 | BP9 | Bioplasma | 0.50 | THz refractive phenotype | `statsd` / `perfetto` (read-only) |
 | BP8 | Bioplasma | 0.32 | QED water coherence | Reserved annotation (no impl.) |
 
 ### Zone 4: `cytoskeleton`
-**Glyph**: 架 · **Combined σ**: 0.60 (P5) · **Dominant carrier**: Tubulin dipolar (GHz–THz) + MT photon waveguide
+**Glyph**: 架 · **Combined σ**: 0.75 (P5) · **Dominant carrier**: Tubulin dipolar (GHz–THz) + MT photon waveguide
 
 | Pathway | Family | σ | Carrier | LineageOS Implementation |
 |---|---|---|---|---|
-| P5 | Biophoton | 0.60 | Vis photon (MT waveguide) | Binder threadpool / HIDL passthrough |
+| P5 | Biophoton | 0.75 | Vis photon (MT waveguide) | Binder threadpool / HIDL passthrough |
 | BP9 | Bioplasma | 0.50 | THz refractive signature | Diagnostic telemetry (read-only) |
 | BP6 | Bioplasma | 0.45 | Fröhlich collective dipole | SurfaceFlinger VSYNC coherence (metaphor) |
 
@@ -259,12 +259,13 @@ Each of the 8 Cell OS zones now carries a combined bioplasma+biophoton field pro
 | BP7 | Bioplasma | 0.72 | Vmem pattern (downstream) | `SettingsProvider` / LineageParts |
 
 ### Zone 6: `endoplasmic-reticulum`
-**Glyph**: 網 · **Combined σ**: 0.65 (BP4) · **Dominant carrier**: Ca²⁺ ion flux (0.001–1 Hz)
+**Glyph**: 網 · **Combined σ**: 0.82 (BP14) · **Dominant carrier**: Ca²⁺ ion flux (IP3R oscillation + ELF coupling)
 
 | Pathway | Family | σ | Carrier | LineageOS Implementation |
 |---|---|---|---|---|
-| BP4 | Bioplasma | 0.65 | Ca²⁺ oscillation (ELF downstream) | `eventfd` + `MessageQueue` handler |
-| BP1 | Bioplasma | 0.92 | Ca²⁺ store gradient (DC) | Power state monitor |
+| BP14 | Bioplasma | 0.82 | IP3R Ca²⁺ spark / CICR oscillation | NO_HZ_FULL timer coalescing (`kernel/time/tick-sched.c`) |
+| BP4 | Bioplasma | 0.70 | Ca²⁺ oscillation (ELF downstream) | `eventfd` + `MessageQueue` handler |
+| P2 | Biophoton | 0.60 | Blue-green photon (oxidative protein folding emission) | Binder oneway |
 
 ### Zone 7: `golgi`
 **Glyph**: 體 · **Combined σ**: 0.72 (BP7 route change) · **Dominant carrier**: Vesicle sorting / state persistence
@@ -453,7 +454,7 @@ Extremely Low Frequency electromagnetic fields (0.01–300 Hz) couple to cellula
 ```typescript
 export const BP4_ELF_COUPLING: BioplasmaPathway = {
   code: "BP4",
-  sigma: 0.65,
+  sigma: 0.70,
   status: "indicative",
   carrier: "ELF EM field (VGCC stochastic resonance)",
   frequencyRange: "0.01–300 Hz",
@@ -753,7 +754,7 @@ The circadian clock produces a **broadcast output** that modulates nearly every 
 
 ### §5.11 BP13 — Liquid-Liquid Phase Separation → cgroup Memory Tier / NUMA Affinity
 
-**σ = 0.72 · Indicative · Metaphor-class analogy · Added June 2026**
+**σ = 0.75 · Indicative · Metaphor-class analogy · Added June 2026 · σ raised 0.72→0.75 on BMAL1 LLPS hub (Signal Transduction 2026)**
 
 #### Biological Mechanism
 
@@ -761,7 +762,7 @@ The circadian clock produces a **broadcast output** that modulates nearly every 
 
 Key properties: (1) soft boundary — molecules exchange freely between condensed and dilute phases via diffusion; (2) concentration-sensor — assembly is threshold-driven by protein concentration; (3) selectivity — different IDR sequences produce different condensate compositions; (4) functional gateway — some condensates concentrate enzymes (nucleolus concentrates rRNA modifiers), others exclude them (stress granules sequester mRNAs away from translation).
 
-In-vivo condensate function (signalling amplification vs. pathological aggregation) is an active research area — hence σ = 0.72, not higher.
+In-vivo condensate function (signalling amplification vs. pathological aggregation) is an active research area. The BMAL1 LLPS transcriptional hub discovery (Signal Transduction 2026) confirmed high-fidelity LLPS biology, raising σ from 0.72 to 0.75. Full mechanistic in-vivo grounding would push toward 0.80+ (verified tier); the remaining gap is the absence of independent replication of the BMAL1 condensate finding specifically — hence σ = 0.75.
 
 #### LineageOS / Android Analogy
 
@@ -972,7 +973,7 @@ The QCM6490 SPU is a dedicated secure enclave for hardware root-of-trust, key st
 
 ## 8. TypeScript Implementation Contract
 
-> **Scope**: This section covers the **React/TypeScript SPA subset only** — the nine core bioplasma pathways (BP1–BP9) implemented in the Cell OS explorer SPA. The four extended pathways (BP10, BP12, BP13, BP14) and the nine biophoton pathways (P1–P9) are part of the full 22-pathway manifold but are not yet reflected in the SPA TypeScript constants below. Native Android ROM coverage of the full pathway set is in `CELL_OS_ROM_FORK_PLAN.md` and §11.
+> **Scope**: This section covers the **React/TypeScript SPA implementation** as of June 2026. BP1–BP9 are fully implemented (constants, hooks, store, UI). BP12, BP13, BP14 are exported as TypeScript constants in `bioplasmaPathways.ts` but have no runtime hooks or UI — they are `isMetaphor: true` placeholders. BP10 is not yet in the SPA implementation. The nine biophoton pathways (P1–P9) are implemented separately via `BIOPHOTON_LINKS` in `mappings.ts`. Native Android ROM coverage of the full pathway set is in `CELL_OS_ROM_FORK_PLAN.md` and §11.
 
 > **Status**: All items in this section reflect the **as-built implementation** as of June 2026. The planned code sketches from the original roadmap have been superseded by the actual source files listed below. Planned file names that differ from the final names are noted inline.
 
@@ -1251,7 +1252,7 @@ On profile change:
 | 7 | BP4 (ELF Coupling) | 0.70 | `useELFResonance.ts` | ✅ visibilitychange/focus; 8s debounce; σ raised 0.65→0.70 June 2026 |
 | 8 | BP9 (THz Telemetry) | 0.50 | `BioplasmaFieldSection.tsx` | ✅ Read-only panel cards; never feeds routing |
 | 9 | BP5 (RF/MMW) | 0.60 | `useThermalHAL.ts` | ✅ 12s interval; heapRatio > 0.75 gate; lineageosPath fixed June 2026 |
-| 10 | BP13 (Phase Separation) | 0.72 | `bioplasmaPathways.ts` only | ⏸ Constant exported; `isMetaphor: true`; no runtime hook (cgroup analogy) |
+| 10 | BP13 (Phase Separation) | 0.75 | `bioplasmaPathways.ts` only | ⏸ Constant exported; `isMetaphor: true`; no runtime hook (cgroup analogy) |
 | 11 | BP6 (Fröhlich) | 0.45 | `bioplasmaPathways.ts` only | ⏸ Deferred — constant exported; no runtime logic |
 | 12 | BP8 (QED Water) | 0.32 | `bioplasmaPathways.ts` only | 🔒 Reserved annotation; no runtime usage |
 
