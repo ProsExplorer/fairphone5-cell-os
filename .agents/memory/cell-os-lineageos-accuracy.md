@@ -87,14 +87,16 @@ Both `LineageOSv2_Manifold.md` and `LineageOSv2_Description.md` comprehensively 
 
 **Description**: Header status block added; §10 BP8 corrected (IWaterCoherence HAL superseded by ICellVitalService arch); §13 taxonomy updated (approved-rom-component class added; false thermal/performance claims removed; SecurityStatusOrganelle APPROVED); footer updated to include ROM fork plan authority.
 
-## Seven Core Accuracy Rules (check before any LineageOS doc is cited)
+## Nine Core Accuracy Rules (check before any LineageOS doc is cited)
 
-1. **Trust Interface**: DEPRECATED in LOS 20/21+. Mark as `deprecated-feature`. Do not cite as current. Replacement: `SecurityStatusOrganelle.kt` (APPROVED ROM Phase 3).
+1. **Trust Interface**: DEPRECATED in LOS 20/21+. Mark as `deprecated-feature`. Replacement: `android_packages_apps_CellShell/SecurityStatusOrganelle.kt` (APPROVED ROM Phase 3). File path is repo-relative, NOT package-prefixed (`org.cellos.cellshell/` is the package name, not a path).
 2. **Privacy Guard**: Fake-data injection `unconfirmed` in LOS 21+. AppOps toggle `indicative`.
 3. **microG**: Not in standard LOS FP5. Requires "LineageOS for microG" variant.
 4. **Updater scope**: OTA client UX + server endpoint only. Not a full update_engine replacement.
 5. **Root/su**: Opt-in (Magisk), not default. Confirmed absent from FP5 device config.
 6. **Kernel tree**: Use `android_kernel_fairphone_qcm6490` (v5.4, branches lineage-21 → lineage-23.2). WireGuard enabled (`CONFIG_WIREGUARD=y` in gki_defconfig, lineage-23.2).
-7. **BP5 thermal**: `ThermalManager.java` HTTP 404 in LOS 21. `android_hardware_lineage_interfaces` has NO `thermal/` or `performance/` subdirectory. BP5 integration is `PowerManager.addThermalStatusListener()` via `CellVitalOverlayController.kt`. `THERMAL_STATUS_HAL_SKIP_SET_THROTTLING` does not exist. All 7 constants: NONE(0.00), LIGHT(0.30), MODERATE(0.55), SEVERE(0.80), CRITICAL(0.95), EMERGENCY(0.98), SHUTDOWN(1.00).
+7. **BP5 thermal**: `ThermalManager.java` HTTP 404 in LOS 21. `android_hardware_lineage_interfaces` has NO `thermal/` or `performance/` subdirectory. BP5 integration is `PowerManager.addThermalStatusListener()` (NOT `addThermalStatusChangedListener`) via `CellVitalOverlayController.kt`. All 7 constants: NONE(0.00), LIGHT(0.30), MODERATE(0.55), SEVERE(0.80), CRITICAL(0.95), EMERGENCY(0.98), SHUTDOWN(1.00).
+8. **BP8 kernel**: Patch is to `drivers/soc/qcom/smem.c` (adding `cellos_smem_coherence_probe()`), NOT a new `smem_coherence.c` file. Gated by `CONFIG_CELLOS_BIOPLASMA_BP8`. Sysfs node: `/sys/kernel/cellos/smem_coherence`.
+9. **Pathway counts**: 13 bioplasma (BP1–BP9, BP10, BP12–BP14) + 9 biophoton (P1–P9) = 22 total. SPA TypeScript contract covers BP1–BP9 only (scope note required in §8). Authority σ values from research docs — never derive from Manifold: BP13=0.75, BP4=0.70, P3=0.85, P5=0.75, P2=0.60 (all raised from earlier values per 2024-2026 evidence).
 
-**How to apply**: Before writing or reviewing any LineageOS doc, grep for `ThermalManager`, `lineage/interfaces/thermal`, `lineage/interfaces/performance`, `lineage-build.prop`, `IWaterCoherence`, `Trust`, `android_kernel_qcom_sm7325`, `fairphone/kernel` — all are wrong or superseded. If Trust appears as a current feature, mark `deprecated-feature`.
+**How to apply**: Before writing or reviewing any LineageOS doc, grep for `addThermalStatusChangedListener`, `smem_coherence.c`, `ThermalManager`, `lineage/interfaces/thermal`, `lineage/interfaces/performance`, `lineage-build.prop`, `IWaterCoherence`, `org.cellos.cellshell/Security`, `Trust`, `android_kernel_qcom_sm7325` — all are wrong or superseded. Always verify σ values against BIOPLASMA_RESEARCH.md and BIOPHOTON_RESEARCH.md, not the Manifold summary tables (which may lag the authority docs).
