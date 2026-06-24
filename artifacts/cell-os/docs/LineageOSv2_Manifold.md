@@ -62,8 +62,8 @@ Bioplasma pathways (ionic/EM field carriers) and biophoton pathways (photon carr
 | DC / quasi-static | 0 Hz | Resting potential; wound TEP; Vmem pattern | BP1, BP3, BP7 | `THREAD_PRIORITY_CRITICAL` | Unchanged |
 | ELF | 0.01–300 Hz | VGCC stochastic resonance; Ca²⁺ oscillations | BP4 | `THREAD_PRIORITY_URGENT_DISPLAY` | Unchanged |
 | Schumann resonance | 7.83 Hz (ELF sub-band) | Ion cyclotron resonance (contested) | BP4 sub | `THREAD_PRIORITY_FOREGROUND` (caveat) | Flagged listener |
-| RF / UHF | 300 MHz–3 GHz | Membrane thermal coupling | BP5 sub | `THREAD_PRIORITY_DEFAULT` | HAL callback |
-| MMW | 30–300 GHz | Lipid bilayer resonance; 53–60 GHz window | BP5 | `THREAD_PRIORITY_BACKGROUND` | Freq-gated HAL |
+| RF / UHF | 300 MHz–3 GHz | Membrane thermal coupling | BP5 sub | `THREAD_PRIORITY_DEFAULT` | `PowerManager` listener |
+| MMW | 30–300 GHz | Lipid bilayer resonance; 53–60 GHz window | BP5 | `THREAD_PRIORITY_BACKGROUND` | `PowerManager` thermal status |
 | Sub-THz / THz | 0.1–10 THz | THz refractive phenotype; Fröhlich condensate | BP6, BP9 | `THREAD_PRIORITY_LOWEST` | Diagnostic only |
 | QED water CD | ~THz (estimated) | Interfacial water coherence (speculative) | BP8 | Reserved (not implemented) | Zero-weight |
 | Blue-green visible | 450–550 nm | Triplet carbonyl (Russell mechanism) | P2 | `THREAD_PRIORITY_FOREGROUND` | Unchanged |
@@ -72,7 +72,7 @@ Bioplasma pathways (ionic/EM field carriers) and biophoton pathways (photon carr
 | Deep NIR | 1,270 nm | Singlet O₂ monomol decay | P7 sub | `THREAD_PRIORITY_LOWEST` | SeedVault |
 | UV | 200–380 nm | DNA excimer/exciplex; NER burst | P4, P5 | `THREAD_PRIORITY_URGENT_DISPLAY` | Unchanged |
 
-### 1.2 Unified Pathway Summary Table (All 19 Pathways)
+### 1.2 Unified Pathway Summary Table (Core 19 Pathways — 22-pathway manifold; P8, P9, BP10 in §5.x sections)
 
 | Code | Family | σ | Status | Carrier | Frequency | Zone | LOS Implementation Domain |
 |---|---|---|---|---|---|---|---|
@@ -84,7 +84,7 @@ Bioplasma pathways (ionic/EM field carriers) and biophoton pathways (photon carr
 | **BP7** | Bioplasma | 0.72 | Indicative | Vmem spatial pattern | DC + 0.001–0.1 Hz | all zones | SettingsProvider / LineageParts |
 | **BP13** | Bioplasma | 0.72 | Indicative | IDR liquid-liquid phase separation | DC (state change) | nucleus→cytoplasm | cgroup memory tier / NUMA affinity |
 | **BP4** | Bioplasma | 0.70 | Indicative | ELF EM field (VGCC) | 0.01–300 Hz | membrane→ER | epoll / Looper / MessageQueue |
-| **BP5** | Bioplasma | 0.60 | Indicative | RF/MMW EM field | 30–300 GHz | membrane→nucleus | AIDL Thermal/Sensor HAL |
+| **BP5** | Bioplasma | 0.60 | Indicative | RF/MMW EM field | 30–300 GHz | membrane→nucleus | `PowerManager` thermal status listener → `CellVitalService` |
 | **P3** | Biophoton | 0.80 | Verified | NIR photon (600–900 nm) | ~430 THz | membrane→broadcast | sendBroadcast / AppOps |
 | **P1** | Biophoton | 0.75 | Verified | Red/NIR photon | 430–500 THz | mitochondria→nucleus | Binder oneway |
 | **P7** | Biophoton | 0.65 | Indicative | NIR lateral photon | 2023 isolated-mito | mitochondria lat. | Messenger async |
@@ -156,7 +156,7 @@ To prevent data drift and circular references, the following hierarchy of author
 ### 3.2 σ Inheritance Rules for LineageOS Claims
 
 - **AOSP-Inherited Components**: If a component is identical to AOSP (e.g., Binder, ART, Bionic, epoll), it inherits the full σ and confidence tier from the associated research document.
-- **LineageOS-Specific Components**: Features unique to LineageOS (e.g., Trebuchet, LineageParts, Lineage Thermal HAL) begin at `indicative` until the specific source path is verified in the LineageOS GitHub.
+- **LineageOS-Specific Components**: Features unique to LineageOS (e.g., Trebuchet, LineageParts, `CellVitalOverlayController.kt` BP5 thermal integration) begin at `indicative` until the specific source path is verified in the LineageOS GitHub.
 - **The Verification Ceiling**: Source-verification of a LineageOS implementation raises the *implementation confidence*, but the overall Manifold σ **can never exceed** the biological σ ceiling defined in the research documents.
 - **σ Distinction**: The bioplasma/biophoton σ is a weight of biological evidence (0–1 continuous); the implementation tier (Verified/Indicative) is a flag of code-level certainty. A pathway can be `indicative` evidence level and still carry σ = 0.72 if its mechanistic coherence supports a high weighting.
 
@@ -668,7 +668,7 @@ export const BP8_QED_WATER: BioplasmaPathway = {
   carrier: "QED coherent EM mode (interfacial water)",
   frequencyRange: "THz range (estimated); QED resonance",
   plasmaLiteralness: "field-coherence-analogy",
-  lineageosPath: "drivers/soc/qcom/smem_coherence.c · android_kernel_fairphone_qcm6490",
+  lineageosPath: "drivers/soc/qcom/smem.c (cellos_smem_coherence_probe() patch, CONFIG_CELLOS_BIOPLASMA_BP8) · android_kernel_fairphone_qcm6490",
   organelleRoute: { source: "cytoplasm", target: "broadcast", direction: "readonly" },
   ipcAnalogue: "Qualcomm SMEM inter-processor shared memory substrate — " +
                "strongest available implementation candidate for BP8",
@@ -1452,13 +1452,13 @@ The Cell OS ROM fork introduces a native Android layer beneath the React/TypeScr
 | Component | Package / Path | Biological Role | ROM Phase |
 |---|---|---|---|
 | **ICellVitalService.aidl** | `frameworks/base/core/java/android/os/ICellVitalService.aidl` | Biological signalling interface contract (plasma membrane receptor surface) | Phase 2 |
-| **CellVitalService.java** | `services/core/java/com/android/server/cellos/CellVitalService.java` | System server singleton (nucleus) — aggregates all bioplasma pathway signals | Phase 2 |
-| **CellOsBootstrap.java** | `services/core/java/com/android/server/cellos/CellOsBootstrap.java` | Boot sequencer — `PHASE_SYSTEM_SERVICES_READY` init | Phase 2 |
-| **CellVitalOverlayController.kt** | `packages/SystemUI/src/com/android/systemui/cellos/CellVitalOverlayController.kt` | BP5 thermal listener; SystemUI biophoton ring render loop | Phase 3 |
-| **CellShell** (org.cellos.cellshell) | `packages/apps/CellShell/` | Privileged native system app replacing React SPA for on-device display | Phase 3 |
-| **SecurityStatusOrganelle.kt** | `org.cellos.cellshell/SecurityStatusOrganelle.kt` | Immune checkpoint: SELinux, verified boot, AppOps audit, biometric state | Phase 3 |
-| **generate_domain.py** | `tools/cell-os/generate_domain.py` | TypeScript→Kotlin domain codegen | Phase 2 |
-| **CellOsDomain.kt** | `src/main/kotlin/org/cellos/domain/CellOsDomain.kt` | Generated sealed class hierarchy (BP/P pathway objects on-device) | Phase 2 |
+| **CellVitalService.java** | `frameworks/base/services/core/java/com/android/server/cellos/CellVitalService.java` (`android_frameworks_base`) | System server singleton (nucleus) — aggregates all bioplasma pathway signals | Phase 2 |
+| **CellOsBootstrap.java** | `frameworks/base/services/core/java/com/android/server/cellos/CellOsBootstrap.java` (`android_frameworks_base`) | Boot sequencer — `PHASE_SYSTEM_SERVICES_READY` init | Phase 2 |
+| **CellVitalOverlayController.kt** | `frameworks/base/packages/SystemUI/src/com/android/systemui/cellos/CellVitalOverlayController.kt` (`android_frameworks_base`) | BP5 thermal listener; SystemUI biophoton ring render loop | Phase 3 |
+| **CellShell** (org.cellos.cellshell) | `android_packages_apps_CellShell/` (new repo) | Privileged native system app replacing React SPA for on-device display | Phase 3 |
+| **SecurityStatusOrganelle.kt** | `android_packages_apps_CellShell/SecurityStatusOrganelle.kt` | Immune checkpoint: SELinux, verified boot, AppOps audit, biometric state | Phase 3 |
+| **generate_domain.py** | `android_packages_apps_CellShell/tools/generate_domain.py` | TypeScript→Kotlin domain codegen | Phase 2 |
+| **CellOsDomain.kt** | `android_packages_apps_CellShell/generated/CellOsDomain.kt` (also `cell_os_domain.json` asset bundle) | Generated sealed class hierarchy (BP/P pathway objects on-device) | Phase 2 |
 
 ### §11.2 Platform Permission Model
 
@@ -1473,6 +1473,7 @@ Permission declared in **platform** (frameworks), not in client app:
 - `CellShell` **requests** `org.cellos.permission.READ_VITALS` — it does NOT declare it
 - Every `ICellVitalService` Binder stub method calls `enforceCallingPermission("org.cellos.permission.READ_VITALS", ...)` — enforcement is in the server stub, not the client annotation
 - `@RequiresPermission` annotations in `ICellVitalService.aidl` are lint metadata only — they do not enforce at runtime
+- Privileged clients (CellShell) must additionally be allowlisted in `etc/permissions/privapp-permissions-cellos.xml` — a privapp allowlist entry is mandatory for signature-protected permissions consumed by privileged system apps
 
 ### §11.3 BP5 Thermal Integration (ROM Layer)
 
@@ -1501,10 +1502,10 @@ Valid status → σ mapping (all 7 constants, no fallthrough, no default-to-zero
 | Phase | Key deliverable | Acceptance gate |
 |---|---|---|
 | **Phase 1** | ROM identity, FP5 boot, branding overlays (FrameworksResTarget/, SystemUIResTarget/) | `ro.cellos.version` visible in `adb shell getprop`; device boots to homescreen |
-| **Phase 2** | AIDL skeleton, CellVitalService registered at PHASE_SYSTEM_SERVICES_READY, platform permission | `adb shell dumpsys cellos_vital` returns JSON; `CellShell` binds without SecurityException |
-| **Phase 3** | SystemUI biological shell (PhoneStatusBarView, QS tiles, CellVitalOverlayController), CellShell app, SecurityStatusOrganelle | Biophoton ring visible in status bar; QS tile fires `bioplasmaSignal`; SecurityStatusOrganelle fragment launches |
-| **Phase 4** | SMEM sysfs + kernel (`CONFIG_CELLOS_BIOPLASMA_BP8`), `powerhint.xml` tuning, thermal HAL validation | `/sys/kernel/cellos/smem_coherence` returns valid CI; `getBP8CoherenceIndex()` returns 0.0 (zero guard active) |
-| **Phase 5** | Signed production ROM, OTA manifest, reproducible build | `adb shell pm verify-app-links` passes; OTA package installs cleanly |
+| **Phase 2** | AIDL skeleton, CellVitalService registered at PHASE_SYSTEM_SERVICES_READY, platform permission, domain codegen | `adb shell service check cellos_vital` returns "found"; integrity script exits 0 (15/9/20/13 counts); generated Kotlin matches TypeScript domain constants |
+| **Phase 3** | SystemUI biological shell (PhoneStatusBarView, BatteryMeterView BP1 colour, QS tiles, CellVitalOverlayController), CellShell app, SecurityStatusOrganelle | Status bar shows live BP1 colour shift with battery voltage; P1/BP1 QS tiles expand showing σ value and confidence tier; CellShell app shows all 15 organelle zones with pathway detail |
+| **Phase 4** | SMEM sysfs + kernel (`CONFIG_CELLOS_BIOPLASMA_BP8`), `powerhint.xml` tuning, thermal HAL validation | `adb shell cat /sys/kernel/cellos/smem_coherence` returns CI in [0.0, 1.0] (if flag enabled); `getPathwayState("BP8")` returns 0.0f (zero guard confirmed); BP5 QS tile reflects all 7 `THERMAL_STATUS_*` states correctly |
+| **Phase 5** | Signed, reproducible build; OTA update package; privacy/security review | `make dist` produces flashable `.zip` and OTA delta; SELinux audit clean (no denials); privacy/security review complete; full biological integrity pass (all σ values + source path HTTP 200 checks) |
 
 Full phase specification, patch architecture, repo strategy, and acceptance criteria: `CELL_OS_ROM_FORK_PLAN.md`.
 
