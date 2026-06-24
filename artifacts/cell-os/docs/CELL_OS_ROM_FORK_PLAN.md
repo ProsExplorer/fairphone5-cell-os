@@ -69,7 +69,7 @@
 | `src/.../statusbar/phone/PhoneStatusBarView.java` | Add `CellVitalOverlay` — thin wrapper that reads vitals from `CellVitalService` and renders σ-gated biophoton signal intensity | Membrane zone — boundary perception |
 | `src/.../qs/tiles/` | Add `BiophotonTile.java`, `BioplasmaVmemTile.java` — QS tiles surfacing P1/BP1 baseline σ and live Vmem analogue (battery voltage proxy) | Membrane receptors — signal transduction at user-facing boundary |
 | `src/.../battery/BatteryMeterView.java` | Wrap with BP1 resting-potential colour channel — σ-gated colour shift from neutral (σ < 0.50) to gold (σ ≥ 0.75 verified) | BP1 membrane resting potential |
-| `packages/SystemUI/src/com/android/systemui/cellos/CellVitalOverlayController.kt` (**new file**) | Feed `CellVitalService` thermal events via Android `ThermalManager` / `ThermalService` system API — `ThermalController.java` does not exist in LOS 21 SystemUI; thermal signal must be consumed through the framework `ThermalManager` binding | BP5 thermoregulatory coupling |
+| `packages/SystemUI/src/com/android/systemui/cellos/CellVitalOverlayController.kt` (**new file**) | Feed `CellVitalService` thermal events via `PowerManager.addThermalStatusListener(executor, listener)` — `ThermalManager.java` does not exist in `frameworks/base` on LOS 21 (HTTP 404 verified); `ThermalController.java` also absent; thermal throttling status is consumed via `PowerManager.OnThermalStatusChangedListener`. **Valid constants (all 7 must be handled):** `THERMAL_STATUS_NONE`, `THERMAL_STATUS_LIGHT`, `THERMAL_STATUS_MODERATE`, `THERMAL_STATUS_SEVERE`, `THERMAL_STATUS_CRITICAL`, `THERMAL_STATUS_EMERGENCY`, `THERMAL_STATUS_SHUTDOWN` (verified in `PowerManager.java` L2687–L2718) | BP5 thermoregulatory coupling |
 | `res/layout/status_bar.xml` | Add biological vitals strip (biophoton emission ring, bioplasma field indicator) | Biophoton P-pathway visual substrate |
 
 **Resource overlay** — FP5 uses component-named overlay directories (verified on `lineage-21` branch). Do **not** use `overlay/frameworks/base/` — that path does not exist in the FP5 device tree:
@@ -86,12 +86,13 @@
 
 | File | Purpose |
 |---|---|
-| `CellVitalService.java` | System server singleton. Owns the live pathway registry. Reads Binder stats, thermal zone temps, battery voltage, network signal. Maps to organelle zones. Exposes read-only AIDL to privileged apps. |
-| `CellVitalServiceImpl.java` | Pathway computation: P1–P9 biophoton link couplingSigma from live Binder; BP1 Vmem from battery voltage; BP2 from Binder thread latency; BP3 from broadcast queue depth; BP5 from thermal zone readings; BP8 returns zero unconditionally (reserved guard). |
+| `CellVitalService.java` | System server singleton. Owns the live pathway registry. Reads Binder stats, thermal throttling status (via `PowerManager`), battery voltage, network signal. Maps to organelle zones. Exposes read-only AIDL to privileged apps. |
+| `CellVitalServiceImpl.java` | Pathway computation: P1–P9 biophoton link couplingSigma from live Binder; BP1 Vmem from battery voltage; BP2 from Binder thread latency; BP3 from broadcast queue depth; BP5 from `PowerManager.OnThermalStatusChangedListener` throttling status — **all 7 constants must be handled:** NONE=σ 0.00, LIGHT=0.30, MODERATE=0.55, SEVERE=0.80, CRITICAL=0.95, EMERGENCY=0.98, SHUTDOWN=1.00; BP8 returns zero unconditionally (reserved guard). |
 | `CellOsBootstrap.java` | Called from `SystemServer.java` at PHASE_SYSTEM_SERVICES_READY; loads Kotlin-generated domain registry (see §3). |
 
 **New AIDL in `frameworks/base/core/java/android/os/`:**
-- `ICellVitalService.aidl` — `getZoneSignal(zoneId)`, `getPathwayState(pathwayId)`, `getManifoldSnapshot()` — all read-only, all signature-protected
+- `ICellVitalService.aidl` — `getZoneSignal(zoneId)`, `getPathwayState(pathwayId)`, `getManifoldSnapshot()` — all read-only
+- Permission enforcement: the `.aidl` file declares the interface only. The `CellVitalService.java` Binder stub must call `context.enforceCallingPermission("org.cellos.permission.READ_VITALS", "CellVitalService")` at the top of every method implementation. **Permission ownership:** `org.cellos.permission.READ_VITALS` must be declared in the **platform/framework** (e.g., `frameworks/base/core/res/AndroidManifest.xml` or a dedicated `platform-permissions-cellos.xml` in the `android_vendor_lineage` overlay) with `android:protectionLevel="signature"`. It is then *requested* by privileged clients (CellShell); it must **not** be defined in the client app manifest. Privapp clients must still be allowlisted in `etc/permissions/privapp-permissions-cellos.xml`. `@RequiresPermission` is a Java lint annotation — metadata only, not a security mechanism.
 
 **`frameworks/base/services/java/com/android/server/SystemServer.java` patch:**
 - Single `startCellOsService()` call added at PHASE_SYSTEM_SERVICES_READY hook
@@ -140,7 +141,7 @@
 | Type | System server service, started at PHASE_SYSTEM_SERVICES_READY |
 | Biological role | The nervous system of Cell OS — live pathway registry, zone signal computation, biophoton/bioplasma bridge |
 | Key invariant | **BP8 always returns zero** — `if (pathwayId.equals("BP8") && status.equals("reserved")) return 0.0f;` This guard is unconditional and cannot be removed without a BIOPLASMA_RESEARCH.md §9.2 σ revision |
-| Binder surface | `ICellVitalService.aidl` — `@RequiresPermission("org.cellos.permission.READ_VITALS")` on all methods |
+| Binder surface | `ICellVitalService.aidl` declares interface; enforcement is `context.enforceCallingPermission("org.cellos.permission.READ_VITALS", tag)` in every Binder stub method. Permission **declared in platform** (`frameworks/base/core/res/AndroidManifest.xml` or `android_vendor_lineage` overlay), `protectionLevel="signature"`. Privileged clients request it; privapp clients added to `privapp-permissions-cellos.xml`. `@RequiresPermission` annotation is lint metadata only — Binder enforcement is the actual security gate. |
 
 ### 3c. `SecurityStatusOrganelle` — Trust Interface Replacement
 
@@ -218,19 +219,19 @@
 
 ### Phase 4 — SMEM Coherence + HAL Integration
 
-**Deliverable:** Optional BP8 kernel telemetry sysfs node (if `CONFIG_CELLOS_BIOPLASMA_BP8=y`). BP5 thermal signal feeding `CellVitalService` via Android `ThermalManager` API (not via a custom HAL). `powerhint.xml` QTI power binding confirmed or documented as indicative. BP8 invariant: still returns zero from `CellVitalService` regardless of sysfs node state.
+**Deliverable:** Optional BP8 kernel telemetry sysfs node (if `CONFIG_CELLOS_BIOPLASMA_BP8=y`). BP5 thermal signal feeding `CellVitalService` via `PowerManager.addThermalStatusListener()` (throttling status, not raw zone temperatures — `ThermalManager` class does not exist in LOS 21 `frameworks/base`). `powerhint.xml` QTI power binding confirmed or documented as indicative. BP8 invariant: still returns zero from `CellVitalService` regardless of sysfs node state.
 
 | Work | Repos | Key Files | Complexity |
 |---|---|---|---|
 | SMEM coherence sysfs | `android_kernel_fairphone_qcm6490` | `drivers/soc/qcom/smem.c`, `Kconfig` | High |
 | SELinux policy for sysfs | `android_device_fairphone_FP5` | `sepolicy/vendor/cellos_sysfs.te` (vendor/ subdirectory — verified path pattern for modern LineageOS device trees) | Medium |
-| Thermal HAL CellVital bridge | `android_device_fairphone_FP5` + vendor blobs | Read thermal zones via Android `ThermalManager` system API — actual AIDL service is `android.hardware.thermal-service.qti` (from `android_hardware_qcom_thermal`); `qcom-caf/common` provides shared Qualcomm build/VINTF infrastructure; no `thermal/` dir in `android_hardware_lineage_interfaces` | Medium |
+| Thermal status validation (Phase 3 component) | `android_frameworks_base` | `CellVitalOverlayController.kt` **created in Phase 3** via `PowerManager.addThermalStatusListener(executor, listener)`. Phase 4 task: validate all 7 throttling states (NONE/LIGHT/MODERATE/SEVERE/CRITICAL/EMERGENCY/SHUTDOWN) are received correctly on real FP5 hardware under thermal load. No new code; hardware validation only. | Low |
 | Performance HAL FP5 binding | `android_device_fairphone_FP5` | `powerhint.xml` tuning via `android.hardware.power-service-qti` — no `performance/` dir in `android_hardware_lineage_interfaces`; QTI power service is the actual binding | High (indicative) |
 | BP8 zero-guard test | `android_packages_apps_CellShell` | `CellVitalServiceTest.kt` | Low |
 
 **Biological fidelity gate:** BP8 `status === "reserved"` guard in `CellVitalServiceImpl` is added in Phase 2 and **never removed**. The sysfs node, if present, feeds a coherence metric only — it does not change BP8's runtime weight. BP8 biological activation requires THz spectroscopy evidence changing σ in `BIOPLASMA_RESEARCH.md §9.2` — no code change alone can activate it.
 
-**Acceptance criteria:** `adb shell cat /sys/kernel/cellos/smem_coherence` returns a ratio in [0.0, 1.0] (if enabled). `adb shell service call cellos_vital 1 i32 8` returns 0.0 (BP8 zero-weight confirmed). BP5 QS tile shows live thermal zone temperature.
+**Acceptance criteria:** `adb shell cat /sys/kernel/cellos/smem_coherence` returns a ratio in [0.0, 1.0] (if enabled). `adb shell service call cellos_vital 1 i32 8` returns 0.0 (BP8 zero-weight confirmed). BP5 QS tile reflects all 7 `PowerManager` thermal states — NONE (σ 0.00), LIGHT (0.30), MODERATE (0.55), SEVERE (0.80), CRITICAL (0.95), EMERGENCY (0.98), SHUTDOWN (1.00) — all cases handled in `CellVitalServiceImpl` switch/when block without fallthrough.
 
 ---
 
@@ -344,15 +345,21 @@ It does **not** appear in:
 
 ### Immediate Next Actions
 
-1. **Create `android_packages_apps_CellShell` repository** — empty Android app skeleton with `Android.bp`, `AndroidManifest.xml` declaring `android:sharedUserId="android.uid.system"`, and `tools/generate_domain.py` stub.
+**Phase 1 gate must clear before any Phase 2–4 work begins.** These steps are ordered by dependency, not by interest.
 
-2. **Write `generate_domain.py`** — parse TypeScript domain constants, emit `CellOsDomain.kt` and `cell_os_domain.json`, run integrity count assertions.
+1. **Wire local manifests** — create `.repo/local_manifests/roomservice.xml` referencing all Cell OS forks. Without this, no build is possible.
 
-3. **Apply Phase 1 branding overlays** — `android_vendor_lineage` `common.mk` branding, bootanimation placeholder, About page identity strings.
+2. **Apply Phase 1 branding overlays** — `android_vendor_lineage` `common.mk` branding (`PRODUCT_BRAND`, `PRODUCT_NAME`, `PRODUCT_SYSTEM_DEFAULT_PROPERTIES` for `ro.cellos.*`), bootanimation placeholder, About page identity strings in `MyDeviceInfoFragment.java` and `strings.xml`. FP5 RRO overlays under `overlay/FrameworksResTarget/` and `overlay/SystemUIResTarget/`.
 
-4. **Register `CellVitalService` in SystemServer** — skeleton only, AIDL interface, BP8 zero-guard in place from day one.
+3. **Flash and validate Phase 1 acceptance criteria** — ROM boots on FP5, no AVC denials, `adb shell getprop ro.cellos.version` ≠ empty, About screen shows "Cell OS". Do not proceed to Phase 2 until all three checks pass.
 
-5. **Commit `cellos_integrity_check.sh`** — build-time enforcement of 20/9/13/15 counts before any SystemUI or kernel work begins.
+4. **Create `android_packages_apps_CellShell` repository** — Android app skeleton with `Android.bp`, `AndroidManifest.xml` (`android:sharedUserId="android.uid.system"`, **requests** `org.cellos.permission.READ_VITALS` — does **not** declare it; the permission is platform-owned and declared in `frameworks/base/core/res/AndroidManifest.xml`), `privapp-permissions-cellos.xml` allowlist entry, and `tools/generate_domain.py` stub.
+
+5. **Write `generate_domain.py`** — parse TypeScript domain constants, emit `CellOsDomain.kt` and `cell_os_domain.json`, run integrity count assertions (15/9/20/13).
+
+6. **Register `CellVitalService` skeleton in SystemServer** — AIDL interface, `enforceCallingPermission()` in every Binder stub method, BP8 zero-guard in place from day one.
+
+7. **Commit `cellos_integrity_check.sh`** — build-time enforcement of 20/9/13/15 counts. Must pass before any SystemUI or kernel work begins.
 
 **Do not start Phase 4 (kernel/SMEM) until Phase 3 acceptance criteria pass.** The biology is fully expressible through the framework service and SystemUI layer. Kernel patches are an enhancement, not a prerequisite.
 
@@ -400,7 +407,7 @@ Verified top-level directories (branch `lineage-21.0`, verified 2026-06-21): `_b
 
 | HAL | Actual Source | Cell OS Integration Method |
 |---|---|---|
-| **Thermal** | `android.hardware.thermal-service.qti` AIDL service (from `android_hardware_qcom_thermal` repo); `hardware/qcom-caf/common` provides shared Qualcomm build infrastructure and VINTF compatibility matrix | `CellVitalOverlayController.kt` calls `ThermalManager.addThermalStatusListener()` — no fork of any HAL repo needed for Phase 1–4 |
+| **Thermal** | `android.hardware.thermal-service.qti` AIDL service (from `android_hardware_qcom_thermal` repo); `hardware/qcom-caf/common` provides shared build/VINTF infrastructure | Cell OS accesses thermal status via `PowerManager.addThermalStatusListener(executor, OnThermalStatusChangedListener)` — this is the public Android 14 API surface. `ThermalManager.java` does not exist in LOS 21 `frameworks/base`. No fork of any HAL repo needed for Phases 1–4. |
 | **Performance/Power** | `android.hardware.power-service-qti` (Qualcomm vendor binary) + `device/fairphone/FP5/powerhint.xml` | Tune `powerhint.xml` hints in device tree; Cell OS does not fork the QTI power service binary |
 
 ### When to fork `android_hardware_lineage_interfaces`
@@ -415,16 +422,21 @@ All paths verified against live LineageOS GitHub 2026-06-21. See §8 for per-rep
 
 | Phase | Repo | Branch | Verified Path | Operation | Status |
 |---|---|---|---|---|---|
+| 1 | `.repo/local_manifests/` | n/a | `roomservice.xml` | Create: wire all Cell OS forks into build graph | ✓ Structural |
 | 1 | `android_vendor_lineage` | `lineage-21.0` | `config/common.mk` | Modify: `PRODUCT_BRAND`, `PRODUCT_NAME`, add `PRODUCT_SYSTEM_DEFAULT_PROPERTIES` for `ro.cellos.*` | ✓ Verified |
 | 1 | `android_vendor_lineage` | `lineage-21.0` | `bootanimation/` | Replace with Cell OS boot animation | ✓ Verified |
 | 1 | `android_packages_apps_Settings` | `lineage-21.0` | `src/com/android/settings/deviceinfo/aboutphone/MyDeviceInfoFragment.java` | Modify: inject Cell OS identity strings | ✓ Verified |
 | 1 | `android_packages_apps_Settings` | `lineage-21.0` | `res/values/strings.xml` | Modify: rename About labels | ✓ Verified |
 | 1 | `android_device_fairphone_FP5` | `lineage-21` | `overlay/FrameworksResTarget/res/values/config.xml` | Create: Cell OS framework overlay entries | ✓ Verified (dir exists) |
 | 1 | `android_device_fairphone_FP5` | `lineage-21` | `overlay/SystemUIResTarget/res/values/config.xml` | Create: Cell OS SystemUI overlay entries | ✓ Verified (dir exists) |
-| 2 | `android_frameworks_base` | `lineage-21.0` | `packages/SystemUI/src/com/android/systemui/statusbar/phone/PhoneStatusBarView.java` | Modify: add `CellVitalOverlay` wrapper | ✓ Verified |
-| 2 | `android_frameworks_base` | `lineage-21.0` | `packages/SystemUI/src/com/android/systemui/battery/BatteryMeterView.java` | Modify: BP1 resting-potential colour channel | ✓ Verified |
-| 2 | `android_frameworks_base` | `lineage-21.0` | `packages/SystemUI/src/com/android/systemui/qs/tiles/` | Create: `BiophotonTile.java`, `BioplasmaVmemTile.java` | ✓ Verified (52 files) |
-| 2 | `android_frameworks_base` | `lineage-21.0` | `packages/SystemUI/src/com/android/systemui/cellos/CellVitalOverlayController.kt` | **Create** new file: `ThermalManager` binding for BP5 | ✓ Verified (dir is new) |
+| 2 | `android_frameworks_base` | `lineage-21.0` | `core/java/android/os/ICellVitalService.aidl` | **Create**: AIDL interface (`getZoneSignal`, `getPathwayState`, `getManifoldSnapshot`) | ✓ Verified (76 AIDL files at path) |
+| 2 | `android_frameworks_base` | `lineage-21.0` | `services/core/java/com/android/server/cellos/CellVitalService.java` | **Create**: system server singleton skeleton + BP8 zero-guard + `enforceCallingPermission()` on every Binder method | ✓ Verified (path pattern) |
+| 2 | `android_frameworks_base` | `lineage-21.0` | `services/java/com/android/server/SystemServer.java` | Modify: add `startCellOsService()` at `PHASE_SYSTEM_SERVICES_READY` (confirmed L2913) | ✓ Verified |
+| 2 | `android_frameworks_base` | `lineage-21.0` | `core/res/AndroidManifest.xml` | Modify: declare `org.cellos.permission.READ_VITALS` with `protectionLevel="signature"` (platform-owned permission) | ✓ Verified (pattern) |
+| 3 | `android_frameworks_base` | `lineage-21.0` | `packages/SystemUI/src/com/android/systemui/statusbar/phone/PhoneStatusBarView.java` | Modify: add `CellVitalOverlay` wrapper | ✓ Verified |
+| 3 | `android_frameworks_base` | `lineage-21.0` | `packages/SystemUI/src/com/android/systemui/battery/BatteryMeterView.java` | Modify: BP1 resting-potential colour channel | ✓ Verified |
+| 3 | `android_frameworks_base` | `lineage-21.0` | `packages/SystemUI/src/com/android/systemui/qs/tiles/` | Create: `BiophotonTile.java`, `BioplasmaVmemTile.java` | ✓ Verified (52 files) |
+| 3 | `android_frameworks_base` | `lineage-21.0` | `packages/SystemUI/src/com/android/systemui/cellos/CellVitalOverlayController.kt` | **Create** new file: `PowerManager.addThermalStatusListener()` binding for BP5 | ✓ Verified (dir is new) |
 | 4 | `android_kernel_fairphone_qcm6490` | `lineage-21` | `drivers/soc/qcom/smem.c` | Modify: add `cellos_smem_coherence_probe()` guarded | ✓ Verified |
 | 4 | `android_kernel_fairphone_qcm6490` | `lineage-21` | `drivers/soc/qcom/Kconfig` | Modify: add `CONFIG_CELLOS_BIOPLASMA_BP8` flag | ✓ Verified |
 | 4 | `android_device_fairphone_FP5` | `lineage-21` | `sepolicy/vendor/cellos_sysfs.te` | Create: SELinux policy for sysfs read | ✓ Verified (pattern) |
@@ -433,13 +445,20 @@ All paths verified against live LineageOS GitHub 2026-06-21. See §8 for per-rep
 **Unverified / deferred paths** (do not assume stable across branch rebase):
 - `packages/SystemUI/` class names if rebasing to `lineage-23.2` — re-verify before Phase 3
 - `android_hardware_lineage_interfaces` directory structure on future branches
-- FA3 gap: `ThermalManager.addThermalStatusListener()` Android 14 API, `PHASE_SYSTEM_SERVICES_READY` hook, `android:sharedUserId` system app manifest, `@RequiresPermission` AIDL annotation — plausible per AOSP Android 14 knowledge, Tier-1 verification recommended before Phase 2
+
+**FA3 gap — Tier-1 resolved (2026-06-21):**
+- `ThermalManager.addThermalStatusListener()` → ✗ WRONG CLASS: `ThermalManager.java` HTTP 404 in LOS 21. Use `PowerManager.addThermalStatusListener(executor, listener)` with `OnThermalStatusChangedListener`. Confirmed via `PowerManager.java` source.
+- `PHASE_SYSTEM_SERVICES_READY` → ✓ CONFIRMED at L2913 in `SystemServer.java`
+- `android:sharedUserId="android.uid.system"` → ✓ CONFIRMED (Settings app manifest, LOS 21 active)
+- `@RequiresPermission` in AIDL → ✗ NUANCE: annotation is Java metadata only; Binder-side `enforceCallingPermission()` is the actual enforcement mechanism. AIDL placement in `core/java/android/os/` → ✓ CONFIRMED (76 AIDL files at that path)
 
 ---
 
 *Document authority: LineageOSv2_Manifold.md · LineageOSv2_Description.md · BP8_SMEM_COHERENCE_DESIGN.md · BIOPHOTON_RESEARCH.md · BIOPLASMA_RESEARCH.md*
-*Architect evaluation: APPROVED with corrections — ROM-first, kernel-last*
 *Deep research review 1: 2026-06-21 — 4 factual errors corrected, 3 structural sections added*
 *Deep research review 2: 2026-06-21 — 7 further corrections (lineage-build.prop 404, overlay paths, branch names, motorola_health, thermal service attribution)*
-*FA3 gap note: ThermalManager API, PHASE_SYSTEM_SERVICES_READY, sharedUserId, @RequiresPermission — plausible per AOSP knowledge; Tier-1 verify before Phase 2*
+*Deep research review 3: 2026-06-24 — FA3 Tier-1 resolved: ThermalManager→PowerManager (HTTP 404 confirmed), PHASE_SYSTEM_SERVICES_READY confirmed, sharedUserId confirmed, @RequiresPermission→enforceCallingPermission() model corrected, §7 reordered (Phase 1 gate first)*
+*Deep research review 4: 2026-06-24 — thermal constants corrected (7 valid: NONE/LIGHT/MODERATE/SEVERE/CRITICAL/EMERGENCY/SHUTDOWN; HAL_SKIP absent); permission ownership moved to platform/framework; §10 phase labels fixed (SystemUI→Phase 3), Phase 1/2 paths added*
+*Deep research review 5: 2026-06-24 — §7 CellShell manifest: requests (not declares) platform-owned permission; Phase 4 thermal row clarified as Phase 3 component validation; Phase 4 acceptance criteria lists all 7 thermal states with σ values*
+*Architect evaluation: APPROVED — engineer may begin Phase 1*
 *Generated: 2026-06-21*

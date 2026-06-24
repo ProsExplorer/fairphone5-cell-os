@@ -13,7 +13,7 @@ description: android_hardware_lineage_interfaces does not contain thermal/ or pe
 
 | HAL | Actual source | Cell OS integration method |
 |---|---|---|
-| Thermal | `hardware/qcom-caf/common` tree; surfaced via Android `ThermalManager` / `ThermalService` system API | `CellVitalOverlayController.kt` calls `ThermalManager.addThermalStatusListener()` |
+| Thermal | `android_hardware_qcom_thermal` repo; underlying HAL is `android.hardware.thermal-service.qti` | `CellVitalOverlayController.kt` calls **`PowerManager.addThermalStatusListener(executor, listener)`** — `ThermalManager.java` does NOT exist in LOS 21 `frameworks/base` (HTTP 404 verified) |
 | Performance/Power | `android.hardware.power-service-qti` (Qualcomm vendor binary) + `device/fairphone/FP5/powerhint.xml` | Tune `powerhint.xml` in device tree; do not fork the QTI power service binary |
 
 ## When to fork android_hardware_lineage_interfaces
@@ -33,7 +33,8 @@ Only if Cell OS needs a **new custom AIDL interface** not in the existing HAL se
 
 ## Other verified path facts (lineage-21.0 / lineage-21 branches)
 
-- `ThermalController.java` does **not** exist anywhere in `android_frameworks_base` on lineage-21.0 (0 search results). Use `ThermalManager` API instead.
+- `ThermalController.java` does **not** exist in LOS 21 SystemUI.
+- `ThermalManager.java` does **NOT** exist in `core/java/android/os/` on LOS 21 (HTTP 404). **Use `PowerManager.addThermalStatusListener(executor, OnThermalStatusChangedListener)` instead.** All **7** throttling constants live in `PowerManager.java` (L2687–L2718, verified): `THERMAL_STATUS_NONE`, `THERMAL_STATUS_LIGHT`, `THERMAL_STATUS_MODERATE`, `THERMAL_STATUS_SEVERE`, `THERMAL_STATUS_CRITICAL`, `THERMAL_STATUS_EMERGENCY`, `THERMAL_STATUS_SHUTDOWN`. `HAL_SKIP_SET_THROTTLING` does **not** exist. `IThermalService.aidl` confirmed at `core/java/android/os/`. σ mapping: NONE=0.00, LIGHT=0.30, MODERATE=0.55, SEVERE=0.80, CRITICAL=0.95, EMERGENCY=0.98, SHUTDOWN=1.00.
 - About page class is `MyDeviceInfoFragment.java` in `src/com/android/settings/deviceinfo/aboutphone/`. `DeviceInfoSettings.java` does not exist.
 - `vendor/lineage/config/lineage-build.prop` does NOT EXIST (HTTP 404 verified twice). Use `PRODUCT_SYSTEM_DEFAULT_PROPERTIES` in `config/common.mk` or a sourced `.mk` file instead.
 - SELinux policy lives at `device/fairphone/FP5/sepolicy/vendor/` (not just `sepolicy/`).
@@ -42,4 +43,13 @@ Only if Cell OS needs a **new custom AIDL interface** not in the existing HAL se
 - Thermal AIDL service is `android.hardware.thermal-service.qti` (from `android_hardware_qcom_thermal` repo), not just "qcom-caf/common tree".
 - FP5 active development has moved to `lineage-23.2`; `lineage-21.0` branch exists but is no longer primary. All verified paths in CELL_OS_ROM_FORK_PLAN.md are for lineage-21.0 — re-verify before rebasing to 23.2.
 
-**How to apply:** Before writing or reviewing any Cell OS ROM fork document that names HAL paths, file paths, or class names, check this file first. Do not assume paths from AOSP documentation apply to LOS 21 without verification.
+## AIDL security model (LOS 21)
+
+- `@RequiresPermission` is a Java lint annotation — **metadata only**. It does not enforce access.
+- Actual enforcement: `context.enforceCallingPermission("org.cellos.permission.READ_VITALS", tag)` inside every Binder stub method.
+- Permission `org.cellos.permission.READ_VITALS` must be **declared in the platform** (`frameworks/base/core/res/AndroidManifest.xml` or `android_vendor_lineage` overlay), `protectionLevel="signature"`. Client apps (CellShell) **request** it only — they never declare it. Privapp clients are allowlisted in `etc/permissions/privapp-permissions-cellos.xml`.
+- `PHASE_SYSTEM_SERVICES_READY` confirmed at L2913 in `SystemServer.java` on lineage-21.0.
+- `android:sharedUserId="android.uid.system"` confirmed in Settings manifest on lineage-21.0 — still active for system apps.
+- AIDL files placed in `core/java/android/os/` — confirmed 76 AIDL files already there (correct pattern).
+
+**How to apply:** Before writing or reviewing any Cell OS ROM fork document that names HAL paths, file paths, API names, or class names, check this file first. Do not assume paths from AOSP documentation apply to LOS 21 without verification.
