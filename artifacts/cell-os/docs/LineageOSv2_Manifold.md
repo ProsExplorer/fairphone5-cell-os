@@ -172,7 +172,7 @@ To prevent data drift and circular references, the following hierarchy of author
 | **BP7** (Morphogenesis) | 0.72 | `indicative` | LOS-specific — LineageParts source-verified |
 | **BP13** (Phase Separation) | 0.72 | `indicative` | kernel/mm/ cgroup + NUMA zone paths; metaphor analogy |
 | **BP4** (ELF Coupling) | 0.70 | `indicative` | Inherited — epoll/Looper AOSP invariant; σ raised per Renati 2024 QFT/QED ICR consolidation |
-| **BP5** (RF/MMW Coupling) | 0.60 | `indicative` | LOS-specific: hardware/lineage/interfaces/thermal/ confirmed |
+| **BP5** (RF/MMW Coupling) | 0.60 | `indicative` | Framework-level: `CellVitalOverlayController.kt` (SystemUI) calls `PowerManager.addThermalStatusListener(executor, OnThermalStatusChangedListener)`. `android_hardware_lineage_interfaces` has **no `thermal/` directory** (verified absent). Underlying HAL `android.hardware.thermal-service.qti` is transparent to Cell OS. |
 | **BP9** (THz Phenotype) | 0.50 | `indicative` | StatsD/perfetto verified AOSP; THz analogy metaphor |
 | **BP6** (Fröhlich Coherence) | 0.45 | `speculative` | No LOS production path; architectural metaphor only |
 | **BP8** (QED Water) | 0.32 | `reserved` | No implementation; annotation placeholder only |
@@ -217,7 +217,7 @@ Each of the 8 Cell OS zones now carries a combined bioplasma+biophoton field pro
 | BP3 | Bioplasma | 0.85 | Wound DC field | `sendBroadcast` / `ACTION_BATTERY_LOW` |
 | P3 | Biophoton | 0.80 | NIR photon (extracellular UPE) | Unordered broadcast + AppOps/Privacy Guard |
 | BP4 | Bioplasma | 0.65 | ELF EM (VGCC resonance) | `epoll_wait` EPOLLET + Looper |
-| BP5 | Bioplasma | 0.60 | MMW EM (lipid bilayer) | AIDL Thermal/Sensor HAL callback |
+| BP5 | Bioplasma | 0.60 | MMW EM (lipid bilayer) | `CellVitalOverlayController.kt` → `PowerManager.OnThermalStatusChangedListener` → `CellVitalService` |
 | P6 | Biophoton | 0.55 | Vis/NIR retrograde | `hardirq` → IRQ thread → syscall |
 
 ### Zone 2: `mitochondria`
@@ -255,7 +255,7 @@ Each of the 8 Cell OS zones now carries a combined bioplasma+biophoton field pro
 | Pathway | Family | σ | Carrier | LineageOS Implementation |
 |---|---|---|---|---|
 | P4 | Biophoton | 0.35 | UV anterograde photon | `init.lineage.rc` ordered service start |
-| BP5 | Bioplasma | 0.60 | RF/MMW (G-quadruplex) | HAL callback → kernel driver |
+| BP5 | Bioplasma | 0.60 | RF/MMW (G-quadruplex) | `PowerManager.OnThermalStatusChangedListener` → `CellVitalService` (throttling status mapped to σ via all 7 constants: NONE→0.00 … SHUTDOWN→1.00) |
 | BP7 | Bioplasma | 0.72 | Vmem pattern (downstream) | `SettingsProvider` / LineageParts |
 
 ### Zone 6: `endoplasmic-reticulum`
@@ -467,7 +467,7 @@ export const BP4_ELF_COUPLING: BioplasmaPathway = {
 
 ---
 
-### §5.5 BP5 — RF/MMW Bioplasma Coupling → AIDL HAL Frequency-Gated Callback
+### §5.5 BP5 — RF/MMW Bioplasma Coupling → PowerManager Thermal-Status Listener
 
 **σ = 0.60 · Indicative · Organelle route**: `cell-membrane` → `nucleus` (inward)
 
@@ -478,32 +478,36 @@ Radio frequency and millimetre-wave (30–300 GHz) electromagnetic fields couple
 
 | Component | Source Path | Biological Analogy | Confidence |
 |---|---|---|---|
-| **AIDL Thermal HAL** | `hardware/interfaces/thermal/aidl/IThermal.aidl` | Membrane boundary receptor | `verified` |
-| **IThermalCallback.aidl** | `hardware/interfaces/thermal/aidl/IThermalCallback.aidl` | VGCC downstream callback | `verified` |
-| **AIDL Sensor HAL** | `hardware/interfaces/sensors/aidl/ISensors.aidl` | Frequency-gated antenna | `verified` |
-| **LineageOS HW interfaces** | `github.com/LineageOS/android_hardware_lineage_interfaces` ✓ | Lineage HAL extensions | `indicative` |
-| **FP5 thermal configuration** | `android_device_fairphone_FP5` device tree | FP5-specific frequency profile | `indicative` |
+| **PowerManager.java** | `frameworks/base/core/java/android/os/PowerManager.java` (L2687–L2718) | Frequency-gated membrane receptor | `verified` |
+| **OnThermalStatusChangedListener** | `PowerManager.OnThermalStatusChangedListener` interface | VGCC downstream callback | `verified` |
+| **CellVitalOverlayController.kt** | `packages/SystemUI/src/com/android/systemui/cellos/CellVitalOverlayController.kt` (new ROM file — Phase 3) | Membrane receptor transducer | `verified` (path exists, file is new) |
+| **CellVitalServiceImpl.java** | `services/core/java/com/android/server/cellos/CellVitalServiceImpl.java` | BP5 σ computation | `verified` (path pattern) |
+| **QTI Thermal HAL** | `android.hardware.thermal-service.qti` (`android_hardware_qcom_thermal` repo) | Underlying thermal substrate | `indicative` — transparent to Cell OS |
 
-**FP5 note**: The specific thermal HAL configuration for QCM6490/FP5 is `indicative`. The AIDL interface definitions are `verified` AOSP; their activation on FP5 is device-maintainer-dependent.
+> **Absent paths (verified):** `ThermalManager.java` does **not** exist in `frameworks/base/core/java/android/os/` on LOS 21 (HTTP 404). `ThermalController.java` is also absent. `android_hardware_lineage_interfaces` has **no `thermal/` directory** (verified). `THERMAL_STATUS_HAL_SKIP_SET_THROTTLING` does not exist.
+
+> **Valid thermal constants** (all 7 must be handled in `CellVitalServiceImpl` switch/when block without fallthrough): `THERMAL_STATUS_NONE` (σ 0.00), `THERMAL_STATUS_LIGHT` (0.30), `THERMAL_STATUS_MODERATE` (0.55), `THERMAL_STATUS_SEVERE` (0.80), `THERMAL_STATUS_CRITICAL` (0.95), `THERMAL_STATUS_EMERGENCY` (0.98), `THERMAL_STATUS_SHUTDOWN` (1.00).
 
 #### P→A→E (BP5)
-- **P**: External RF/thermal event at sensor boundary detected by Sensor/Thermal HAL — only if at a registered sampling frequency (resonant window)
-- **A**: `IThermalCallback.oneway notifyThrottling()` fires — the frequency-gated callback cannot fire below registered threshold, exactly like MMW bilayer selectivity
-- **E**: CPU/GPU throttling applied; power dissipation adjusted; nuclear-level DNA protection (G-quadruplex stress response) initiated
+- **P**: `PowerManager.OnThermalStatusChangedListener` fires when throttling status changes — the callback is threshold-gated (fires only on state transitions), exactly mirroring MMW bilayer selectivity that produces coupling only at resonant frequencies
+- **A**: `CellVitalOverlayController.kt` receives the status constant; `CellVitalServiceImpl.java` maps it to a BP5 σ value via the 7-constant table above
+- **E**: BP5 σ update propagates to `CellVitalService`; QS tile (`BioplasmaVmemTile.java`) surfaces live thermoregulatory state; nuclear-level G-quadruplex analogue (status → σ → zone signal) is expressed in SystemUI
 
 #### TypeScript Hook
 
 ```typescript
-export const BP5_RF_COUPLING: BioplasmaPathway = {
+export const BP5_RF_MMW: BioplasmaPathway = {
   code: "BP5",
   sigma: 0.60,
   status: "indicative",
   carrier: "RF/MMW EM field (membrane phospholipid resonance)",
   frequencyRange: "30–300 GHz (53–60 GHz resonant window)",
   plasmaLiteralness: "field-coherence-analogy",
-  lineageosPath: "hardware/interfaces/thermal/aidl/IThermal.aidl",
+  // ROM lineageosPath (Phase 3): packages/SystemUI/src/com/android/systemui/cellos/CellVitalOverlayController.kt
+  // React SPA lineageosPath (legacy): useThermalHAL.ts (JS heap ratio proxy)
+  lineageosPath: "packages/SystemUI/src/com/android/systemui/cellos/CellVitalOverlayController.kt",
   organelleRoute: { source: "cell-membrane", target: "nucleus", direction: "inward" },
-  ipcAnalogue: "AIDL HAL frequency-gated callback",
+  ipcAnalogue: "PowerManager.addThermalStatusListener() → CellVitalService (frequency-gated threshold callback)",
   isMetaphor: true,
 };
 ```
@@ -828,18 +832,20 @@ These LineageOS features have no AOSP equivalent and specifically enhance BP pat
 
 ---
 
-### 7.1 LineageOS Thermal Profiles → Thermoregulatory Coupling
+### 7.1 BP5 Thermoregulatory Coupling → PowerManager Thermal Status
 
-**Source**: `hardware/lineage/interfaces/thermal` · `github.com/LineageOS/android_hardware_lineage_interfaces` ✓  
+**Source**: `frameworks/base/core/java/android/os/PowerManager.java` · `android_frameworks_base`  
 **Zone**: `mitochondria` · **BP Enhancement**: BP5, BP1  
-**Confidence**: `verified` (σ=0.85 for thermal HAL architecture)
+**Confidence**: `verified` (PowerManager.java confirmed; CellVitalOverlayController.kt is Phase 3 ROM work)
 
-LineageOS thermal profiles act as the cell's **thermoregulatory feedback loops**. Just as mitochondrial uncoupling proteins (UCPs) dissipate the proton gradient to generate heat and protect against oxidative stress, LineageOS thermal profiles modulate the metabolic baseline to prevent bioplasma "overheating" (thermal runaway). The Thermal HAL provides a mechanism to handle non-thermal RF coupling (BP5) by adjusting the energy dissipation rate — a receptor-level response to field coupling that AOSP's simpler thermal management lacks.
+> **Corrected (2026-06-24):** The earlier entry referenced `hardware/lineage/interfaces/thermal` in `android_hardware_lineage_interfaces`. **That directory does not exist** — verified absent. The actual Cell OS BP5 integration is via `PowerManager.addThermalStatusListener(executor, OnThermalStatusChangedListener)` in the SystemUI `CellVitalOverlayController.kt`. The underlying QTI thermal HAL (`android.hardware.thermal-service.qti`, from `android_hardware_qcom_thermal`) is transparent to Cell OS — Cell OS never calls it directly.
+
+LineageOS thermal status acts as the cell's **thermoregulatory feedback loop**. Just as mitochondrial uncoupling proteins (UCPs) dissipate the proton gradient to protect against oxidative stress, the throttling status listener modulates the BP5 σ signal to reflect thermoregulatory state. All 7 PowerManager thermal constants are mapped to σ values (NONE=0.00 through SHUTDOWN=1.00), giving Cell OS a continuous thermoregulatory axis from baseline homeostasis to protective shutdown.
 
 **P→A→E**:
-- P: Thermal/Sensor HAL detects external RF-induced stress or high compute load
-- A: Lineage Thermal HAL selects a profile (Cool, Balanced, Performance)
-- E: CPU/GPU frequencies capped; mitochondrial bioplasma flux (power draw) throttled
+- P: `PowerManager` fires `OnThermalStatusChangedListener` on state transition (threshold-gated, mirroring MMW resonant selectivity)
+- A: `CellVitalOverlayController.kt` receives status; `CellVitalServiceImpl.java` maps to BP5 σ
+- E: CPU/GPU throttling expressed as BP5 σ shift; `CellVitalService` propagates to zone signal; QS tile surfaces live thermoregulatory state
 
 ---
 
@@ -873,17 +879,19 @@ LineageParts is the **epigenetic transcription factor** for the BP7 morphogeneti
 
 ---
 
-### 7.4 Performance HAL (Binder Tuning) → Cytoplasmic Flux Optimisation
+### 7.4 Performance / Power HAL Tuning → Cytoplasmic Flux Optimisation
 
-**Source**: `hardware/lineage/interfaces/performance` · `android_hardware_lineage_interfaces`  
+**Source**: `device/fairphone/FP5/powerhint.xml` (device tree) · `android.hardware.power-service-qti` (QTI vendor binary)  
 **Zone**: `cytoplasm` · **BP Enhancement**: BP2  
-**Confidence**: `indicative` (σ=0.65)
+**Confidence**: `indicative` (σ=0.65; powerhint.xml path is device-maintainer-dependent — verify at build time)
 
-The LineageOS Performance HAL is the **cytoplasmic streaming regulator**. By optimising Binder thread priorities and `schedutil` scheduling hints, it ensures the ionic flux of IPC messages (BP2 action potential chain) propagates through the cell with minimal resistance. AOSP does not include this tuning layer for FP5; it is a LineageOS-specific improvement that reduces BP2 transaction latency.
+> **Corrected (2026-06-24):** The earlier entry referenced `hardware/lineage/interfaces/performance` in `android_hardware_lineage_interfaces`. **That directory does not exist** — verified absent. The actual FP5 Performance/Power HAL is `android.hardware.power-service-qti` (Qualcomm vendor binary); Cell OS tunes it via `powerhint.xml` in the FP5 device tree. There is no `android_hardware_lineage_interfaces/performance/` to fork.
+
+The QTI power service / `powerhint.xml` tuning is the **cytoplasmic streaming regulator**. By configuring `schedutil` scheduling hints appropriate for FP5's tri-cluster QCM6490, it ensures the ionic flux of IPC messages (BP2 action potential chain) propagates with minimal resistance. Tuning `powerhint.xml` is Phase 4 work in the ROM Fork Plan (indicative complexity — verify exact file location in `configs/` subdir at build time).
 
 **P→A→E**:
-- P: High-priority UI event detected
-- A: Performance HAL boosts Binder thread priority via `schedutil` hint
+- P: High-priority UI event triggers performance hint via `IPerformanceHint`
+- A: `android.hardware.power-service-qti` applies `schedutil` hint; Binder thread priority elevated
 - E: BP2 transaction delivered with sub-millisecond latency; bioplasma action potential wave completes its route
 
 ---
@@ -899,11 +907,13 @@ LiveDisplay implements **chromatic adaptation** — the cellular process by whic
 
 ---
 
-### 7.6 Trust Interface → Immune Checkpoint (Historical / Deprecated)
+### 7.6 Trust Interface → Immune Checkpoint (Deprecated → SecurityStatusOrganelle)
 
 **STATUS**: ❌ **DEPRECATED/REMOVED in LOS 20/21+** — `android_packages_apps_Trust` repository HTTP 404-deleted.
 
-The Trust Interface was the **immune checkpoint complex** for bioplasma pathway integrity — it would have surfaced BP3 wound-state, BP7 Vmem anomalies, and BP1 resting-state deviations to the user. Because it is removed, the bioplasma manifold currently lacks an immune checkpoint layer. Future Cell OS design should consider implementing a custom Security Status organelle that performs this function.
+The Trust Interface was the **immune checkpoint complex** for bioplasma pathway integrity — it would have surfaced BP3 wound-state, BP7 Vmem anomalies, and BP1 resting-state deviations to the user. Because it is removed, the immune checkpoint layer is currently absent from the baseline LineageOS build.
+
+**Replacement (APPROVED — Phase 3, CELL_OS_ROM_FORK_PLAN.md):** `SecurityStatusOrganelle` is now an approved Cell OS ROM component. It will be implemented as a privileged CellShell fragment + Settings deeplink (`org.cellos.cellshell/SecurityStatusOrganelle.kt`), surfacing: SELinux status, verified boot state, network permission audit (AppOps BP3 analogue), and biometric unlock state. This directly fills the immune checkpoint gap with a Cell OS-native component that does not depend on the deleted Trust Interface repository.
 
 ### 7.7 QCM6490 Extended Substrate Capabilities (Deep Research Additions — June 2026)
 
@@ -1270,8 +1280,14 @@ On profile change:
 
 | Source claimed | Verification result | Confidence |
 |---|---|---|
-| `github.com/LineageOS/android_hardware_lineage_interfaces` | ✓ HTTP 200 confirmed | `verified` |
-| `hardware/interfaces/thermal/aidl/IThermal.aidl` | ✓ AOSP AIDL standard | `verified` |
+| `github.com/LineageOS/android_hardware_lineage_interfaces` | ✓ HTTP 200 confirmed — **repo exists** | `verified` |
+| `hardware/lineage/interfaces/thermal/` (within above repo) | ❌ **Absent** — no `thermal/` directory in `android_hardware_lineage_interfaces` (verified) | `verified-absent` |
+| `hardware/lineage/interfaces/performance/` (within above repo) | ❌ **Absent** — no `performance/` directory in `android_hardware_lineage_interfaces` (verified) | `verified-absent` |
+| `frameworks/base/core/java/android/os/PowerManager.java` | ✓ AOSP/LOS invariant; `OnThermalStatusChangedListener` + 7 `THERMAL_STATUS_*` constants at L2687–L2718 | `verified` |
+| `ThermalManager.java` (frameworks/base/core/java/android/os/) | ❌ **HTTP 404** — does not exist in LOS 21 (verified) | `verified-absent` |
+| `THERMAL_STATUS_HAL_SKIP_SET_THROTTLING` constant | ❌ **Does not exist** — not a valid PowerManager constant (verified) | `verified-absent` |
+| `android.hardware.thermal-service.qti` (`android_hardware_qcom_thermal`) | ✓ Exists as vendor binary; transparent to Cell OS — not called directly | `indicative` |
+| `hardware/interfaces/thermal/aidl/IThermal.aidl` | ✓ AOSP AIDL standard — used by QTI thermal HAL vendor, not by Cell OS directly | `verified` |
 | `hardware/interfaces/sensors/aidl/ISensors.aidl` | ✓ AOSP AIDL standard | `verified` |
 | `frameworks/native/libs/binder/ProcessState.cpp` (BP6) | `indicative` — parent framework repo confirmed; specific file is AOSP invariant | `indicative` |
 
@@ -1290,6 +1306,11 @@ On profile change:
 |---|---|
 | `android_packages_apps_Trust` | ❌ HTTP 404 — repository deleted. Trust Interface removed in LOS 20/21+. |
 | `hardware/lineage/livedisplay/` (FP5 overlay) | ❌ Absent from FP5 device tree — LiveDisplay inactive on FP5 LOS 21 |
+| `hardware/lineage/interfaces/thermal/` | ❌ **Absent** — no thermal/ subdirectory in `android_hardware_lineage_interfaces` (verified) |
+| `hardware/lineage/interfaces/performance/` | ❌ **Absent** — no performance/ subdirectory in `android_hardware_lineage_interfaces` (verified) |
+| `ThermalManager.java` (frameworks/base/core/java/android/os/) | ❌ **HTTP 404** — does not exist in LOS 21 frameworks/base |
+| `THERMAL_STATUS_HAL_SKIP_SET_THROTTLING` | ❌ **Does not exist** — not a valid PowerManager or AIDL constant |
+| `lineage-build.prop` | ❌ **Does not exist** — build properties are in `PRODUCT_SYSTEM_DEFAULT_PROPERTIES` in `config/common.mk` |
 | Privacy Guard fake-data injection | `unconfirmed` — full synthetic-effector capability absent in LOS 17+ (Android 10+) |
 | Root/su binary in official LOS | ❌ Not present — opt-in Magisk only |
 | microG in standard LOS | ❌ Separate build variant — not in official LOS |
@@ -1326,13 +1347,15 @@ The following table records the as-built status of every component specified or 
 | `BioplasmaFieldSection` | `src/features/explorer/components/BioplasmaFieldSection.tsx` | ✅ Implemented | All 8 zone panels; σ bar; direction glyph; BP7 VmemProfile switcher |
 | `bioplasmaZoneWeights` ring glow | `src/features/explorer/navigation/CellMapNav.tsx` | ✅ Implemented | `useLearnedManifold()` wired to SVG `fillOpacity`/`strokeOpacity` |
 | BP1 boot-time profile restore | `src/features/explorer/navigation/CellExplorerLayout.tsx` | ✅ Implemented | `initBP1Baseline(VMEM_BASELINE[readVmemFromStorage()])` on mount |
-| `SecurityStatusOrganelle` (immune checkpoint) | — | ❌ Not yet built | Replacement for deprecated Trust Interface; §10 Phase 3 outstanding |
+| `SecurityStatusOrganelle` (immune checkpoint) | `org.cellos.cellshell/SecurityStatusOrganelle.kt` (ROM) | ✅ APPROVED — ROM Phase 3 | Privileged CellShell fragment: SELinux status, verified boot, AppOps audit, biometric state. SPA equivalent `SecurityStatusOrganelle.tsx` remains outstanding. |
 
 ---
 
 ## 10. Implementation Roadmap
 
-> **Status as of June 2026**: Phases 1–3 are fully complete. Phase 4 (documentation sync) is in progress — this document has been updated; `BIOPLASMA_RESEARCH.md` §13 sync is pending. The immune checkpoint organelle (`SecurityStatusOrganelle.tsx`) remains the sole outstanding Phase 3 item.
+> **Scope**: This roadmap covers the **React/TypeScript SPA** (Cell OS explorer). Native Android ROM phases are tracked separately in `CELL_OS_ROM_FORK_PLAN.md` (APPROVED 2026-06-24; Phases 1–5 defined). Both tracks are active and independent.
+
+> **React/TypeScript SPA status as of June 2026**: Phases 1–3 fully complete. Phase 4 (documentation sync) in progress — this document updated; `BIOPLASMA_RESEARCH.md` §13 sync pending. SPA `SecurityStatusOrganelle.tsx` remains the sole outstanding Phase 3 item (its native counterpart `SecurityStatusOrganelle.kt` is approved ROM Phase 3 work).
 
 ---
 
@@ -1387,7 +1410,7 @@ On profile change: persists to localStorage → fires BP7 signal → updates mem
 |---|---|---|---|
 | BP6 coherent burst | `src/domain/content/bioplasmaPathways.ts` | ⏸ Deferred as planned | Constant `BP6_FROHLICH` exported; `status: "speculative"`; zero runtime logic. Activate only when Fröhlich condensate evidence reaches σ ≥ 0.50. |
 | BP8 reserved annotation | `src/domain/content/bioplasmaPathways.ts` | 🔒 Annotation-only | `BP8_QED_WATER` exported; `bioplasmaSignal()` returns immediately for this pathway; not rendered in any panel |
-| Immune checkpoint | — | ❌ **Not yet built** | `SecurityStatusOrganelle.tsx` — replacement for deprecated Trust Interface (§7.6). Should surface BP3 wound-state, BP7 Vmem anomalies, BP1 resting-state deviations. Remains the sole outstanding Phase 3 item. |
+| Immune checkpoint (SPA) | — | ❌ **SPA not yet built** | `SecurityStatusOrganelle.tsx` — SPA version remains outstanding. Native `SecurityStatusOrganelle.kt` (CellShell, privileged fragment) is APPROVED ROM Phase 3 work in `CELL_OS_ROM_FORK_PLAN.md §3.3`. |
 
 ---
 
@@ -1409,7 +1432,7 @@ Items not in the original roadmap but identified during implementation:
 
 | Item | Priority | Notes |
 |---|---|---|
-| `SecurityStatusOrganelle.tsx` | High | Immune checkpoint — surfaces BP1/BP3/BP7 anomalies. See §7.6. |
+| `SecurityStatusOrganelle.tsx` (SPA) | High | SPA immune checkpoint — surfaces BP1/BP3/BP7 anomalies. See §7.6. Native `SecurityStatusOrganelle.kt` is APPROVED ROM Phase 3 (`CELL_OS_ROM_FORK_PLAN.md §3.3`). |
 | BP12 runtime hook | Medium | `useCircadianClock.ts` — wrap `visibilityState`/`document.timeline` to broadcast circadian phase to zone weights via `bioplasmaSignal()`. Substrate is AlarmManagerService; OS hook is JS Page Visibility API. |
 | BP14 runtime hook | Medium | `useCalciumSpark.ts` — `setInterval` with stochastic jitter simulates CICR; fires burst of bioplasmaSignal() calls with overlapping TTLs to the ER zone and broadcast. |
 | BP6 activation criteria | Research-gated | Requires biological σ ≥ 0.50; currently 0.45. Pietruszka 2025 is Tier 2 only; monitor in-vivo confirmation. |
@@ -1418,4 +1441,73 @@ Items not in the original roadmap but identified during implementation:
 
 ---
 
-*Document compiled from 14 research batches, June 2026. Phases 1–3 implementation verified June 2026. Biological claims governed by `BIOPLASMA_RESEARCH.md`. LineageOS source claims verified against `github.com/LineageOS` organisation. FP5-specific constraints enforced per §3.5 and §9.5.*
+## 11. Native Android ROM Layer
+
+> **Authority**: `CELL_OS_ROM_FORK_PLAN.md` (APPROVED 2026-06-24) is the canonical specification for all components in this section. This section is a coordinate map entry — implementation details are in the fork plan.
+
+The Cell OS ROM fork introduces a native Android layer beneath the React/TypeScript SPA. This layer runs on-device as real Android system components, not in a WebView. It maps the bioplasma/biophoton manifold directly onto the Android system server and SystemUI at the privilege level of a first-party platform component.
+
+### §11.1 Core Components
+
+| Component | Package / Path | Biological Role | ROM Phase |
+|---|---|---|---|
+| **ICellVitalService.aidl** | `frameworks/base/core/java/android/os/ICellVitalService.aidl` | Biological signalling interface contract (plasma membrane receptor surface) | Phase 2 |
+| **CellVitalService.java** | `services/core/java/com/android/server/cellos/CellVitalService.java` | System server singleton (nucleus) — aggregates all bioplasma pathway signals | Phase 2 |
+| **CellOsBootstrap.java** | `services/core/java/com/android/server/cellos/CellOsBootstrap.java` | Boot sequencer — `PHASE_SYSTEM_SERVICES_READY` init | Phase 2 |
+| **CellVitalOverlayController.kt** | `packages/SystemUI/src/com/android/systemui/cellos/CellVitalOverlayController.kt` | BP5 thermal listener; SystemUI biophoton ring render loop | Phase 3 |
+| **CellShell** (org.cellos.cellshell) | `packages/apps/CellShell/` | Privileged native system app replacing React SPA for on-device display | Phase 3 |
+| **SecurityStatusOrganelle.kt** | `org.cellos.cellshell/SecurityStatusOrganelle.kt` | Immune checkpoint: SELinux, verified boot, AppOps audit, biometric state | Phase 3 |
+| **generate_domain.py** | `tools/cell-os/generate_domain.py` | TypeScript→Kotlin domain codegen | Phase 2 |
+| **CellOsDomain.kt** | `src/main/kotlin/org/cellos/domain/CellOsDomain.kt` | Generated sealed class hierarchy (BP/P pathway objects on-device) | Phase 2 |
+
+### §11.2 Platform Permission Model
+
+Permission declared in **platform** (frameworks), not in client app:
+
+```xml
+<!-- frameworks/base/core/res/AndroidManifest.xml -->
+<permission android:name="org.cellos.permission.READ_VITALS"
+    android:protectionLevel="signature" />
+```
+
+- `CellShell` **requests** `org.cellos.permission.READ_VITALS` — it does NOT declare it
+- Every `ICellVitalService` Binder stub method calls `enforceCallingPermission("org.cellos.permission.READ_VITALS", ...)` — enforcement is in the server stub, not the client annotation
+- `@RequiresPermission` annotations in `ICellVitalService.aidl` are lint metadata only — they do not enforce at runtime
+
+### §11.3 BP5 Thermal Integration (ROM Layer)
+
+```kotlin
+// CellVitalOverlayController.kt — Phase 3
+context.getSystemService(PowerManager::class.java)
+    .addThermalStatusChangedListener(executor) { status ->
+        cellVitalService.updateBP5ThermalStatus(status)
+    }
+```
+
+Valid status → σ mapping (all 7 constants, no fallthrough, no default-to-zero):
+
+| PowerManager constant | σ value |
+|---|---|
+| `THERMAL_STATUS_NONE` | 0.00 |
+| `THERMAL_STATUS_LIGHT` | 0.30 |
+| `THERMAL_STATUS_MODERATE` | 0.55 |
+| `THERMAL_STATUS_SEVERE` | 0.80 |
+| `THERMAL_STATUS_CRITICAL` | 0.95 |
+| `THERMAL_STATUS_EMERGENCY` | 0.98 |
+| `THERMAL_STATUS_SHUTDOWN` | 1.00 |
+
+### §11.4 ROM Phase Summary
+
+| Phase | Key deliverable | Acceptance gate |
+|---|---|---|
+| **Phase 1** | ROM identity, FP5 boot, branding overlays (FrameworksResTarget/, SystemUIResTarget/) | `ro.cellos.version` visible in `adb shell getprop`; device boots to homescreen |
+| **Phase 2** | AIDL skeleton, CellVitalService registered at PHASE_SYSTEM_SERVICES_READY, platform permission | `adb shell dumpsys cellos_vital` returns JSON; `CellShell` binds without SecurityException |
+| **Phase 3** | SystemUI biological shell (PhoneStatusBarView, QS tiles, CellVitalOverlayController), CellShell app, SecurityStatusOrganelle | Biophoton ring visible in status bar; QS tile fires `bioplasmaSignal`; SecurityStatusOrganelle fragment launches |
+| **Phase 4** | SMEM sysfs + kernel (`CONFIG_CELLOS_BIOPLASMA_BP8`), `powerhint.xml` tuning, thermal HAL validation | `/sys/kernel/cellos/smem_coherence` returns valid CI; `getBP8CoherenceIndex()` returns 0.0 (zero guard active) |
+| **Phase 5** | Signed production ROM, OTA manifest, reproducible build | `adb shell pm verify-app-links` passes; OTA package installs cleanly |
+
+Full phase specification, patch architecture, repo strategy, and acceptance criteria: `CELL_OS_ROM_FORK_PLAN.md`.
+
+---
+
+*Document compiled from 14 research batches, June 2026. Last updated June 24, 2026 (ROM fork plan integration). Biological claims governed by `BIOPLASMA_RESEARCH.md`. LineageOS source claims verified against `github.com/LineageOS` organisation. ROM implementation architecture governed by `CELL_OS_ROM_FORK_PLAN.md` (APPROVED). FP5-specific constraints enforced per §3.5 and §9.5.*

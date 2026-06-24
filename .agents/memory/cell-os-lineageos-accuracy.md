@@ -79,13 +79,22 @@ All 5 candidate repos searched with negative result:
 - Fake-data injection (null mic/camera/GPS): `unconfirmed` in LOS 21+
 - LiveDisplay FP5 HAL backend: still pending verification
 
-## Six Core Accuracy Rules (must check before any LineageOS doc is cited)
+## ROM Fork Plan Integration (CELL_OS_ROM_FORK_PLAN.md — APPROVED 2026-06-24)
 
-1. **Trust Interface**: DEPRECATED in LOS 20/21+. Mark as `deprecated-feature`. Do not cite as current.
+Both `LineageOSv2_Manifold.md` and `LineageOSv2_Description.md` comprehensively updated. Key document state changes:
+
+**Manifold**: §3.3 BP5 corrected; §5.5 BP5 rewritten (PowerManager API, absent paths); §7.1 corrected (thermal/ dir absent); §7.4 corrected (performance/ dir absent); §7.6 SecurityStatusOrganelle APPROVED; §9.3 expanded (absence matrix); §9.5 expanded; §9.6 SecurityStatusOrganelle APPROVED; §10 scoped to SPA + ROM pointer; new §11 Native Android ROM Layer added.
+
+**Description**: Header status block added; §10 BP8 corrected (IWaterCoherence HAL superseded by ICellVitalService arch); §13 taxonomy updated (approved-rom-component class added; false thermal/performance claims removed; SecurityStatusOrganelle APPROVED); footer updated to include ROM fork plan authority.
+
+## Seven Core Accuracy Rules (check before any LineageOS doc is cited)
+
+1. **Trust Interface**: DEPRECATED in LOS 20/21+. Mark as `deprecated-feature`. Do not cite as current. Replacement: `SecurityStatusOrganelle.kt` (APPROVED ROM Phase 3).
 2. **Privacy Guard**: Fake-data injection `unconfirmed` in LOS 21+. AppOps toggle `indicative`.
 3. **microG**: Not in standard LOS FP5. Requires "LineageOS for microG" variant.
 4. **Updater scope**: OTA client UX + server endpoint only. Not a full update_engine replacement.
 5. **Root/su**: Opt-in (Magisk), not default. Confirmed absent from FP5 device config.
 6. **Kernel tree**: Use `android_kernel_fairphone_qcm6490` (v5.4, branches lineage-21 → lineage-23.2). WireGuard enabled (`CONFIG_WIREGUARD=y` in gki_defconfig, lineage-23.2).
+7. **BP5 thermal**: `ThermalManager.java` HTTP 404 in LOS 21. `android_hardware_lineage_interfaces` has NO `thermal/` or `performance/` subdirectory. BP5 integration is `PowerManager.addThermalStatusListener()` via `CellVitalOverlayController.kt`. `THERMAL_STATUS_HAL_SKIP_SET_THROTTLING` does not exist. All 7 constants: NONE(0.00), LIGHT(0.30), MODERATE(0.55), SEVERE(0.80), CRITICAL(0.95), EMERGENCY(0.98), SHUTDOWN(1.00).
 
-**How to apply**: Before writing or reviewing any LineageOS doc, grep for `Trust`, `android_packages_apps_Trust`, `android_kernel_qcom_sm7325`, `fairphone/kernel` — all are wrong. If Trust appears as a current feature, mark `deprecated-feature`.
+**How to apply**: Before writing or reviewing any LineageOS doc, grep for `ThermalManager`, `lineage/interfaces/thermal`, `lineage/interfaces/performance`, `lineage-build.prop`, `IWaterCoherence`, `Trust`, `android_kernel_qcom_sm7325`, `fairphone/kernel` — all are wrong or superseded. If Trust appears as a current feature, mark `deprecated-feature`.
