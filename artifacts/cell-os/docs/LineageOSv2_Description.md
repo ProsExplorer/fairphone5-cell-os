@@ -326,6 +326,7 @@ The full approved component set is in `CELL_OS_ROM_FORK_PLAN.md` and mirrored in
 | **Phase 2** | `CellOsBootstrap.java` | `android_frameworks_base` | Boot sequencer at `PHASE_SYSTEM_SERVICES_READY` |
 | **Phase 2** | `generate_domain.py` → `CellOsDomain.kt` + `cell_os_domain.json` | `android_packages_apps_CellShell` | Domain codegen: TypeScript → Kotlin sealed class hierarchy |
 | **Phase 2** | `cellos_integrity_check.sh` (15 zones / 9 P / 20 links / 13 BP) | `android_device_fairphone_FP5` | Build-time biological fidelity assertion |
+| **Phase 2** | Platform permission (`org.cellos.permission.READ_VITALS`) + `privapp-permissions-cellos.xml` | `android_frameworks_base` (permission decl.); `android_device_fairphone_FP5` (allowlist) | Secure nervous system gate — `protectionLevel="signature"` with server-side `enforceCallingPermission` in every Binder stub; `@RequiresPermission` annotation is lint-only |
 | **Phase 3** | `CellVitalServiceImpl.java` (live signal computation) | `android_frameworks_base` | Pathway computation: Binder→BP2, battery→BP1, broadcast→BP3, thermal→BP5 |
 | **Phase 3** | `CellVitalOverlayController.kt` (SystemUI) | `android_frameworks_base` | BP5 thermal listener; drives σ-gated vitals overlay |
 | **Phase 3** | `PhoneStatusBarView.java`, `BatteryMeterView.java`, `BiophotonTile.java` | `android_frameworks_base` | Membrane zone — boundary perception and signal transduction |
@@ -333,7 +334,7 @@ The full approved component set is in `CELL_OS_ROM_FORK_PLAN.md` and mirrored in
 | **Phase 3** | `SecurityStatusOrganelle.kt` | `android_packages_apps_CellShell` | Immune checkpoint (BP1/BP3/BP7): SELinux, verified boot, AppOps, biometric |
 | **Phase 4** | `drivers/soc/qcom/smem.c` patch + `Kconfig` (`CONFIG_CELLOS_BIOPLASMA_BP8`) | `android_kernel_fairphone_qcm6490` | BP8 SMEM coherence probe (zero-guard maintained) |
 | **Phase 4** | `sepolicy/vendor/cellos_sysfs.te` | `android_device_fairphone_FP5` | SELinux policy — sysfs read-only gate |
-| **Phase 4** | `powerhint.xml` tuning | `android_device_fairphone_FP5` | BP2 cytoplasmic flux — schedutil hints for QCM6490 |
+| **Phase 4** | `powerhint.xml` tuning | `android_device_fairphone_FP5` | BP6/BP1 metabolic coherence tuning — QTI power-service schedutil hints for FP5 (higher performance hints lower Binder latency, raising Fröhlich condensate plausibility) |
 | **Phase 5** | Signed reproducible build, OTA package, privacy/security review | `build/make` | Biological integrity certification — all σ values + source path HTTP 200 |
 
 LineageOS and the Cell OS ROM fork add the following features and approved components beyond the AOSP baseline, each enhancing bioplasma pathway implementations (active, dormant, or approved-ROM as labelled):
