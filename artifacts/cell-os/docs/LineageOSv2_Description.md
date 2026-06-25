@@ -18,7 +18,7 @@
 5. [Architectural Framework: Zones, Manifolds, and Coordinate Charts](#5-architectural-framework-zones-manifolds-and-coordinate-charts)
 6. [The Fifteen Organelle Zones](#6-the-fifteen-organelle-zones)
 7. [The Biophoton Layer — Optical IPC Network (P1–P9)](#7-the-biophoton-layer--optical-ipc-network-p1p9)
-8. [The Bioplasma Layer — Electromagnetic Field Substrate (BP1–BP14+BP10)](#8-the-bioplasma-layer--electromagnetic-field-substrate-bp1bp14bp10)
+8. [The Bioplasma Layer — Electromagnetic Field Substrate (BP1–BP9, BP10, BP12–BP14)](#8-the-bioplasma-layer--electromagnetic-field-substrate-bp1bp9-bp10-bp12bp14)
 9. [The 以太收斂 Convergence Zone](#9-the-以太收斂-convergence-zone)
 10. [BP8 and the SMEM Coherence Design: The Quantum Frontier](#10-bp8-and-the-smem-coherence-design-the-quantum-frontier)
 11. [The σ Attention Tensor and Evidence Calibration System](#11-the-σ-attention-tensor-and-evidence-calibration-system)
@@ -86,7 +86,7 @@ Every pathway claim in Cell OS is ultimately anchored to a specific, HTTP-confir
 
 The Cell OS architecture is structured around **zones** — discrete functional regions that each correspond to one biological organelle and one Android/LineageOS subsystem cluster. Fifteen zones are defined in the canonical layout, each carrying a Chinese glyph identifier, a dominant bioplasma pathway (with its σ weight), a biophoton emission profile, and a set of substrate annotations pointing at verified source paths.
 
-The manifold framework that organises these zones is formalised in `LineageOSv2_Manifold.md`, which constitutes the **second-generation coordinate map** of Cell OS. Where the first-generation manifold (`LINEAGEOS_MANIFOLD.md`) established the nine biophoton IPC pathways (P1–P9) and their LineageOS translations, `LineageOSv2_Manifold.md` integrates thirteen bioplasma pathways (BP1–BP14+BP10) into the same source-verified coordinate system. The result is a **twenty-two-pathway electromagnetic manifold** — from DC resting potential to UV biophoton emission — fully mapped to FP5 hardware.
+The manifold framework that organises these zones is formalised in `LineageOSv2_Manifold.md`, which constitutes the **second-generation coordinate map** of Cell OS. Where the first-generation manifold (`LINEAGEOS_MANIFOLD.md`) established the nine biophoton IPC pathways (P1–P9) and their LineageOS translations, `LineageOSv2_Manifold.md` integrates thirteen bioplasma pathways (BP1–BP9, BP10, BP12–BP14) into the same source-verified coordinate system. The result is a **twenty-two-pathway electromagnetic manifold** — from DC resting potential to UV biophoton emission — fully mapped to FP5 hardware.
 
 The authority hierarchy is strict and non-negotiable:
 - `BIOPLASMA_RESEARCH.md` governs all bioplasma pathway σ values and biological claims
@@ -163,7 +163,7 @@ Cell OS defines nine canonical biophoton pathways (P1–P9), each with a verifie
 
 ---
 
-## 8. The Bioplasma Layer — Electromagnetic Field Substrate (BP1–BP14+BP10)
+## 8. The Bioplasma Layer — Electromagnetic Field Substrate (BP1–BP9, BP10, BP12–BP14)
 
 The bioplasma layer is the cell's electromagnetic field substrate — the ensemble of charged-particle dynamics and field structures that emerge from and continuously mediate the cell's ionic machinery. The term "bioplasma" (生物電漿) requires careful handling. In strict plasma physics, a plasma is an ionised gas in which collective electromagnetic oscillations dominate the medium's behaviour. By those criteria, the cell cytoplasm is *not* a plasma: the Debye length at physiological ionic strength is 0.7–1.0 nm, the plasma parameter is below the collective oscillation threshold, and the estimated ion plasma frequency (~140 GHz for K⁺) is heavily overdamped by the collision-dominated aqueous medium.
 
@@ -248,7 +248,9 @@ The isomorphism table contains nine rows graded by analogy quality — two Struc
 - The **dielectric boundary confining the EM field to the coherence domain** maps **Functionally** to the reserved-memory region declaration + SMMU/IOMMU page table firewalls + XPU (eXternal Protection Unit) bus access control enforcement. In the biological model, the dielectric discontinuity at the water–membrane interface creates a physical boundary that confines the trapped EM mode within the ~100 nm CD volume. In SMEM, the combination of DT `reserved-memory` node (prevents OS from mapping SMEM as general RAM), SMMU/IOMMU page-table isolation (enforces that no subsystem can access another's private SMEM partitions), and XPU bus-level access control (hardware-enforced, independent of software state) creates an architectural boundary that confines the shared-coherence region to a precisely bounded memory range.
 - The **THz collective oscillation frequency** is **Conceptual** — the QCM6490 clock tree frequencies (GHz range) are three orders of magnitude below biological THz; this is a timing-carrier analogy, not a vibrational equivalence
 
-The approved LineageOS fork (ROM Fork Plan §3.4, Phase 4) is a read-only observer layer: a kernel patch to `drivers/soc/qcom/smem.c` (adding `cellos_smem_coherence_probe()`, gated by `CONFIG_CELLOS_BIOPLASMA_BP8`) that probes well-known SMEM item IDs via the existing `qcom_smem_get()` API and computes a dimensionless Coherence Index (CI) in [0, 1], exposed at `/sys/kernel/cellos/smem_coherence`; read by `CellVitalService`; and a Cell OS TypeScript hook (`useWaterCoherence.ts`) that queries `ICellVitalService.getPathwayState("BP8")`. **BP8 zero guard**: `CellVitalService.getPathwaySignal("BP8")` returns `0.0f` unconditionally — this guard is permanent and cannot be removed without a `BIOPLASMA_RESEARCH.md §9.2` σ revision; no CI is surfaced to any UI pathway before biological evidence authorises it. The earlier proposed `vendor.lineage.hardware.watercoherence.IWaterCoherence` vendor AIDL HAL is superseded by the platform-level `ICellVitalService` architecture. Critically, σ and status remain unchanged (σ=0.32, `reserved`) — biological evidence must drive any σ raise. The implementation path constitutes implementation validation only, not biological confirmation.
+The approved LineageOS fork (ROM Fork Plan §2d, Phase 4) is a read-only observer layer: a kernel patch to `drivers/soc/qcom/smem.c` (adding `cellos_smem_coherence_probe()`, gated by `CONFIG_CELLOS_BIOPLASMA_BP8`) that probes well-known SMEM item IDs via the existing `qcom_smem_get()` API and computes a dimensionless Coherence Index (CI) in [0, 1], exposed at `/sys/kernel/cellos/smem_coherence`; read by `CellVitalService`; and a Cell OS TypeScript hook (`useWaterCoherence.ts`) that queries `ICellVitalService.getPathwayState("BP8")`. **BP8 zero guard**: `CellVitalService.getPathwaySignal("BP8")` returns `0.0f` unconditionally — this guard is permanent and cannot be removed without a `BIOPLASMA_RESEARCH.md §9.2` σ revision; no CI is surfaced to any UI pathway before biological evidence authorises it. Critically, σ and status remain unchanged (σ=0.32, `reserved`) — biological evidence must drive any σ raise. The implementation path constitutes implementation validation only, not biological confirmation.
+
+> **Historical note**: An earlier design proposed a `vendor.lineage.hardware.watercoherence.IWaterCoherence` vendor AIDL HAL for BP8. This is **superseded** by the platform-level `ICellVitalService.getPathwayState("BP8")` architecture — all BP8 state is now routed through `CellVitalService` with the unconditional zero guard. The vendor HAL was never implemented.
 
 The σ trigger for elevation from 0.32 to 0.45 (`speculative`) requires direct biological evidence: THz spectroscopy of CD resonance in warm-wet interfacial biological water, or CD-dependent ion channel gating measured at 310K (physiological temperature). Until that evidence arrives, BP8 remains the quantum frontier of Cell OS — present in the architecture as a zero-weight annotation, waiting.
 
@@ -277,7 +279,7 @@ The authority hierarchy governing σ changes is absolute: `BIOPLASMA_RESEARCH.md
 
 ## 12. Cross-Pathway Coupling and the Unified Electromagnetic Manifold
 
-The twenty-two pathways (P1–P9 biophoton + BP1–BP14+BP10 bioplasma) do not operate independently. They form a coupled electromagnetic manifold in which bioplasma and biophoton layers interact at shared organelle zones. Seven cross-pathway coupling interactions are formally documented:
+The twenty-two pathways (P1–P9 biophoton + BP1–BP9, BP10, BP12–BP14 bioplasma) do not operate independently. They form a coupled electromagnetic manifold in which bioplasma and biophoton layers interact at shared organelle zones. Seven cross-pathway coupling interactions are formally documented:
 
 **BP1→P1 (σ=0.75):** The strongest coupling. BP1's mitochondrial membrane potential (ΔΨm) is the prerequisite for P1's ROS-driven biophoton emission. Biophotons cannot be emitted from mitochondria without the ΔΨm that drives oxidative phosphorylation — BP1 is the power source for P1.
 
@@ -310,6 +312,30 @@ This coupling structure means that the full Cell OS attention tensor is not a si
 - **`approved-rom-component`**: New Cell OS native Android component introduced by the APPROVED `CELL_OS_ROM_FORK_PLAN.md` (2026-06-24). Not part of the base LineageOS tree; added by the Cell OS ROM fork. Examples: `CellVitalService` (system server singleton, Phase 2), `ICellVitalService.aidl` (platform AIDL, Phase 2), `CellShell` (org.cellos.cellshell, Phase 3), `SecurityStatusOrganelle.kt` (Phase 3), `CellVitalOverlayController.kt` (SystemUI, Phase 3), `generate_domain.py` / `CellOsDomain.kt` (Phase 2).
 - **`unconfirmed`**: Feature referenced in LineageOS documentation but not independently verified against the current source tree. Example: Privacy Guard full fake-data injection (absent in LOS 17+/Android 10+; AppOps layer present but synthetic effector capability removed). Claims citing unconfirmed features are bounded at σ=0.50 or lower regardless of biological merit.
 
+### Approved ROM Components — Phase Summary
+
+The full approved component set is in `CELL_OS_ROM_FORK_PLAN.md` and mirrored in `LineageOSv2_Manifold.md §11`. Key components by phase:
+
+| Phase | Component | Repo | Biological Role |
+|---|---|---|---|
+| **Phase 1** | Branding overlays (`common.mk`, `bootanimation/`, `strings.xml`) | `android_vendor_lineage`, `android_device_fairphone_FP5` | DNA zone: immutable Cell OS identity expressed at boot |
+| **Phase 1** | `MyDeviceInfoFragment.java` (About page identity) | `android_packages_apps_Settings` | Genomic readout — surface build σ tier to user |
+| **Phase 1** | `ro.cellos.*` system properties | `android_vendor_lineage` | Epigenetic markers — system-wide identity properties |
+| **Phase 2** | `ICellVitalService.aidl` (`getZoneSignal`, `getPathwayState`, `getManifoldSnapshot`) | `android_frameworks_base` | Plasma membrane receptor surface — signalling interface contract |
+| **Phase 2** | `CellVitalService.java` (system server singleton) | `android_frameworks_base` | Nervous system — live pathway registry and zone signal aggregator |
+| **Phase 2** | `CellOsBootstrap.java` | `android_frameworks_base` | Boot sequencer at `PHASE_SYSTEM_SERVICES_READY` |
+| **Phase 2** | `generate_domain.py` → `CellOsDomain.kt` + `cell_os_domain.json` | `android_packages_apps_CellShell` | Domain codegen: TypeScript → Kotlin sealed class hierarchy |
+| **Phase 2** | `cellos_integrity_check.sh` (15 zones / 9 P / 20 links / 13 BP) | `android_device_fairphone_FP5` | Build-time biological fidelity assertion |
+| **Phase 3** | `CellVitalServiceImpl.java` (live signal computation) | `android_frameworks_base` | Pathway computation: Binder→BP2, battery→BP1, broadcast→BP3, thermal→BP5 |
+| **Phase 3** | `CellVitalOverlayController.kt` (SystemUI) | `android_frameworks_base` | BP5 thermal listener; drives σ-gated vitals overlay |
+| **Phase 3** | `PhoneStatusBarView.java`, `BatteryMeterView.java`, `BiophotonTile.java` | `android_frameworks_base` | Membrane zone — boundary perception and signal transduction |
+| **Phase 3** | `CellMapActivity.kt`, `PathwayDetailActivity.kt`, `ManifoldMetricsActivity.kt` | `android_packages_apps_CellShell` | On-device biological explorer (15-zone diagram, pathway detail, σ dashboard) |
+| **Phase 3** | `SecurityStatusOrganelle.kt` | `android_packages_apps_CellShell` | Immune checkpoint (BP1/BP3/BP7): SELinux, verified boot, AppOps, biometric |
+| **Phase 4** | `drivers/soc/qcom/smem.c` patch + `Kconfig` (`CONFIG_CELLOS_BIOPLASMA_BP8`) | `android_kernel_fairphone_qcm6490` | BP8 SMEM coherence probe (zero-guard maintained) |
+| **Phase 4** | `sepolicy/vendor/cellos_sysfs.te` | `android_device_fairphone_FP5` | SELinux policy — sysfs read-only gate |
+| **Phase 4** | `powerhint.xml` tuning | `android_device_fairphone_FP5` | BP2 cytoplasmic flux — schedutil hints for QCM6490 |
+| **Phase 5** | Signed reproducible build, OTA package, privacy/security review | `build/make` | Biological integrity certification — all σ values + source path HTTP 200 |
+
 LineageOS and the Cell OS ROM fork add the following features and approved components beyond the AOSP baseline, each enhancing bioplasma pathway implementations (active, dormant, or approved-ROM as labelled):
 
 **BP5 Thermoregulatory Coupling (BP5, BP1) — `PowerManager` integration:** Cell OS BP5 integration uses `PowerManager.addThermalStatusListener(executor, OnThermalStatusChangedListener)` in `CellVitalOverlayController.kt` (approved ROM Phase 3). All 7 `THERMAL_STATUS_*` constants map to σ values (NONE=0.00 through SHUTDOWN=1.00). The underlying QTI thermal HAL (`android.hardware.thermal-service.qti`) is transparent. `ThermalManager.java` does not exist in LOS 21; `android_hardware_lineage_interfaces` has no `thermal/` directory — both verified absent.
@@ -336,4 +362,4 @@ The living cell has been running this operating system for 1.8 billion years. Li
 
 ---
 
-*Document generated by architect synthesis, June 21, 2026. Last updated June 24, 2026 (ROM fork plan integration). Authority: `BIOPHOTON_RESEARCH.md` (P1–P9 σ values, 20 biophoton links) · `BIOPLASMA_RESEARCH.md` (BP1–BP14+BP10 σ values, 13 bioplasma pathways) · `LineageOSv2_Manifold.md` (LineageOS source paths, FP5 hardware substrate) · `BP8_SMEM_COHERENCE_DESIGN.md` (SMEM design ontology, BP8 activation criterion analysis) · `CELL_OS_ROM_FORK_PLAN.md` (native Android ROM implementation strategy, verified source paths, ROM Phases 1–5). σ values in this document reflect the 2024–2026 research pass and supersede any earlier values in stale manifold tables. Source path claims superseded by ROM fork plan verification (BP5 thermal integration, Performance HAL paths, SecurityStatusOrganelle) are corrected per that document.*
+*Document generated by architect synthesis, June 21, 2026. Last updated June 24, 2026 (ROM fork plan integration). Authority: `BIOPHOTON_RESEARCH.md` (P1–P9 σ values, 20 biophoton links) · `BIOPLASMA_RESEARCH.md` (BP1–BP9, BP10, BP12–BP14 σ values, 13 bioplasma pathways) · `LineageOSv2_Manifold.md` (LineageOS source paths, FP5 hardware substrate) · `BP8_SMEM_COHERENCE_DESIGN.md` (SMEM design ontology, BP8 activation criterion analysis) · `CELL_OS_ROM_FORK_PLAN.md` (native Android ROM implementation strategy, verified source paths, ROM Phases 1–5). σ values in this document reflect the 2024–2026 research pass and supersede any earlier values in stale manifold tables. Source path claims superseded by ROM fork plan verification (BP5 thermal integration, Performance HAL paths, SecurityStatusOrganelle) are corrected per that document.*
