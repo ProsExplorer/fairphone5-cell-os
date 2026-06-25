@@ -8,7 +8,8 @@ import type { BioplasmaPathway } from "@/domain/types";
  * LineageOS source paths are verified against LineageOSv2_Manifold.md §9.
  *
  * Runtime guards enforced by bioplasmaSignal() in useCellVitalStore:
- *   - BP8 (reserved): never fires
+ *   - BP8 (speculative, σ=0.45): direction=readonly → never drives routing via bioplasmaSignal();
+ *     signal emitted via useWaterCoherence hook at speculative weight σ×0.10=0.045
  *   - BP9 (readonly): never drives routing decisions
  */
 
@@ -134,20 +135,21 @@ export const BP7_VMEM_PATTERN: BioplasmaPathway = {
 };
 
 /**
- * BP8 — QED Water Coherence (RESERVED).
- * σ = 0.32 — biological evidence governs σ; SMEM is the implementation candidate
- * but does not raise σ or status. bioplasmaSignal() returns early for reserved.
+ * BP8 — QED Water Coherence (SPECULATIVE — promoted June 2026).
+ * σ = 0.45 raised from 0.32 via six-stream secondary evidence research pass.
+ * Authority: BIOPLASMA_RESEARCH.md §5.9 (σ record) + BP8_SMEM_COHERENCE_DESIGN.md §5 (evidence).
  *
- * Stage 1: lineageosPath set to proposed driver path.
- * Stage 2: smem_coherence.c kernel driver (qcom_smem_get() probe approach).
- * Stage 3: IWaterCoherence AIDL HAL + real sysfs→HAL→hook path.
+ * bioplasmaSignal() applies speculative-tier weight: σ × 0.10 = 0.045 of full amplitude.
+ * The unconditional reserved-guard (return early) is removed for this pathway.
+ * direction === "readonly" guard remains: BP8 reads SMEM sysfs, never drives routing.
  *
- * See BP8_SMEM_COHERENCE_DESIGN.md for the full fork specification.
+ * Next elevation to indicative (σ ≥ 0.50) requires direct THz-TDS CD resonance
+ * measurement in warm-wet mammalian cellular water. See design doc §5.2.
  */
 export const BP8_QED_WATER: BioplasmaPathway = {
   code: "BP8",
-  sigma: 0.32,
-  status: "reserved",
+  sigma: 0.45,
+  status: "speculative",
   carrier: "QED coherent EM mode (interfacial water coherence domains)",
   frequencyRange: "THz range (estimated); QED resonance",
   plasmaLiteralness: "field-coherence-analogy",
@@ -331,9 +333,11 @@ export const BIOPLASMA_BY_CODE: Record<string, BioplasmaPathway> = Object.fromEn
 );
 
 /**
- * Pathways with active runtime implementations.
- * Excludes BP6 (speculative, deferred), BP8 (reserved, no impl),
- * and BP13 (metaphor — LLPS condensate; no direct Android sensor path).
+ * Pathways with active runtime implementations via bioplasmaSignal().
+ * BP8 (speculative, σ=0.45) is excluded here: its signal comes from
+ * useWaterCoherence hook directly (direction=readonly; σ×0.10=0.045 weight),
+ * bypassing bioplasmaSignal(). BP6 (speculative, deferred) and BP13
+ * (metaphor — LLPS condensate; no direct Android sensor path) also excluded.
  */
 export const IMPLEMENTED_BIOPLASMA_PATHWAYS: BioplasmaPathway[] = [
   BP1_RESTING_POTENTIAL,

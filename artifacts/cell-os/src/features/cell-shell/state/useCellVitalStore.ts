@@ -92,8 +92,8 @@ export type CellVitalState = {
    * Emit a bioplasma field signal for a given pathway.
    *
    * Guards (both enforced here — never remove):
-   *   1. status === "reserved" → return immediately (BP8: no runtime logic)
-   *   2. direction === "readonly" → return immediately (BP9: diagnostic only)
+   *   1. status === "reserved" → return immediately (no pathway currently uses this; BP8 is now "speculative")
+   *   2. direction === "readonly" → return immediately (BP9: diagnostic only; BP8: SMEM sysfs read via useWaterCoherence hook, not bioplasmaSignal)
    *
    * Intensity is σ-weighted and clamped to [0,1]:
    *   weightedIntensity = clamp(intensity × σ, 0, 1)
@@ -228,9 +228,9 @@ export const useCellVitalStore = create<CellVitalState>((set) => ({
     })),
 
   bioplasmaSignal: (pathway, intensity = 1.0, ttlMs = 1500) => {
-    // Guard 1 — reserved pathways never fire (BP8).
+    // Guard 1 — reserved-tier gate (no pathway currently uses this; BP8 is now "speculative").
     if (pathway.status === "reserved") return;
-    // Guard 2 — read-only pathways never drive routing (BP9).
+    // Guard 2 — read-only pathways never drive routing (BP9; BP8 uses useWaterCoherence hook directly).
     if (pathway.organelleRoute.direction === "readonly") return;
 
     // σ-weighted intensity, clamped to [0, 1].

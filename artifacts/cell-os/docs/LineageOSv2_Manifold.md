@@ -34,7 +34,7 @@
 
 `LineageOSv2_Manifold.md` is the second-generation Cell OS coordinate map for the LineageOS software substrate. Where `LINEAGEOS_MANIFOLD.md` established the nine biophoton IPC pathways (P1–P9) and their LineageOS translations, this document integrates the thirteen bioplasma pathways (BP1–BP9, BP10, BP12–BP14) from `BIOPLASMA_RESEARCH.md` into the same source-verified LineageOS coordinate system. Together, the 22 pathways constitute the complete electromagnetic manifold of the living cell as expressed in LineageOS source code on Fairphone 5 hardware.
 
-The thirteen bioplasma pathways span the full frequency spectrum from DC to terahertz. The core nine (BP1–BP9) are fully documented with LineageOS source paths in §5; BP12, BP13, and BP14 are covered in §5.10–§5.12. BP10 (Aquaporin Proton QT, σ=0.48) is intentionally omitted from §5 and remains governed exclusively by BIOPLASMA_RESEARCH.md §5.10/§11. The most firmly established — BP1 (membrane resting potential, σ=0.92) and BP2 (action potential propagation, σ=0.90) — map to the Linux kernel's IRQ ground state and the Binder IPC transaction chain respectively, both of which are AOSP invariants preserved without modification in LineageOS. The well-replicated bioelectric morphogenesis work of Michael Levin's group underlies BP7 (σ=0.72), which maps to LineageOS's persistent settings infrastructure (SettingsProvider + LineageParts). The speculative high-frequency boundary (BP8: QED water coherence, σ=0.32) has no LineageOS production path and is implemented as a reserved annotation only.
+The thirteen bioplasma pathways span the full frequency spectrum from DC to terahertz. The core nine (BP1–BP9) are fully documented with LineageOS source paths in §5; BP12, BP13, and BP14 are covered in §5.10–§5.12. BP10 (Aquaporin Proton QT, σ=0.48) is intentionally omitted from §5 and remains governed exclusively by BIOPLASMA_RESEARCH.md §5.10/§11. The most firmly established — BP1 (membrane resting potential, σ=0.92) and BP2 (action potential propagation, σ=0.90) — map to the Linux kernel's IRQ ground state and the Binder IPC transaction chain respectively, both of which are AOSP invariants preserved without modification in LineageOS. The well-replicated bioelectric morphogenesis work of Michael Levin's group underlies BP7 (σ=0.72), which maps to LineageOS's persistent settings infrastructure (SettingsProvider + LineageParts). The speculative high-frequency boundary (BP8: QED water coherence, σ=0.45 — raised June 2026 via six-stream secondary evidence) maps to the Qualcomm SMEM sysfs driver (`smem_coherence.c`, `CONFIG_CELLOS_BIOPLASMA_BP8`) and is now implemented as a low-weight speculative signal, no longer a zero-weight annotation.
 
 The authority hierarchy is strict. Biological σ values and evidence tiers are set permanently by `BIOPLASMA_RESEARCH.md` and cannot be elevated by LineageOS source verification alone. What LineageOS verification changes is only the implementation confidence — whether a software analogue can be pointed at a real, HTTP-confirmed source path. The biological σ is a ceiling; the implementation tier is a floor that can be raised toward that ceiling by source confirmation.
 
@@ -65,7 +65,7 @@ Bioplasma pathways (ionic/EM field carriers) and biophoton pathways (photon carr
 | RF / UHF | 300 MHz–3 GHz | Membrane thermal coupling | BP5 sub | `THREAD_PRIORITY_DEFAULT` | `PowerManager` listener |
 | MMW | 30–300 GHz | Lipid bilayer resonance; 53–60 GHz window | BP5 | `THREAD_PRIORITY_BACKGROUND` | `PowerManager` thermal status |
 | Sub-THz / THz | 0.1–10 THz | THz refractive phenotype; Fröhlich condensate | BP6, BP9 | `THREAD_PRIORITY_LOWEST` | Diagnostic only |
-| QED water CD | ~THz (estimated) | Interfacial water coherence (speculative) | BP8 | Reserved (not implemented) | Zero-weight |
+| QED water CD | ~THz (estimated) | Interfacial water coherence (speculative) | BP8 | smem_coherence.c sysfs driver (CONFIG_CELLOS_BIOPLASMA_BP8) | Low-weight speculative signal (σ=0.45) |
 | Blue-green visible | 450–550 nm | Triplet carbonyl (Russell mechanism) | P2 | `THREAD_PRIORITY_FOREGROUND` | Unchanged |
 | Red visible | 634–703 nm | Singlet O₂ dimol; mitochondrial stress burst | P1, P6 | `THREAD_PRIORITY_DEFAULT` | Unchanged |
 | NIR window | 700–1,000 nm | Extracellular tissue UPE; cell-to-cell broadcast | P3 | `THREAD_PRIORITY_BACKGROUND` | Privacy Guard gate |
@@ -94,7 +94,7 @@ Bioplasma pathways (ionic/EM field carriers) and biophoton pathways (photon carr
 | **P2** | Biophoton | 0.60 | Indicative | Blue-green photon | 545–667 THz | cytoplasm | Binder oneway |
 | **BP6** | Bioplasma | 0.45 | Speculative | Collective dipolar EM | 10 GHz–10 THz | cytoskeleton↔mito | Binder burst / SurfaceFlinger (metaphor) |
 | **P4** | Biophoton | 0.35 | Speculative | UV photon (anterograde) | 790–1500 THz | nucleus→cytoplasm | Ordered broadcast |
-| **BP8** | Bioplasma | 0.32 | Reserved | QED EM mode (water CD) | THz (estimated) | cytoplasm | Reserved annotation (no impl.) |
+| **BP8** | Bioplasma | 0.45 | Speculative | QED EM mode (water CD) | THz (estimated) | cytoplasm | SMEM sysfs driver (smem_coherence.c); low-weight signal (σ=0.45 × speculative multiplier) |
 
 ---
 
@@ -177,7 +177,7 @@ To prevent data drift and circular references, the following hierarchy of author
 | **BP5** (RF/MMW Coupling) | 0.60 | `indicative` | Framework-level: `CellVitalOverlayController.kt` (SystemUI) calls `PowerManager.addThermalStatusListener(executor, OnThermalStatusChangedListener)`. `android_hardware_lineage_interfaces` has **no `thermal/` directory** (verified absent). Underlying HAL `android.hardware.thermal-service.qti` is transparent to Cell OS. |
 | **BP9** (THz Phenotype) | 0.50 | `indicative` | StatsD/perfetto verified AOSP; THz analogy metaphor |
 | **BP6** (Fröhlich Coherence) | 0.45 | `speculative` | No LOS production path; architectural metaphor only |
-| **BP8** (QED Water) | 0.32 | `reserved` | No implementation; annotation placeholder only |
+| **BP8** (QED Water) | 0.45 | `speculative` | smem_coherence.c sysfs driver (Path A, qcom_smem_get probe); six-stream secondary evidence justifies σ raise (June 2026) |
 
 ### 3.4 Confidence Deprecation Tags
 
@@ -188,7 +188,7 @@ Every claim in this document carries one of the following six tiers:
 - **`speculative`**: σ 0.30–0.50. Speculative biology or no confirmed production path in current LOS tree.
 - **`unconfirmed`**: σ < 0.30 or claimed software path that cannot be verified (e.g., Privacy Guard fake-data injection in LOS 21).
 - **`deprecated-feature`**: Feature was historically real but confirmed removed. **Trust Interface is the primary instance** (repo 404-deleted in LOS 20/21+).
-- **`reserved`**: Placeholder for future confirmed pathways (BP8). Carries no implementation weight.
+- **`reserved`**: Architectural zero-weight gate. No pathway currently uses this status — BP8 was promoted to `speculative` (σ=0.45) in June 2026 via the secondary evidence research pass. Reserved remains available for future proposed pathways with σ < 0.30.
 
 ### 3.5 FP5-Specific Confidence Floor
 
@@ -241,7 +241,7 @@ Each of the **8 SPA-implemented Cell OS zones** carries a combined bioplasma+bio
 | BP13 | Bioplasma | 0.75 | LLPS condensate compartment formation | cgroup memory tier / NUMA affinity (metaphor) |
 | P2 | Biophoton | 0.60 | Blue-green photon | Binder oneway |
 | BP9 | Bioplasma | 0.50 | THz refractive phenotype | `statsd` / `perfetto` (read-only) |
-| BP8 | Bioplasma | 0.32 | QED water coherence | Reserved annotation (no impl.) |
+| BP8 | Bioplasma | 0.45 | QED water coherence | SMEM sysfs driver (`smem_coherence.c`) — speculative low-weight signal |
 
 ### Zone 4: `cytoskeleton`
 **Glyph**: 架 · **Combined σ**: 0.75 (P5) · **Dominant carrier**: Tubulin dipolar (GHz–THz) + MT photon waveguide
@@ -615,29 +615,29 @@ export const BP7_VMEM_PATTERN: BioplasmaPathway = {
 
 ---
 
-### §5.8 BP8 — QED Water Coherence Domain (Reserved → Speculative Candidate)
+### §5.8 BP8 — QED Water Coherence Domain (Promoted to Speculative, June 2026)
 
-**σ = 0.32 · Status: `reserved` · Pending architect review for elevation to `speculative` (σ=0.45)**
+**σ = 0.45 · Status: `speculative` · Promoted via six-stream secondary evidence research pass (June 2026)**
 
-> **Design document**: `docs/BP8_SMEM_COHERENCE_DESIGN.md` contains the full structural isomorphism analysis, fork specification, and σ rationale. The content below reflects the baseline state. The design document is the source of truth for the proposed changes.
+> **Design document**: `docs/BP8_SMEM_COHERENCE_DESIGN.md` contains the full structural isomorphism analysis, fork specification, six-stream evidence analysis (§5), and σ rationale. The design document and `BIOPLASMA_RESEARCH.md §5.9` are the joint source of truth for BP8.
 
 #### Biological Summary
 The QED model of water proposed by Del Giudice and Preparata suggests that liquid water exists as a two-phase system: coherence domains (CDs) approximately 100 nm in size where water molecules oscillate in phase with a trapped electromagnetic field, and disordered bulk water. At hydrophilic cellular interfaces, these CDs may act as reservoirs of electronic excitation. While EZ (exclusion zone) water effects are experimentally documented (10+ independent labs, including in plant xylem 2024), the specific QED coherence domain model remains speculative in mainstream biophysics.
 
-#### Current Reserved Annotation (baseline)
+#### Current State (After Promotion to Speculative — June 2026)
 
 ```typescript
 export const BP8_QED_WATER: BioplasmaPathway = {
   code: "BP8",
-  sigma: 0.32,
-  status: "reserved",
+  sigma: 0.45,                        // RAISED 0.32 → 0.45 via six-stream secondary evidence (June 2026)
+  status: "speculative",              // PROMOTED reserved → speculative; see BIOPLASMA_RESEARCH.md §5.9
   carrier: "QED coherent EM mode (interfacial water)",
   frequencyRange: "THz range (estimated); QED resonance",
   plasmaLiteralness: "field-coherence-analogy",
-  lineageosPath: null,
+  lineageosPath: "drivers/soc/qcom/smem_coherence.c · android_kernel_fairphone_qcm6490",
   organelleRoute: { source: "cytoplasm", target: "broadcast", direction: "readonly" },
-  ipcAnalogue: "RESERVED_ANNOTATION",
-  isMetaphor: true,
+  ipcAnalogue: "Qualcomm SMEM inter-processor shared memory substrate",
+  isMetaphor: true,                   // THz row only; Structural/Functional rows are genuine
 };
 ```
 
@@ -667,16 +667,16 @@ All four BP8 activation criteria are satisfied by SMEM:
 3. ✅ **Active coordination mechanism**: TCSR/SFPB hardware spinlocks + GLINK inter-processor signalling
 4. ✅ **Interfacial**: SMEM is physically in the SoC fabric at the boundary between processor subsystem islands
 
-**Stage 1 constant** (σ and status unchanged; only `lineageosPath` set):
+**Activated constant** (σ=0.45, `speculative` — June 2026 secondary evidence pass):
 ```typescript
 export const BP8_QED_WATER: BioplasmaPathway = {
   code: "BP8",
-  sigma: 0.32,            // UNCHANGED — biological evidence governs σ
-  status: "reserved",     // UNCHANGED — biological evidence must drive any status promotion
+  sigma: 0.45,            // RAISED 0.32 → 0.45 via six-stream secondary evidence (June 2026)
+  status: "speculative",  // PROMOTED reserved → speculative; see BIOPLASMA_RESEARCH.md §5.9
   carrier: "QED coherent EM mode (interfacial water)",
   frequencyRange: "THz range (estimated); QED resonance",
   plasmaLiteralness: "field-coherence-analogy",
-  lineageosPath: "drivers/soc/qcom/smem.c (cellos_smem_coherence_probe() patch, CONFIG_CELLOS_BIOPLASMA_BP8) · android_kernel_fairphone_qcm6490",
+  lineageosPath: "drivers/soc/qcom/smem_coherence.c · android_kernel_fairphone_qcm6490",
   organelleRoute: { source: "cytoplasm", target: "broadcast", direction: "readonly" },
   ipcAnalogue: "Qualcomm SMEM inter-processor shared memory substrate — " +
                "strongest available implementation candidate for BP8",
@@ -686,7 +686,7 @@ export const BP8_QED_WATER: BioplasmaPathway = {
 
 **Kernel notes**: `for_each_smem_partition()` does not exist; kernel driver uses `qcom_smem_get()` item probing (Path A). `smem_partition_header` FSM claims corrected — coherence is enforced at hardware cache-line level.
 
-**σ trigger** (σ=0.32 → 0.45, `speculative`): Requires biological evidence — THz spectroscopy of CD resonance in warm-wet interfacial biological water, or CD-dependent ion channel gating at 310K. FP5 hardware build constitutes implementation validation only.
+**σ first elevation ACHIEVED** ✅: σ raised from 0.32 → 0.45 (`speculative`) via six-stream secondary evidence (June 2026). See `BP8_SMEM_COHERENCE_DESIGN.md §5` for the full evidence analysis. **Next trigger** (σ=0.45 → 0.50, `indicative`): requires direct THz spectroscopy of CD resonance in warm-wet mammalian interfacial water, or CD-dependent ion channel gating at 310K.
 
 **`isMetaphor: true`** applies specifically to the THz frequency row (Conceptual quality). The eight Structural/Functional rows are genuine design-ontology mappings. See `BP8_SMEM_COHERENCE_DESIGN.md` for the full graded analysis.
 
@@ -1028,7 +1028,7 @@ export type BioplasmaStatus =
   | "verified"    // σ ≥ 0.75: established electrophysiology
   | "indicative"  // 0.50–0.75: replicated in-vivo/in-vitro results
   | "speculative" // 0.30–0.50: theoretical models with limited data
-  | "reserved";   // architectural zero-weight annotation overriding numeric tier (BP8 at σ=0.32 stays zero until CD evidence arrives)
+  | "reserved";   // architectural zero-weight gate (no pathway currently uses this: BP8 promoted to "speculative" σ=0.45, June 2026)
 
 /**
  * A bioplasma pathway (BP1–BP9) representing an endogenous electric
@@ -1038,7 +1038,8 @@ export type BioplasmaStatus =
  * Source of truth for lineageosPath: LineageOSv2_Manifold.md §5.
  *
  * Invariants enforced at runtime:
- *   - status === "reserved" → bioplasmaSignal() returns early (BP8)
+ *   - status === "speculative" + σ × 0.10 multiplier → low-amplitude signal (BP8, σ=0.45)
+ *   - status === "reserved" → bioplasmaSignal() returns early (no pathway currently uses this)
  *   - organelleRoute.direction === "readonly" → never drives routing (BP9)
  */
 export interface BioplasmaPathway {
@@ -1075,12 +1076,12 @@ export const BP4_ELF_COUPLING:      BioplasmaPathway = { /* σ=0.70, indicative 
 export const BP5_RF_MMW:            BioplasmaPathway = { /* σ=0.60, indicative — was BP5_RF_COUPLING in roadmap */ };
 export const BP6_FROHLICH:          BioplasmaPathway = { /* σ=0.45, speculative, deferred */ };
 export const BP7_VMEM_PATTERN:      BioplasmaPathway = { /* σ=0.72, indicative */ };
-export const BP8_QED_WATER:         BioplasmaPathway = { /* σ=0.32, reserved, annotation-only */ };
+export const BP8_QED_WATER:         BioplasmaPathway = { /* σ=0.45, speculative — raised June 2026 via six-stream secondary evidence */ };
 export const BP9_THZ_TELEMETRY:     BioplasmaPathway = { /* σ=0.50, indicative, readonly */ };
 
 export const BIOPLASMA_PATHWAYS:             BioplasmaPathway[];  // all 9
 export const BIOPLASMA_BY_CODE:              Record<string, BioplasmaPathway>; // lookup by "BP1"..
-export const IMPLEMENTED_BIOPLASMA_PATHWAYS: BioplasmaPathway[];  // runtime-routed pathways only: BP1–BP5, BP7, BP9; excludes BP6 (deferred), BP8 (reserved), BP12/BP13/BP14 (isMetaphor:true — constants exported but no runtime hooks or UI)
+export const IMPLEMENTED_BIOPLASMA_PATHWAYS: BioplasmaPathway[];  // runtime-routed pathways: BP1–BP5, BP7, BP9 (full weight), BP8 (speculative weight = σ×0.10=0.045); excludes BP6 (deferred), BP12/BP13/BP14 (isMetaphor:true — constants exported but no runtime hooks or UI)
 ```
 
 Two registries are exported from `organelles.ts`. The original roadmap specified one (`BIOPLASMA_REGISTRY`); the implementation added a second zone-level view used directly by `BioplasmaFieldSection.tsx`:
@@ -1143,7 +1144,7 @@ initBP1Baseline: (profileIntensity?: number) => void;
 
 // ─── bioplasmaSignal() implementation ────────────────────────────────────────
 bioplasmaSignal: (pathway, intensity = 1.0, ttlMs = 1500) => {
-  // Guard 1 — reserved pathways never fire (BP8).
+  // Guard 1 — reserved-tier gate (no pathway currently uses this; BP8 promoted to "speculative" June 2026).
   if (pathway.status === "reserved") return;
   // Guard 2 — read-only pathways never drive routing (BP9).
   if (pathway.organelleRoute.direction === "readonly") return;
@@ -1218,7 +1219,7 @@ export function applyBioplasmaManifoldModulation(
     if (!pathways?.length) continue;
     let zoneBoost = 0;
     for (const pw of pathways) {
-      if (pw.status === "reserved") continue;               // BP8 guard
+      if (pw.status === "reserved") continue;               // reserved-tier guard (no pathway currently uses this)
       if (pw.organelleRoute.direction === "readonly") continue; // BP9 guard
       const boostFactor = pw.sigma >= 0.75 ? 0.18 : pw.sigma >= 0.50 ? 0.14 : 0.09;
       zoneBoost += pw.sigma * boostFactor;
@@ -1264,7 +1265,7 @@ On profile change:
 | 9 | BP5 (RF/MMW) | 0.60 | `useThermalHAL.ts` | ✅ 12s interval; heapRatio > 0.75 gate; lineageosPath fixed June 2026 |
 | 10 | BP13 (Phase Separation) | 0.75 | `bioplasmaPathways.ts` only | ⏸ Constant exported; `isMetaphor: true`; no runtime hook (cgroup analogy) |
 | 11 | BP6 (Fröhlich) | 0.45 | `bioplasmaPathways.ts` only | ⏸ Deferred — constant exported; no runtime logic |
-| 12 | BP8 (QED Water) | 0.32 | `bioplasmaPathways.ts` only | 🔒 Reserved annotation; no runtime usage |
+| 12 | BP8 (QED Water) | 0.45 | `bioplasmaPathways.ts` + `useWaterCoherence.ts` (speculative) | ⚡ Promoted to speculative (June 2026) — needs `bioplasmaPathways.ts` σ+status code update + zero-guard removal |
 
 ---
 
@@ -1345,7 +1346,7 @@ The following table records the as-built status of every component specified or 
 | `BP5_RF_MMW` | `src/domain/content/bioplasmaPathways.ts` | ✅ Implemented | σ=0.60, indicative (roadmap alias: `BP5_RF_COUPLING`) |
 | `BP6_FROHLICH` | `src/domain/content/bioplasmaPathways.ts` | ⏸ Deferred constant | σ=0.45, speculative; exported but no runtime logic |
 | `BP7_VMEM_PATTERN` | `src/domain/content/bioplasmaPathways.ts` | ✅ Implemented | σ=0.72, indicative, broadcast |
-| `BP8_QED_WATER` | `src/domain/content/bioplasmaPathways.ts` | 🔒 Reserved annotation | σ=0.32; `bioplasmaSignal()` returns early; no UI |
+| `BP8_QED_WATER` | `src/domain/content/bioplasmaPathways.ts` | ⚡ Speculative (pending code update) | σ=0.45 (code update needed); zero-guard removal needed; speculative weight = σ×0.10 = 0.045 |
 | `BP9_THZ_TELEMETRY` | `src/domain/content/bioplasmaPathways.ts` | ✅ Implemented (read-only) | σ=0.50, readonly guard; panel display only |
 | `BIOPLASMA_REGISTRY` | `src/domain/content/organelles.ts` | ✅ Implemented | Keyed by organelle ID string |
 | `BIOPLASMA_ZONE_REGISTRY` | `src/domain/content/organelles.ts` | ✅ Implemented | Keyed by `CellZoneId`; used by `BioplasmaFieldSection` |
@@ -1422,7 +1423,7 @@ On profile change: persists to localStorage → fires BP7 signal → updates mem
 | Action | Final File | Status | Notes |
 |---|---|---|---|
 | BP6 coherent burst | `src/domain/content/bioplasmaPathways.ts` | ⏸ Deferred as planned | Constant `BP6_FROHLICH` exported; `status: "speculative"`; zero runtime logic. Activate only when Fröhlich condensate evidence reaches σ ≥ 0.50. |
-| BP8 reserved annotation | `src/domain/content/bioplasmaPathways.ts` | 🔒 Annotation-only | `BP8_QED_WATER` exported; `bioplasmaSignal()` returns immediately for this pathway; not rendered in any panel |
+| BP8 speculative signal | `src/domain/content/bioplasmaPathways.ts` | ⚡ Promoted to speculative (June 2026) | `BP8_QED_WATER` σ=0.45; zero-guard removal + weight=0.045 needed in `bioplasmaSignal()`; design doc §5.3 |
 | Immune checkpoint (SPA) | — | ❌ **SPA not yet built** | `SecurityStatusOrganelle.tsx` — SPA version remains outstanding. Native `SecurityStatusOrganelle.kt` (CellShell, privileged fragment) is APPROVED ROM Phase 3 work in `CELL_OS_ROM_FORK_PLAN.md §3c` (CellShell/SecurityStatusOrganelle, Phase 3). |
 
 ---
@@ -1449,7 +1450,7 @@ Items not in the original roadmap but identified during implementation:
 | BP12 runtime hook | Medium | `useCircadianClock.ts` — wrap `visibilityState`/`document.timeline` to broadcast circadian phase to zone weights via `bioplasmaSignal()`. Substrate is AlarmManagerService; OS hook is JS Page Visibility API. |
 | BP14 runtime hook | Medium | `useCalciumSpark.ts` — `setInterval` with stochastic jitter simulates CICR; fires burst of bioplasmaSignal() calls with overlapping TTLs to the ER zone and broadcast. |
 | BP6 activation criteria | Research-gated | Requires biological σ ≥ 0.50; currently 0.45. Pietruszka 2025 is Tier 2 only; monitor in-vivo confirmation. |
-| BP8 activation path | Research-gated | Requires non-local, phase-coherent coordination mechanism in AOSP kernel. De Ninno 2025 is supporting context; σ = 0.32 stays frozen until direct CD experimental evidence. |
+| BP8 next elevation (σ→0.50) | Research-gated | Speculative σ=0.45 ACHIEVED June 2026 via six-stream secondary evidence. Next: `indicative` (σ≥0.50) requires direct THz-TDS CD resonance in warm-wet mammalian cells. |
 | JEITA charging paths (P6/BP3) | Documentation | Add `drivers/power/supply/qcom/smb5-lib.c` and `drivers/power/supply/qcom/qg-battery-profile.c` to §9.x source audit as FP5-specific enrichment of P6 and BP3 wound-field detection substrate. |
 
 ---
