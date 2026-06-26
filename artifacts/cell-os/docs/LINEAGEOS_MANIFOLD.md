@@ -128,7 +128,7 @@ This section synthesises the biophoton IPC pathways (P1–P7) and the bioplasma 
 
 **Zone Description**: The fast, fluid medium for biochemical work and transport. Suspends organelles and mediates all IPC transactions.
 - **Biophoton Pathways**: P4 (Target), P5 (Medium)
-- **Bioplasma Pathways**: BP8 (Water Coherence Domain, σ=0.32), BP9 (THz Refractive Phenotype, σ=0.50)
+- **Bioplasma Pathways**: BP8 (Water Coherence Domain, σ=0.45 — raised June 2026 via six-stream secondary evidence; speculative), BP9 (THz Refractive Phenotype, σ=0.50)
 - **Combined σ weight**: 0.50 (BP9)
 - **Dominant Field Carrier**: THz EM / QED Coherent Modes
 - **LineageOS Implementation**: Binder IPC Driver (`drivers/android/binder.c`) + Bionic libc. The IPC bus is the physical medium for cytoplasmic signal propagation.

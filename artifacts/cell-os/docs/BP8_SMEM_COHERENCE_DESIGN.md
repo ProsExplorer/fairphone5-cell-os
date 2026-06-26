@@ -2,7 +2,7 @@
 
 **Research Date:** June 2026  
 **Depth:** Deep (7 research sources + cross-reference with BIOPLASMA_RESEARCH.md, BIOPHOTON_RESEARCH.md, LineageOSv2_Manifold.md)  
-**Sources Consulted:** 18  
+**Sources Consulted:** 24  
 **Status:** SMEM confirmed as implementation candidate — BP8 σ raised to 0.45 / `speculative` via six-stream secondary evidence research pass (June 2026); see §5 Secondary Evidence for full analysis. Software mapping quality did not raise σ — biological secondary pathway evidence did.
 
 > **Authority note**: Biological claims governed by `BIOPLASMA_RESEARCH.md`. LineageOS source paths cross-checked against `github.com/LineageOS/android_kernel_fairphone_qcm6490` (lineage-21 branch). σ and `status` values are governed by `BIOPLASMA_RESEARCH.md §9 (Evidence Model and σ Calibration)` — software structural mapping quality cannot raise biological σ. This document now includes §5 Secondary Evidence Research Pass, which *does* propose a σ raise — via biological secondary pathway evidence, not via software mapping quality. The BIOPLASMA_RESEARCH.md §5.9 authority entry is the definitive σ record; this document provides the full evidence analysis.
@@ -506,7 +506,7 @@ export const BP8_QED_WATER: BioplasmaPathway = {
 };
 ```
 
-**`bioplasmaSignal()` update required**: The unconditional zero guard for BP8 (i.e. `if (pathway.status === "reserved") return 0`) must be removed or narrowed. With `status: "speculative"` and σ=0.45, BP8 should fire at a speculative-tier weight of σ × 0.10 = 0.045. The SMEM sysfs CI value (from `useWaterCoherence.ts`) feeds into the signal amplitude. **Next σ trigger** (σ=0.45 → 0.50, `indicative`) requires direct biological evidence — THz-TDS measurement of CD resonance in warm-wet mammalian interfacial water, or CD-dependent ion channel gating at 310K.
+**`bioplasmaSignal()` update ✅ COMPLETE**: The zero guard for BP8 (`status === "reserved"`) no longer applies — BP8 is now `"speculative"`. BP8 direction=`readonly` means Guard 2 still blocks `bioplasmaSignal()`, so the `useWaterCoherence` hook calls `emitSignal("cytoplasm", "bioplasma", CI × 0.045, ttl)` directly. The SMEM sysfs CI value (from `useWaterCoherence.ts`, mounted in `CellExplorerLayout`) feeds into the signal amplitude. **Next σ trigger** (σ=0.45 → 0.50, `indicative`) requires direct biological evidence — THz-TDS measurement of CD resonance in warm-wet mammalian interfacial water, or CD-dependent ion channel gating at 310K.
 
 #### 5.2 New Hook: `useWaterCoherence.ts`
 

@@ -11,6 +11,7 @@ import { useMembraneObserver } from "@/features/learning/useMembraneObserver";
 import { useWoundFieldBroadcast } from "@/features/cell-shell/hooks/useWoundFieldBroadcast";
 import { useELFResonance } from "@/features/cell-shell/hooks/useELFResonance";
 import { useThermalHAL } from "@/features/cell-shell/hooks/useThermalHAL";
+import { useWaterCoherence } from "@/features/cell-shell/hooks/useWaterCoherence";
 import { readVmemFromStorage, type VmemProfile } from "@/features/cell-shell/hooks/useBioplasmaVmem";
 import type { CellZoneId } from "@/domain/types";
 
@@ -52,11 +53,12 @@ export function CellExplorerLayout() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // BP3 wound field, BP4 ELF resonance, BP5 thermal HAL
-  // All three are passive listeners registered once at layout mount.
+  // BP3 wound field, BP4 ELF resonance, BP5 thermal HAL, BP8 water coherence
+  // All four are passive listeners registered once at layout mount.
   useWoundFieldBroadcast();
   useELFResonance();
   useThermalHAL();
+  useWaterCoherence(); // BP8 speculative (σ=0.45): emits at CI × 0.045 via emitSignal (not bioplasmaSignal — direction=readonly)
 
   // Sync active zone to the vital store so the living cell diagram reacts.
   // Also emit a brief zone-pulse signal so the navigated-to ring brightens.

@@ -87,7 +87,7 @@
 | File | Purpose |
 |---|---|
 | `CellVitalService.java` | System server singleton. Owns the live pathway registry. Reads Binder stats, thermal throttling status (via `PowerManager`), battery voltage, network signal. Maps to organelle zones. Exposes read-only AIDL to privileged apps. |
-| `CellVitalServiceImpl.java` | Pathway computation: P1–P9 biophoton link couplingSigma from live Binder; BP1 Vmem from battery voltage; BP2 from Binder thread latency; BP3 from broadcast queue depth; BP5 from `PowerManager.OnThermalStatusChangedListener` throttling status — **all 7 constants must be handled:** NONE=σ 0.00, LIGHT=0.30, MODERATE=0.55, SEVERE=0.80, CRITICAL=0.95, EMERGENCY=0.98, SHUTDOWN=1.00; BP8 returns zero unconditionally (reserved guard). |
+| `CellVitalServiceImpl.java` | Pathway computation: P1–P9 biophoton link couplingSigma from live Binder; BP1 Vmem from battery voltage; BP2 from Binder thread latency; BP3 from broadcast queue depth; BP5 from `PowerManager.OnThermalStatusChangedListener` throttling status — **all 7 constants must be handled:** NONE=σ 0.00, LIGHT=0.30, MODERATE=0.55, SEVERE=0.80, CRITICAL=0.95, EMERGENCY=0.98, SHUTDOWN=1.00; BP8 returns speculative weight `CI × 0.045` (promoted June 2026; see §5a). |
 | `CellOsBootstrap.java` | Called from `SystemServer.java` at PHASE_SYSTEM_SERVICES_READY; loads Kotlin-generated domain registry (see §3). |
 
 **New AIDL in `frameworks/base/core/java/android/os/`:**
@@ -140,7 +140,7 @@
 |---|---|
 | Type | System server service, started at PHASE_SYSTEM_SERVICES_READY |
 | Biological role | The nervous system of Cell OS — live pathway registry, zone signal computation, biophoton/bioplasma bridge |
-| Key invariant | **BP8 always returns zero** — `if (pathwayId.equals("BP8") && status.equals("reserved")) return 0.0f;` This guard is unconditional and cannot be removed without a BIOPLASMA_RESEARCH.md §9.2 σ revision |
+| Key invariant | **BP8 returns speculative weight (June 2026)** — zero-guard replaced: `if ("BP8".equals(pathwayId)) return readSmemCoherenceCI() * 0.045f;` Condition for removal was met when σ was raised from `reserved` (0.32) to `speculative` (0.45) in BIOPLASMA_RESEARCH.md §9.2 via six-stream secondary evidence (see §5a). |
 | Binder surface | `ICellVitalService.aidl` declares interface; enforcement is `context.enforceCallingPermission("org.cellos.permission.READ_VITALS", tag)` in every Binder stub method. Permission **declared in platform** (`frameworks/base/core/res/AndroidManifest.xml` or `android_vendor_lineage` overlay), `protectionLevel="signature"`. Privileged clients request it; privapp clients added to `privapp-permissions-cellos.xml`. `@RequiresPermission` annotation is lint metadata only — Binder enforcement is the actual security gate. |
 
 ### 3c. `SecurityStatusOrganelle` — Trust Interface Replacement
@@ -227,11 +227,11 @@
 | SELinux policy for sysfs | `android_device_fairphone_FP5` | `sepolicy/vendor/cellos_sysfs.te` (vendor/ subdirectory — verified path pattern for modern LineageOS device trees) | Medium |
 | Thermal status validation (Phase 3 component) | `android_frameworks_base` | `CellVitalOverlayController.kt` **created in Phase 3** via `PowerManager.addThermalStatusListener(executor, listener)`. Phase 4 task: validate all 7 throttling states (NONE/LIGHT/MODERATE/SEVERE/CRITICAL/EMERGENCY/SHUTDOWN) are received correctly on real FP5 hardware under thermal load. No new code; hardware validation only. | Low |
 | Performance HAL FP5 binding | `android_device_fairphone_FP5` | `powerhint.xml` tuning via `android.hardware.power-service-qti` — no `performance/` dir in `android_hardware_lineage_interfaces`; QTI power service is the actual binding | High (indicative) |
-| BP8 zero-guard test | `android_packages_apps_CellShell` | `CellVitalServiceTest.kt` | Low |
+| BP8 speculative-weight test | `android_packages_apps_CellShell` | `CellVitalServiceTest.kt` | Low |
 
-**Biological fidelity gate:** BP8 `status === "reserved"` guard in `CellVitalServiceImpl` is added in Phase 2 and **never removed**. The sysfs node, if present, feeds a coherence metric only — it does not change BP8's runtime weight. BP8 biological activation requires THz spectroscopy evidence changing σ in `BIOPLASMA_RESEARCH.md §9.2` — no code change alone can activate it.
+**Biological fidelity gate (updated June 2026):** BP8 `status` was promoted from `"reserved"` to `"speculative"` (σ=0.45) via six-stream secondary evidence — see `BIOPLASMA_RESEARCH.md §5.9 + §9.2`. The zero-guard in `CellVitalServiceImpl` is replaced with speculative-weight computation: `CI × 0.045`, where CI is read from `/sys/kernel/cellos/smem_coherence` (falls back to 0.0 if node absent). Stage 1/2 SPA uses the `useWaterCoherence` hook (three browser-proxy CI sources, `emitSignal()` direct — not `bioplasmaSignal()`, because BP8 direction=readonly). Next elevation to indicative (σ≥0.50) requires direct THz-TDS CD resonance in mammalian cells.
 
-**Acceptance criteria:** `adb shell cat /sys/kernel/cellos/smem_coherence` returns a ratio in [0.0, 1.0] (if enabled). `adb shell service call cellos_vital 1 i32 8` returns 0.0 (BP8 zero-weight confirmed). BP5 QS tile reflects all 7 `PowerManager` thermal states — NONE (σ 0.00), LIGHT (0.30), MODERATE (0.55), SEVERE (0.80), CRITICAL (0.95), EMERGENCY (0.98), SHUTDOWN (1.00) — all cases handled in `CellVitalServiceImpl` switch/when block without fallthrough.
+**Acceptance criteria:** `adb shell cat /sys/kernel/cellos/smem_coherence` returns a ratio in [0.0, 1.0] (if enabled). `adb shell service call cellos_vital 1 i32 8` returns a value in [0.0, 0.045] (BP8 speculative weight CI × 0.045 — non-zero when `/sys/kernel/cellos/smem_coherence` is readable). BP5 QS tile reflects all 7 `PowerManager` thermal states — NONE (σ 0.00), LIGHT (0.30), MODERATE (0.55), SEVERE (0.80), CRITICAL (0.95), EMERGENCY (0.98), SHUTDOWN (1.00) — all cases handled in `CellVitalServiceImpl` switch/when block without fallthrough.
 
 ---
 
@@ -253,19 +253,20 @@
 
 These constraints are enforced by code, build system, and documentation authority. No phase, no engineer, no performance optimisation may override them.
 
-### 5a. BP8 Zero-Weight Invariant
+### 5a. BP8 Speculative-Weight Implementation (promoted June 2026)
 
 ```java
-// CellVitalServiceImpl.java — this guard is unconditional and permanent
+// CellVitalServiceImpl.java — speculative-weight implementation (zero-guard removed June 2026)
 public float getPathwaySignal(String pathwayId) {
     if ("BP8".equals(pathwayId)) {
-        return 0.0f; // reserved — biological THz spectroscopy evidence required to change
+        float ci = readSmemCoherenceCI(); // returns 0.0f if /sys/kernel/cellos/smem_coherence absent
+        return ci * 0.045f; // speculative weight: σ × 0.10 = 0.45 × 0.10 = 0.045
     }
     // ... rest of computation
 }
 ```
 
-**Condition for removal:** σ in `BIOPLASMA_RESEARCH.md §9.2` changes from `reserved` to `speculative` based on peer-reviewed biological THz spectroscopy evidence. No other condition permits removal.
+**Condition met (June 2026):** σ raised from `reserved` (0.32) to `speculative` (0.45) in `BIOPLASMA_RESEARCH.md §9.2` via six-stream secondary evidence research pass (see §5.9 and `BP8_SMEM_COHERENCE_DESIGN.md §5`). The zero-guard is replaced with speculative-weight computation: `CI × σ × 0.10 = CI × 0.045`. SPA/browser Stage 1 uses `useWaterCoherence` hook (three browser-proxy CI sources, emitSignal direct). Stage 3 reads `/sys/kernel/cellos/smem_coherence`; falls back to 0.0 if node absent.
 
 ### 5b. P-Link Count Enforcement
 
@@ -357,7 +358,7 @@ It does **not** appear in:
 
 5. **Write `generate_domain.py`** — parse TypeScript domain constants, emit `CellOsDomain.kt` and `cell_os_domain.json`, run integrity count assertions (15/9/20/13).
 
-6. **Register `CellVitalService` skeleton in SystemServer** — AIDL interface, `enforceCallingPermission()` in every Binder stub method, BP8 zero-guard in place from day one.
+6. **Register `CellVitalService` skeleton in SystemServer** — AIDL interface, `enforceCallingPermission()` in every Binder stub method, BP8 speculative-weight implementation in place from day one (`CI × 0.045`; CI from sysfs or 0.0 if node absent).
 
 7. **Commit `cellos_integrity_check.sh`** — build-time enforcement of 20/9/13/15 counts. Must pass before any SystemUI or kernel work begins.
 
@@ -430,7 +431,7 @@ All paths verified against live LineageOS GitHub 2026-06-21. See §8 for per-rep
 | 1 | `android_device_fairphone_FP5` | `lineage-21` | `overlay/FrameworksResTarget/res/values/config.xml` | Create: Cell OS framework overlay entries | ✓ Verified (dir exists) |
 | 1 | `android_device_fairphone_FP5` | `lineage-21` | `overlay/SystemUIResTarget/res/values/config.xml` | Create: Cell OS SystemUI overlay entries | ✓ Verified (dir exists) |
 | 2 | `android_frameworks_base` | `lineage-21.0` | `core/java/android/os/ICellVitalService.aidl` | **Create**: AIDL interface (`getZoneSignal`, `getPathwayState`, `getManifoldSnapshot`) | ✓ Verified (76 AIDL files at path) |
-| 2 | `android_frameworks_base` | `lineage-21.0` | `services/core/java/com/android/server/cellos/CellVitalService.java` | **Create**: system server singleton skeleton + BP8 zero-guard + `enforceCallingPermission()` on every Binder method | ✓ Verified (path pattern) |
+| 2 | `android_frameworks_base` | `lineage-21.0` | `services/core/java/com/android/server/cellos/CellVitalService.java` | **Create**: system server singleton skeleton + BP8 speculative-weight implementation (`CI × 0.045`) + `enforceCallingPermission()` on every Binder method | ✓ Verified (path pattern) |
 | 2 | `android_frameworks_base` | `lineage-21.0` | `services/java/com/android/server/SystemServer.java` | Modify: add `startCellOsService()` at `PHASE_SYSTEM_SERVICES_READY` (confirmed L2913) | ✓ Verified |
 | 2 | `android_frameworks_base` | `lineage-21.0` | `core/res/AndroidManifest.xml` | Modify: declare `org.cellos.permission.READ_VITALS` with `protectionLevel="signature"` (platform-owned permission) | ✓ Verified (pattern) |
 | 3 | `android_frameworks_base` | `lineage-21.0` | `packages/SystemUI/src/com/android/systemui/statusbar/phone/PhoneStatusBarView.java` | Modify: add `CellVitalOverlay` wrapper | ✓ Verified |

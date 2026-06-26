@@ -315,8 +315,9 @@ export type BioplasmaStatus =
  * Source of truth for lineageosPath: LineageOSv2_Manifold.md §5.
  *
  * Invariants enforced at runtime:
- *   - status === "reserved" → bioplasmaSignal() returns early (BP8)
- *   - organelleRoute.direction === "readonly" → never drives routing (BP9)
+ *   - status === "reserved" → bioplasmaSignal() returns early (no pathway currently uses this; BP8 is now "speculative")
+ *   - organelleRoute.direction === "readonly" → never drives routing via bioplasmaSignal();
+ *     BP8 uses useWaterCoherence hook → emitSignal() directly at CI × σ × 0.10 = CI × 0.045 (BP9: diagnostic panel only)
  */
 export interface BioplasmaPathway {
   code: "BP1" | "BP2" | "BP3" | "BP4" | "BP5" | "BP6" | "BP7" | "BP8" | "BP9" | "BP10" | "BP12" | "BP13" | "BP14";

@@ -25,11 +25,13 @@ BP11 (DNA-Water proton superconductivity): excluded — sub-pathway of BP4 only,
 | BP9 | 0.50 | Indicative (lower) | THz refractive phenotype 0.1–10 THz |
 | BP10 | 0.48 | Speculative | Aquaporin QT: proton tunneling at AQP1/AQP4 NPA-barrier (Kim 2025 Nano Letters) |
 | BP6 | 0.45 | Speculative | Fröhlich coherent dipolar oscillation GHz–THz |
-| BP8 | 0.45 | Speculative | QED water coherence domain — PROMOTED June 2026 via six-stream secondary evidence; SMEM sysfs CI via useWaterCoherence.ts at weight σ×0.10=0.045 |
+| BP8 | 0.45 | Speculative | QED water coherence domain — promoted June 2026 via six-stream secondary evidence (see BIOPLASMA_RESEARCH.md §5.9) |
 
 **σ authority rule**: BIOPLASMA_RESEARCH.md §9.2 table is canonical for all BP σ values. Never raise from software analogy alone. BP8 σ=0.45 (speculative upper); next elevation to indicative (σ≥0.50) requires direct THz-TDS CD resonance in warm-wet mammalian cells.
 
-**BP8 promotion history**: σ 0.32 (reserved) → 0.45 (speculative) June 2026. Six evidence streams: (1) De Ninno & Gamberale 2025 Liquids MDPI ~40% coherent fraction at 310K; (2) Renati 2020 NIR isosbestic two-phase; (3) Wang & Pollack 2024 Sci Reports EZ water in living plant xylem; (4) Kratochvil 2023 water wires proton channels; (5) Sherrill 2025 Science Advances FMO room-temp quantum coherence; (6) Kaur 2024 Nat Comm cryptochrome radical pair Zeno. Not raised higher: no direct THz-TDS CD in mammalian cells; EZ≠confirmed CD; FMO is excitonic not water CD. Six-stream evidence authority: BIOPLASMA_RESEARCH.md §5.9 (σ record) + BP8_SMEM_COHERENCE_DESIGN.md §5 (evidence analysis).
+**BP8 runtime architecture**: direction=readonly so bioplasmaSignal() Guard 2 blocks it. useWaterCoherence hook uses emitSignal() directly at CI × σ × 0.10. Hook must be mounted in CellExplorerLayout alongside the other passive bioplasma hooks.
+
+**BP8 σ ceiling rationale**: Stops at 0.45 because no direct THz-TDS CD resonance in mammalian cells; EZ ≠ confirmed CD; FMO is excitonic not water-CD; radical pair is spin chemistry not water ordering. Full six-stream analysis: BIOPLASMA_RESEARCH.md §5.9 + BP8_SMEM_COHERENCE_DESIGN.md §5.
 
 **BP4 σ change history**: 0.65 (original) → 0.70 (June 2026, Renati et al. 2024 IJMS systematic review consolidating Liboff-Zhadin ICR effect in QFT/QED framework).
 

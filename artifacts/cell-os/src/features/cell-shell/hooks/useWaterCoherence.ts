@@ -3,7 +3,7 @@ import { useCellVitalStore } from "@/features/cell-shell/state/useCellVitalStore
 import { BP8_QED_WATER } from "@/domain/content/bioplasmaPathways";
 
 /**
- * useWaterCoherence — BP8 QED Water Coherence (σ=0.32, reserved)
+ * useWaterCoherence — BP8 QED Water Coherence (σ=0.45, speculative — promoted June 2026)
  *
  * Biological analogue: QED coherence domains (~100 nm) in interfacial water
  * at hydrophilic surfaces — discrete, phase-coherent, collectively oscillating
@@ -13,7 +13,7 @@ import { BP8_QED_WATER } from "@/domain/content/bioplasmaPathways";
  *   (android_kernel_fairphone_qcm6490 — proposed fork, see BP8_SMEM_COHERENCE_DESIGN.md)
  *
  * Kernel/HAL path (Stage 3, real hardware):
- *   smem_coherence.c → sysfs /sys/kernel/smem_coherence/coherence_index
+ *   smem_coherence.c → sysfs /sys/kernel/cellos/smem_coherence
  *   → IWaterCoherence AIDL HAL → this hook
  *
  * SPA browser simulation (Stage 1 — synthetic CI):
@@ -23,18 +23,24 @@ import { BP8_QED_WATER } from "@/domain/content/bioplasmaPathways";
  *   3. Circadian offset: peak-hour CPU availability proxy (~sine wave over 24h)
  *   All three are combined into a dimensionless CI in [0.0, 1.0].
  *
- * IMPORTANT: BP8 status is "reserved". bioplasmaSignal() checks this guard
- * and returns early — this hook runs and computes synthetic CI but never
- * fires signals while status === "reserved". The hook is pre-wired for when
- * biological evidence eventually justifies status promotion.
+ * Signal emission (speculative-tier weight):
+ *   BP8_QED_WATER.organelleRoute.direction === "readonly" — bioplasmaSignal()
+ *   Guard 2 would return early. This hook bypasses bioplasmaSignal() entirely
+ *   and calls emitSignal() directly on the "cytoplasm" zone.
  *
- * σ=0.32 trigger (→ 0.45, speculative): requires biological evidence —
- * THz spectroscopy of CD resonance in interfacial biological water at 310K,
- * or measured CD-dependent ion channel gating. Hardware CI measurement does
- * NOT satisfy this — that is implementation validation, not biological evidence.
+ *   Amplitude: CI × SPECULATIVE_WEIGHT = CI × (σ × 0.10) = CI × 0.045
+ *   This is the correct architecture for a readonly pathway that still contributes
+ *   a low-weight observable: emitSignal writes directly to the zone signal map
+ *   without routing decisions or broadcast fan-out.
+ *
+ * Authority: BIOPLASMA_RESEARCH.md §5.9 (σ record) · BP8_SMEM_COHERENCE_DESIGN.md §5 (evidence)
+ * Next elevation (σ→0.50, indicative): direct THz-TDS CD resonance in mammalian cells.
  */
 
 const POLL_INTERVAL_MS = 4000;
+
+/** Speculative-tier weight: σ × 0.10 = 0.45 × 0.10 = 0.045 */
+const SPECULATIVE_WEIGHT = BP8_QED_WATER.sigma * 0.10;
 
 function computeSyntheticCI(): number {
   const perf = performance as Performance & {
@@ -55,19 +61,23 @@ function computeSyntheticCI(): number {
 }
 
 export function useWaterCoherence(): void {
-  const bioplasmaSignal = useCellVitalStore((s) => s.bioplasmaSignal);
+  const emitSignal = useCellVitalStore((s) => s.emitSignal);
   const lastCIRef = useRef<number>(0);
 
   useEffect(() => {
     const id = setInterval(() => {
       const ci = computeSyntheticCI();
 
+      // Debounce: skip if CI changed by less than 5% since last emission.
       if (Math.abs(ci - lastCIRef.current) < 0.05) return;
       lastCIRef.current = ci;
 
-      bioplasmaSignal(BP8_QED_WATER, ci, POLL_INTERVAL_MS);
+      // Emit at speculative weight: CI × σ × 0.10 = CI × 0.045.
+      // Direct emitSignal call — not bioplasmaSignal — because BP8 direction === "readonly".
+      // Target zone: cytoplasm (BP8_QED_WATER.organelleRoute.source).
+      emitSignal("cytoplasm", "bioplasma", ci * SPECULATIVE_WEIGHT, POLL_INTERVAL_MS);
     }, POLL_INTERVAL_MS);
 
     return () => clearInterval(id);
-  }, [bioplasmaSignal]);
+  }, [emitSignal]);
 }
