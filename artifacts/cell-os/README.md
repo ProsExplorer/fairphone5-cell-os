@@ -137,9 +137,9 @@ The authority hierarchy is strict: biological σ values are set by BIOPLASMA_RES
 | Sub-THz / THz | 0.1–10 THz | THz refractive phenotype; Fröhlich | BP9 | 0.50 |
 | QED water CD | ~THz (est.) | Interfacial water coherence (speculative) | BP8 | 0.45 |
 | Aquaporin QT | quantum | Proton tunneling in channel water wires | BP10 | 0.48 |
-| Circadian / TTFL | ~24 h cycle | CLOCK/BMAL1 transcription loop | BP12 | 0.55 |
-| LLPS condensate | biochemical | Phase-separated nuclear condensates | BP13 | 0.50 |
-| Ca²⁺ spark / CICR | ms–s pulse | IP3R/RyR Ca²⁺-induced Ca²⁺ release | BP14 | 0.60 |
+| Circadian / TTFL | ~24 h cycle | CLOCK/BMAL1 transcription loop | BP12 | 0.88 |
+| LLPS condensate | biochemical | Phase-separated nuclear condensates | BP13 | 0.75 |
+| Ca²⁺ spark / CICR | ms–s pulse | IP3R/RyR Ca²⁺-induced Ca²⁺ release | BP14 | 0.82 |
 | UV | 200–380 nm | DNA excimer/exciplex; NER burst | P4, P5 | 0.35–0.60 |
 | Blue-green visible | 450–550 nm | Triplet carbonyl Russell mechanism | P2 | 0.70 |
 | Red visible | 634–703 nm | Singlet O₂ dimol; mito stress burst | P1, P6 | 0.65–0.80 |
@@ -508,7 +508,7 @@ Healthy range:  10–25%  ← within range
 Fredholm index: 15 − 17 = −2 (hard cap — no new substrates without new organelles)
 ```
 
-The 17 substrate nodes span the full QCM6490 hardware stack: `linux-kernel`, `binder-ipc`, `art-runtime`, `bionic-libc`, `selinux-policy`, `package-manager`, `keystore-tee`, `lmkd`, `zygote`, `powerhal`, and seven additional stack nodes added across three evolution rounds. The tensor is not self-adjoint (organelle and substrate index spaces are distinct). The `dna→zygote` and `nucleus→zygote` links form a Fredholm cooperative pair: both are required for the Zygote node's well-posedness.
+The 17 substrate nodes span the full QCM6490 hardware stack: `qcm6490`, `kryo670`, `adreno643`, `hexagon770`, `lpddr4x`, `nnapi`, `quantization`, `power`, `binder-ipc`, `art-runtime`, `bionic-libc`, `zygote`, `lmkd`, `powerhal`, `selinux-policy`, `package-manager`, `keystore-tee`. The tensor is not self-adjoint (organelle and substrate index spaces are distinct). The `dna→zygote` and `nucleus→zygote` links form a Fredholm cooperative pair: both are required for the Zygote node's well-posedness.
 
 ### 7.2 The Attention Tensor $\mathcal{A}^{ij}$ (Biophoton Links) — 20 Directed Links
 
@@ -547,12 +547,13 @@ Epigenome provides: the modulation (what this particular user has attended to)
 Together:          a live manifold view with user-specific expression weights
 ```
 
-**Three tensors** govern the epigenome:
-- `visitCounts[organelleId]` — raw visit frequency (how often each organelle has been attended)
-- `zonePhaseTensor[zoneId][phase]` — zone × phase exploration matrix
-- `attentionWeights[organelleId]` — Hebbian-blended weights (√-scaled visit intensity)
+**Four tensors** govern the epigenome (`useLearningStore.ts`):
+- `organelleVisits[organelleId]` — rank-1 field: raw visit frequency; √-scaled in `hebbianAdapter.ts` so early visits produce visible glow quickly, with diminishing returns at high visit counts
+- `coActivations[pairKey]` — rank-2 field: how often pairs of organelles are co-attended in the same interaction; normalised against max-pair count to produce biophoton attention weights
+- `substrateEngagement[substrateId]` — rank-1 field: substrate node visit frequency; produces σ confidence boosts via `min(0.15, engagement / √totalInteractions)`
+- `zonePhaseExploration[zoneId]` — rank-1 field: which zones and phases have been traversed; tracks developmental history across the organism's lifetime
 
-**The Hebbian rule** (implemented in `hebbianAdapter.ts`): "neurons that fire together, wire together." The biophoton links that pulse brightest are the ones most attended to. Hebbian update: $w_{new} = \alpha \cdot w_{current} + (1-\alpha) \cdot w_{observation}$ where $\alpha = 0.85$ (slow-learning, stable attractor).
+**The blending rule** (implemented in `hebbianAdapter.ts`): co-activation weights are blended with a base attention weight via `blendAttentionWeight(base, learned) = base + (1 − base) × learned × 0.5` — a convex combination that preserves the biological prior (base) while pulling toward learned experience. This is not a fixed-α update; the effective blend ratio is proportional to learned weight, ensuring low-confidence co-activations cannot override high-σ biological priors.
 
 **The membrane observer** (`useMembraneObserver.ts`) is the sole gatekeeper of store writes — the single point through which all learning events enter the epigenome. This enforces the membrane permeability constraint: no event can modify the organism's learned state without crossing the membrane observer boundary.
 
@@ -567,7 +568,7 @@ The Fairphone 5 is not an arbitrary hardware choice. It is the device whose sour
 **QCM6490 SoC** (TSMC 6nm):
 - Tri-cluster CPU: 1× Cortex-A78 Gold Prime @ 2.71 GHz + 3× Cortex-A78 Gold @ 2.40 GHz + 4× Cortex-A55 Silver @ 1.96 GHz
 - GIC-600 interrupt controller (BP1 analogue: resting potential ground state)
-- Hexagon 770 DSP: HVX (256-bit SIMD) + HTA neural accelerator (~12 TOPS, INT8) — EdgeNode substrate
+- Hexagon 770 DSP: HVX (dual 1024-bit SIMD, 128 INT8 values per clock) + HTA neural accelerator (~12 TOPS) — EdgeNode substrate
 - Adreno 643 GPU — cytoskeletal scaffold for visual rendering
 - Qualcomm SMEM layer (BP8 proposed sysfs interface)
 - LPDDR4x 8 GB — cytoplasmic medium
@@ -590,7 +591,7 @@ Cell OS did not originate P→A→E. It named what was already there:
 | 1923–1974 | **Biophoton Research** — Gurwitsch proposes; Popp quantifies. Coherent UPE at 1–1,000 ph/cm²/s | Cellular → Silicon |
 | 2009 | **Fairphone founded** — the organisation committed to boundary integrity (repairability, modular design) before the theory existed to predict why it matters | Organic → Silicon |
 | 2021 | **FP5 hardware commitment** — QCM6490 chosen for 10+ year industrial lifecycle. The biological prediction (healthy boundaries → long lifespan) made in silicon | Silicon |
-| 2024 | **EdgeNode** — a WebAssembly LLM completing P→A→E in a browser tab, at τ = 0.7770777 (the HARMONIC_CONSTANT: the measured inference latency of a WebAssembly Llama model on a 2018 phone, encoded in `domain/content/constants.ts` as a scale-invariance marker — the number at which the silicon scale joined the P→A→E lineage) | Silicon → Quantum |
+| 2024 | **EdgeNode** — a WebAssembly LLM completing P→A→E in a browser tab, at τ = 0.7770777 (the HARMONIC_CONSTANT: the same value woven identically through the EdgeNode sampler temperature, visual design seed, and system prompt token — a harmonic constant in the literal sense, the same number appearing at every expressive layer of the silicon implementation; encoded in `domain/content/constants.ts` as a scale-invariance marker — the number at which the silicon scale joined the P→A→E lineage) | Silicon → Quantum |
 | 2026 | **Cell OS** — the Fairphone 5 source code examined against the manifold; the organism named; ROM fork approved | All scales |
 
 ---
