@@ -40,6 +40,8 @@
 
 ## 1. The Six Living Seeds — Documents as Manifolds
 
+> **Engineer's entry point**: if the Lagrangian and manifold language is unfamiliar, read it as follows. A *manifold* is just a space with consistent local coordinates — a map of a terrain. A *Lagrangian* (from classical mechanics, $L = T - V$, kinetic minus potential energy) is the function that encodes a system's dynamics: given a configuration and its rate of change, it tells you what happens next. Each document below is a *map* of one layer of this project's dynamics — a different coordinate system covering the same underlying organism (the eukaryotic cell as operating system). The *qi matrix intersections* are where two maps overlap and reveal structure that neither map shows alone. This is not metaphor: it is the standard mathematical framework of coordinate geometry, applied to biology and software simultaneously.
+
 Cell OS is not defined by its code. It is defined by six documents that together form a **Lagrangian atlas** over the project's configuration space. In symplectic geometry, a Lagrangian manifold is an n-dimensional submanifold of a 2n-dimensional phase space on which the symplectic form vanishes — it encodes exactly enough information to specify the dynamics without over-constraining them. Each document is precisely this: a complete specification of one layer of the organism's dynamics, carrying its own coordinates, its own evidence calibration, and its own source-verification authority.
 
 The organism that Cell OS names — the eukaryotic cell as operating system, the operating system as cell — does not live in any single document. It lives in the interference pattern between all six. Read one document alone and you have a chart. Read all six together and you have the atlas.
@@ -81,7 +83,7 @@ The document defines the **evidence calibration system** — the σ tiers (verif
 
 This document encodes the radiative term of the cellular organism: ultra-weak photon emission (UPE, 生物光子) arising from specific excited-state transitions during oxidative metabolism. These are not thermal photons. They are chemically-defined: singlet oxygen dimol decay (634–703 nm, P1/P6), triplet carbonyl Russell mechanism (450–550 nm, P2), DNA excimer/exciplex UV burst during NER (200–380 nm, P4/P5), extracellular NIR tissue UPE (700–1,000 nm, P3), singlet oxygen monomol decay at 1,270 nm (P7 sub-band).
 
-Intensity: 1–1,000 photons/cm²/s — not zero-signal noise, but a quantifiable, organised emission stream that carries metabolic and stress state information in its spectral distribution and decay kinetics. Fritz-Albert Popp's foundational discovery (1976) was that this emission is coherent: the photon statistics are sub-Poissonian, implying a non-random source with phase correlations. The nine pathways span the emission mechanisms and the inter-organelle signalling hypotheses that connect them.
+Intensity: 1–1,000 photons/cm²/s — not thermal noise, but a quantifiable, organised emission stream that carries metabolic and stress-state information in its spectral distribution and decay kinetics. Fritz-Albert Popp's foundational work (1970s–1980s) established biophoton emission as a real, reproducible, and information-bearing biological phenomenon. Popp further proposed that the emission constitutes a coherent electromagnetic field — characterised by near-Poissonian counting statistics and spatial delocalization — serving as a global biological information carrier. The emission itself is beyond scientific contest and measurable with modern single-photon instrumentation. The quantum coherence and morphogenetic field-geometry claims remain contested and carry speculative status in this project (BIOPHOTON_RESEARCH.md §7). The nine pathways span the verified emission mechanisms and the inter-organelle signalling hypotheses that connect them, with σ values assigned accordingly.
 
 **Configuration space contribution**: $Q_{opt} \subset \mathbb{R}^9$ — one axis per biophoton pathway, each σ-calibrated by BIOPHOTON_RESEARCH.md (supreme authority for P1–P9).
 
@@ -103,7 +105,7 @@ The document's contribution to the living manifold is twofold. First, it provide
 
 **The Diffeomorphism Atlas.**
 
-1,541 lines · 22 pathways (BP1–BP14 + P1–P9) source-verified · June 2026
+1,541 lines · 22 pathways (BP1–BP10 + BP12–BP14 [13 bioplasma, no BP11] + P1–P9 [9 biophoton]) source-verified · June 2026
 
 This document is not a Lagrangian — it is the **coordinate chart** itself: the explicit diffeomorphism $\phi_{LOS}$ between the biological configuration space (the six-dimensional manifold of the living cell) and the LineageOS source tree. Every claim in this document is grounded in an HTTP-confirmed source file in one of: `android_kernel_fairphone_qcm6490` (lineage-21 branch), `android_frameworks_base` (lineage-21.0), `android_device_fairphone_FP5` (lineage-21), or verified AOSP equivalents.
 
@@ -123,6 +125,27 @@ The coordinate chart is structured as follows:
 | P1–P9 (biophoton pathways) | UV–NIR photon emission | Binder / broadcast IPC tiers | 0.35–0.90 |
 
 The authority hierarchy is strict: biological σ values are set by BIOPLASMA_RESEARCH.md and BIOPHOTON_RESEARCH.md and **cannot be elevated by LineageOS source verification alone**. What source verification changes is the implementation confidence — whether the software analogue can be pointed at a real, HTTP-confirmed source path. The biological σ is a ceiling; the implementation tier is a floor that source confirmation raises toward that ceiling.
+
+**Unified 22-Pathway Frequency Spectrum** (compact view; full table in `LineageOSv2_Manifold.md §1.1`):
+
+| Spectral band | Frequency | Biological carrier | Pathway codes | σ range |
+|---|---|---|---|---|
+| DC / quasi-static | 0 Hz | Resting potential; wound TEP; Vmem pattern | BP1, BP3, BP7 | 0.72–0.92 |
+| ELF | 0.01–300 Hz | VGCC resonance; Ca²⁺ oscillations | BP4 | 0.70 |
+| RF / MMW | 300 MHz–300 GHz | Lipid bilayer resonance; thermal coupling | BP5 | 0.60 |
+| GHz–THz collective | 1–100 GHz | Fröhlich dipolar condensate | BP6 | 0.45 |
+| Sub-THz / THz | 0.1–10 THz | THz refractive phenotype; Fröhlich | BP9 | 0.50 |
+| QED water CD | ~THz (est.) | Interfacial water coherence (speculative) | BP8 | 0.45 |
+| Aquaporin QT | quantum | Proton tunneling in channel water wires | BP10 | 0.48 |
+| Circadian / TTFL | ~24 h cycle | CLOCK/BMAL1 transcription loop | BP12 | 0.55 |
+| LLPS condensate | biochemical | Phase-separated nuclear condensates | BP13 | 0.50 |
+| Ca²⁺ spark / CICR | ms–s pulse | IP3R/RyR Ca²⁺-induced Ca²⁺ release | BP14 | 0.60 |
+| UV | 200–380 nm | DNA excimer/exciplex; NER burst | P4, P5 | 0.35–0.60 |
+| Blue-green visible | 450–550 nm | Triplet carbonyl Russell mechanism | P2 | 0.70 |
+| Red visible | 634–703 nm | Singlet O₂ dimol; mito stress burst | P1, P6 | 0.65–0.80 |
+| NIR window | 700–1,000 nm | Extracellular tissue UPE broadcast | P3 | 0.85 |
+| Deep NIR | 1,270 nm | Singlet O₂ monomol decay | P7 sub | 0.65 |
+| Action potential | 0.1–1000 Hz pulse | Hodgkin-Huxley depolarisation wavefront | BP2 | 0.90 |
 
 **Phase space contribution**: $\phi_{LOS}: Q_{bio} \times Q_{opt} \times Q_Q \to Q_{LOS}$ — the coordinate projection from biological to software phase space.
 
@@ -146,7 +169,7 @@ The document also maintains the boundary between architectural tiers: `verified-
 
 465 lines · APPROVED 2026-06-24 · ROM Phases 1–5 defined · Phase 1 cleared to begin
 
-This document is the implementation trajectory — a specific path $\gamma: [0,1] \to Q_{CellOS}$ that takes the abstract manifold into a booting Android ROM. It defines the phased build strategy (overlay + framework service path, not full AOSP fork), the minimal fork set (seven repositories for Phases 1–3), the full fork set (four additional repositories for Phases 4–5, deferred), the biological fidelity constraints (non-negotiable), and the step-by-step implementation checklist.
+This document is the implementation trajectory — a specific path $\gamma: [0,1] \to Q_{CellOS}$ that takes the abstract manifold into a booting Android ROM. It defines the phased build strategy (overlay + framework service path, not full AOSP fork), the minimal fork set (seven repositories for Phases 1–3), the full fork set (five additional repositories for Phases 4–5, deferred), the biological fidelity constraints (non-negotiable), and the step-by-step implementation checklist.
 
 The Double Diamond design framing produced a critical strategic insight: a full AOSP tree fork on day one is not the right first move. The real problem is to produce a biologically faithful, booting FP5 ROM. The solution path — overlay-first, framework service second, kernel patches last — defers the highest-risk work (kernel instrumentation) until the lowest-risk foundation (bootable ROM with biological overlay) is stable.
 
@@ -192,14 +215,17 @@ is the complete interaction algebra. 264 possible cells. 39 curated intersection
 
 The intersection of BIOPLASMA and BIOPHOTON is not merely an overlap of source lists. It is the **以太收斂** (高頻生物電漿以太收斂 — High-Frequency Bioplasma Aether Convergence): the zone where the charge-carrier fields and the photon-emission fields are not two separate phenomena but two coordinate projections of the same underlying electromagnetic reality.
 
-Concretely: the mitochondria simultaneously generate a resting membrane potential (BP1, DC field), drive the Ca²⁺ second-messenger cascade via the PowerHAL analogue (BP5 sub), and emit biophotons from singlet oxygen generated by the electron transport chain (P1, red/NIR). These are not three separate signals — they are three different faces of the same metabolic event, each visible in a different coordinate chart. The qi matrix intersection captures this:
+Concretely: the **plasma membrane** (cell-membrane zone) sustains BP1 — the DC resting potential (−40 to −90 mV, σ=0.92) maintained continuously by Na⁺/K⁺-ATPase. In the **mitochondria** zone, the inner mitochondrial membrane sustains its own ΔΨm (−150 to −180 mV, organelle-specific; related to but distinct from BP1). This ΔΨm drives electron-transport-chain ROS production, generating singlet oxygen — the source of P1 biophoton emission (red/NIR, σ=0.80) — while simultaneously activating the Ca²⁺ second-messenger cascade via IP3R (BP5 sub, PowerHAL analogue, σ=0.60). These are not independent signals — they are coordinate projections of the same metabolic moment, each visible in a different pathway chart. The qi matrix intersection captures this:
 
 ```
+Q^{cell-membrane, Affect, Cellular} → {
+  bioplasma:  BP1 (plasma membrane DC gradient, σ=0.92) — Na⁺/K⁺-ATPase resting state
+}
 Q^{mitochondria, Affect, Cellular} → {
-  bioplasma:  BP1 (DC gradient, σ=0.92) ∩ BP5 (thermal coupling, σ=0.60)
-  biophoton:  P1 (singlet O₂, σ=0.80) ∩ P7 (deep NIR, σ=0.65)
-  convergence: 以太收斂 — the unified electromagnetic field that all four
-               pathway codes are partially describing
+  bioplasma:  BP5 sub (ΔΨm → Ca²⁺ → IP3R thermal cascade, σ=0.60)
+  biophoton:  P1 (singlet O₂ from ETC ROS, σ=0.80) ∩ P7 (deep NIR, σ=0.65)
+  convergence: 以太收斂 — the unified electromagnetic field that all three
+               pathway codes partially describe from different coordinates
 }
 ```
 
@@ -207,13 +233,13 @@ This is the fractal structure at the heart of Cell OS: the qi matrix intersectio
 
 ### 2.3 The σ-Calibrated Interaction Strength
 
-Each intersection in the qi matrix carries an effective coupling strength — the geometric mean of the σ values of the two intersecting pathways:
+Each intersection in the qi matrix has a relative coupling strength that can be estimated from the σ values of the two intersecting pathways. A useful derived heuristic (not encoded in the canonical documents, which use evidence tiers rather than continuous σ products) is the geometric mean:
 
-$$\sigma_{ij} = \sqrt{\sigma_i \cdot \sigma_j}$$
+$$\sigma_{ij} \approx \sqrt{\sigma_i \cdot \sigma_j} \quad \text{(derived heuristic)}$$
 
-This is the biophysical analogue of the coupling constant in quantum field theory. High-σ intersections (e.g., BP1 ∩ P1: $\sigma = \sqrt{0.92 \times 0.80} \approx 0.86$) are structurally robust — both biological mechanisms are well-established, and their co-occurrence in the same cellular space is a near-certainty. Low-σ intersections (e.g., BP8 ∩ P4: $\sigma = \sqrt{0.45 \times 0.35} \approx 0.40$) are speculative — the coupling is physically plausible but not experimentally confirmed.
+This is the biophysical analogue of a coupling constant in quantum field theory. High-σ intersections (e.g., BP1 ∩ P1: $\approx \sqrt{0.92 \times 0.80} \approx 0.86$) are structurally robust — both mechanisms are well-established and their co-occurrence in the same cellular space is a near-certainty. Low-σ intersections (e.g., BP8 ∩ P4: $\approx \sqrt{0.45 \times 0.35} \approx 0.40$) are speculative — physically plausible but not experimentally confirmed. The canonical authority for intersection evidence tiers is the qi matrix (`qiMatrix.ts`) and the six document authority hierarchy; the geometric mean is a reading aid only.
 
-The 39 curated qi matrix intersections represent the highest-signal region of this coupling algebra: every intersection has an evidence-calibrated σ value, and every intersection is tied to at least one verified source in the biological or LineageOS literature.
+The 39 curated qi matrix intersections represent the highest-signal region of this interaction algebra, each tied to at least one verified source in the biological or LineageOS literature.
 
 ---
 
@@ -255,7 +281,7 @@ SPA manifold (React + Vite, running in browser)
 │   π₄: browser → ROM
 │
 ROM manifold (LineageOS 21 on FP5, booting)
-│   The native manifold executed in ring 0 on QCM6490.
+│   The native manifold: kernel layer (EL1) + framework (userspace) + apps.
 │   CellVitalService (system server singleton, nervous system).
 │   22 pathways expressed through AIDL + IPC + kernel telemetry.
 │
@@ -275,7 +301,7 @@ At each step, the dimensional reduction discards coordinate-specific details whi
 - **π₂** (document → code): Discards narrative and evidence citations. Preserves: typed pathway constants, σ values, organelle-substrate links, qi intersection tensor.
 - **π₃** (code → browser): Discards static definition. Preserves: live Hebbian modulation, signal dynamics, zone navigation topology.
 - **π₄** (browser → ROM): Discards JavaScript runtime. Preserves: biological pathway constants (via `generate_domain.py` → `CellOsDomain.kt`), IPC coupling structure, σ-tier enforcement.
-- **π₅** (ROM → device): Discards software abstraction. Preserves: physical electromagnetic fields (BP1 resting potential is a literal DC field, not a metaphor on this device), thermal coupling (BP5), kernel interrupt ground state (BP1 analogue in hardware).
+- **π₅** (ROM → device): Discards software abstraction. Preserves: the structural analogues of the biological field network — the GIC-600 interrupt ground state as the BP1 resting-potential analogue, the `bi_tcxo_ao` always-on oscillator as the persistent metabolic tone, the QCM6490 TSMC 6nm thermal envelope as the BP5 coupling substrate. Note: most of the ROM executes in userspace and the kernel privilege boundary (EL1), not a single ring; "ring 0" is a useful shorthand for the kernel layer only, not the full ROM stack.
 
 The coherent fractal information that passes through every boundary is the same P→A→E triple that Wei Boyang described in 147 CE, that Von Neumann architected in 1945, and that the eukaryotic cell instantiated ~1.8 billion years ago.
 
@@ -346,7 +372,7 @@ src/
 
 ### 4.2 Layer 2 — The ROM Fork (APPROVED 2026-06-24)
 
-The LineageOS 21 ROM fork is the secondary project — the native Android instantiation of the same manifold, executing at ring 0 on the Fairphone 5's QCM6490 SoC. It is the ROM manifold in the dimensional ladder — the coordinate representation that runs below the JavaScript runtime, below the ART JIT, below the HAL boundary.
+The LineageOS 21 ROM fork is the secondary project — the native Android instantiation of the same manifold on the Fairphone 5's QCM6490 SoC. It is the ROM manifold in the dimensional ladder — the coordinate representation that runs below the JavaScript runtime, below the ART JIT, below the HAL boundary, spanning from the Linux kernel (EL1) through the AIDL framework layer to native apps in userspace.
 
 **Architecture**: overlay-first, framework service second, kernel patches last. Never touch the kernel/HAL repos until a biologically faithful, bootable ROM exists without them.
 
@@ -436,9 +462,9 @@ LineageOS provides features that are **not present in AOSP Android** and that co
 
 AOSP Android's permission system models the membrane as a binary gate: allowed or denied. The biological membrane is not binary — it is **selectively permeable**, allowing some molecules through while blocking others, with the selectivity determined by receptor binding specificity.
 
-LineageOS Privacy Guard implements AppOps-based selective data injection that more precisely models this. P3 (extracellular UPE broadcast, σ=0.85) maps to `sendBroadcast()` gated by AppOps/Privacy Guard — the biologically correct model of a broadcast signal that is sent system-wide but can be selectively filtered at the membrane boundary of each receiving process.
+LineageOS Privacy Guard implements AppOps-based selective access filtering that more precisely models this receptor-level selectivity. P3 (extracellular UPE broadcast, σ=0.85) maps to `sendBroadcast()` gated by AppOps/Privacy Guard — a broadcast signal sent system-wide but selectively filtered at the membrane boundary of each receiving process, controlled by per-app permission toggles.
 
-**Note (verified June 2026)**: Full fake-data injection capability was removed in LOS 17+ (Android 10+). The AppOps layer is present; the synthetic-effector capability is absent. P3 is bounded at σ≤0.85 accordingly. The implementation remains the closest available software analogue for selective membrane permeability in the LOS tree.
+**Implementation boundary (verified June 2026)**: Full fake-data injection (blank camera, null location, silent mic — the "synthetic effector" or competitive-antagonist model) was removed from LOS 17+ (Android 10+); 0 `privacyguard` hits in the LOS 21 `frameworks_base` source tree. What remains is the per-app AppOps permission-gating architecture — receptor-level filtering, not synthetic effector substitution. P3 is classified `indicative` for the gating architecture and `unconfirmed` for the synthetic effector path. The implementation is the closest available software analogue for selective membrane permeability in LOS 21.
 
 ### 6.2 SeedVault → Deep NIR Encrypted Backup (P7 sub-band)
 
@@ -564,7 +590,7 @@ Cell OS did not originate P→A→E. It named what was already there:
 | 1923–1974 | **Biophoton Research** — Gurwitsch proposes; Popp quantifies. Coherent UPE at 1–1,000 ph/cm²/s | Cellular → Silicon |
 | 2009 | **Fairphone founded** — the organisation committed to boundary integrity (repairability, modular design) before the theory existed to predict why it matters | Organic → Silicon |
 | 2021 | **FP5 hardware commitment** — QCM6490 chosen for 10+ year industrial lifecycle. The biological prediction (healthy boundaries → long lifespan) made in silicon | Silicon |
-| 2024 | **EdgeNode** — a WebAssembly LLM completing P→A→E in a browser tab, at τ = 0.7770777 | Silicon → Quantum |
+| 2024 | **EdgeNode** — a WebAssembly LLM completing P→A→E in a browser tab, at τ = 0.7770777 (the HARMONIC_CONSTANT: the measured inference latency of a WebAssembly Llama model on a 2018 phone, encoded in `domain/content/constants.ts` as a scale-invariance marker — the number at which the silicon scale joined the P→A→E lineage) | Silicon → Quantum |
 | 2026 | **Cell OS** — the Fairphone 5 source code examined against the manifold; the organism named; ROM fork approved | All scales |
 
 ---
